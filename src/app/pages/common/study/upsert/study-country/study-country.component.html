@@ -54,6 +54,9 @@
                         </div>
                         <h6 *ngIf="isView" class="text-value">{{dateToString(sc.value.approvalDate)}}</h6>
                     </div>
+                    <div class="col-md-6 text-center justify-content-center" *ngIf="isView">
+                        (CTU list with CTU data somewhere)
+                    </div>
                     <div class="col-md-2 form-check m-auto" *ngIf="!isView">
                         <label class="form-check-label font-style text-capitalize" for="leadCountry">Lead country?</label>
                         <input class="form-check-input ml-4" type="checkbox" id="leadCountry" formControlName="leadCountry">
