@@ -1,0 +1,93 @@
+@media screen and (max-width: 768px) {
+  #dsr-desc {
+    display: none;
+  }
+
+  .display-text {
+    display: none;
+  }
+}
+
+@media screen and (max-height: 480px) {
+  #dsr-desc {
+    display: none;
+  }
+}
+
+header {
+  height: 10vh;
+}
+
+main {
+  height: 80vh;
+}
+
+footer {
+  height: 10vh;
+}
+
+body {
+  max-height:100vh !important;
+}
+
+#auth-container {
+  overflow: hidden;
+}
+
+.tr-logos {
+  max-width: 50%;
+  max-height: 80%;
+}
+
+#main-logo {
+  max-width: 90%;
+  height: auto;
+  max-height: 100%;
+}
+
+#logo-div {
+  height: 50%;
+}
+
+#tagline {
+  font-size: 2.5vh;
+}
+
+.blue {
+  background-color: #000091;
+}
+
+.home-buttons {
+  font-size: 5vh;
+  font-weight: bold;
+  padding: 1.2vh 2.2vh 1.2vh 2.2vh;
+}
+
+#dsr-desc {
+  font-size: 2.5vh;
+}
+
+#projects-text {
+  font-size: 1.5vh;
+  color: white;
+}
+
+#links {
+  padding-left: 0 !important;
+  color: white;
+  font-size: 2.1vh;
+  list-style: none;
+  margin-bottom: 0;
+}
+
+#funded {
+  background-color: white;
+}
+
+#version {
+  color: rgb(131, 128, 128);
+}
+
+.project-logos {
+  height: 100%;
+}

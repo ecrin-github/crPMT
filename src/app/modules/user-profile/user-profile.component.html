@@ -1,0 +1,84 @@
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="my-3">{{user?.firstName}} {{user?.lastName}}</h5>
+                    <p class="text-muted mb-1">{{user?.designation}}</p>
+                    <p class="text-muted mb-1">{{user?.userProfile?.organisation?.defaultName}}</p>
+                    <p class="text-muted mb-1">{{user?.email}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-5 d-flex align-items-center">
+                            <h2>Personal information</h2>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="d-inline-flex align-items-center alert alert-info alert-no-b-margin" role="alert">
+                                <div class="pr-4">
+                                    <i class="fa fa-info-circle fa-3x info-icon"></i>
+                                </div>
+                                <div>
+                                    Your email can be modified on your Life Science account. For the other fields, please contact the
+                                    <a [routerLink]="['/contactUs']" class="alert-link">Repository Manager</a>.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <form [formGroup]="userForm">
+                    <div class="card-body">
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <label for="lsAaiId" class="font-style text-capitalize">Life Science ID (LS AAI)</label>
+                                <h6 class="text-value">{{userForm.get('lsAaiId')?.value}}</h6>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <label for="email" class="font-style text-capitalize">email</label>
+                                <h6 class="text-value">{{userForm.get('email')?.value}}</h6>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <label for="firstName" class="font-style text-capitalize">first name</label>
+                                <h6 class="text-value">{{userForm.get('firstName')?.value}}</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="font-style text-capitalize">last name</label>
+                                <h6 class="text-value">{{userForm.get('lastName')?.value}}</h6>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <label for="profTitle" class="font-style text-capitalize">Title</label>
+                                <h6 class="text-value">{{userForm.get('title')?.value}}</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="designation" class="font-style text-capitalize">Designation</label>
+                                <h6 class="text-value">{{userForm.get('designation')?.value}}</h6>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <label for="email" class="font-style text-capitalize">organisation</label>
+                                <h6 class="text-value">{{userForm.get('organisation')?.value}}</h6>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <label for="isSuperuser" class="font-style text-capitalize">Role</label>
+                                <h6 class="text-value">{{userForm.get('role')?.value}}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

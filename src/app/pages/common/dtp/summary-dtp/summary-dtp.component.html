@@ -1,0 +1,111 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row" id="navbar">
+            <div class="col-md-6">
+                <h2>Data Transfers</h2>
+            </div>
+            <div class="col-md-6 text-right" *ngxPermissionsOnly="['Admin', 'Manager']">
+                <a [routerLink]="['/data-transfers', 'add']" class="btn btn-success">
+                    <i class="fa fa-plus"></i> New data transfer
+                </a>    
+            </div>
+        </div>
+        <!-- <div style="float: right; margin-top: -40px;" >
+        </div> -->
+    </div>
+    <div id="permanentNavbar"></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <select class="form-control" [(ngModel)]="filterColumn" (change)="filterSearch()">
+                    <option selected disabled value="">Search by...</option>
+                    <option [value]=searchColumn.value *ngFor="let searchColumn of searchColumns">
+                        {{searchColumn.text}}</option>
+                </select>
+            </div>
+            <div class="col-md-9">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Search Data Transfer Process..." [(ngModel)]="searchText" (keyup)="onInputChange($event)"/>
+                </div>
+            </div>
+            <!-- <div class="col-md-3">
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" (click)="filterSearch()">Search</button>
+                    <span class="pl-2"><button class="btn btn-warning" (click)="getDtpList()">Clear</button></span>
+                </div>
+            </div> -->
+        </div>
+
+        <mat-table [dataSource]="dataSource">
+
+            <ng-container matColumnDef="dtpId">
+                <mat-header-cell *matHeaderCellDef> ID </mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <a [routerLink]="['/data-transfers', row.id, 'view']">
+                        {{row.id}}
+                    </a>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="dtpTitle">
+                <mat-header-cell *matHeaderCellDef> Title</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <a [routerLink]="['/data-transfers', row.id, 'view']">{{row.displayName}}</a>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="dtpOrganisation">
+                <mat-header-cell *matHeaderCellDef> Organisation </mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <strong>{{row.organisation?.defaultName}}</strong>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="dtpStatus">
+                <mat-header-cell *matHeaderCellDef> Status </mat-header-cell>
+                <mat-cell *matCellDef="let row"> {{row.status?.name}} </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef> Actions </mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <a [routerLink]="['/data-transfers', row.id, 'view']">
+                        <i class="fa fa-eye mr-4" style="color:#0688fa;"></i>
+                    </a>
+                    <a [routerLink]="['/data-transfers', row.id, 'edit']" *ngxPermissionsOnly="['Admin', 'Manager']">
+                        <i class="fa fa-edit mr-4" style="color:#0688fa;"></i>
+                    </a>
+                    <i class="fa fa-trash mr-4" style="color:#f24437; cursor: pointer;" (click)="deleteRecord(row.id)" *ngxPermissionsOnly="['Admin', 'Manager']">
+                    </i>
+                </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;">
+            </mat-row>
+        </mat-table>
+        <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" [length]="dtpLength" [pageSize]="25"></mat-paginator>
+    </div>
+
+</div>
+
+<br />
+  
+  <!-- Modal -->
+<ng-template #exampleModal let-modal>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Delete Record</h5>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <h6>Sorry, DTP agreed date is present for this DTP so you can't delete this DTP</h6>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" (click)="closeModal()">Close</button>
+        </div>
+    </div>
+</ng-template>

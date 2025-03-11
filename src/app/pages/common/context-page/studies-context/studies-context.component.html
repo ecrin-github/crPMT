@@ -1,0 +1,36 @@
+<div class="row">
+    <div class="col-12">
+        <select class="form-control" [(ngModel)]="filterOption" (change)="onChange()">
+            <option selected value="all">All</option>
+            <option value="studyType">Study type</option>
+            <option value="studyStatus">Study Status</option>
+            <option value="identifierType">Identifier Type</option>
+            <option value="titleType">Tile Type</option>
+            <option value="featureType">Feature Type</option>
+            <option value="featureValue">Feature Value</option>
+            <option value="topicType">Topic Type</option>
+            <option value="relationshipType">Relationship Type</option>
+        </select>
+    </div>
+</div>
+<hr />
+<div class="row">
+    <div class="col-12">
+        <table class="table table-bordered">
+            <thead>
+                <tr class="d-flex">
+                    <th class="col-3 text-center" scope="col">Name</th>
+                    <th class="col-9 text-center" scope="col">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="d-flex" *ngFor="let item of list">
+                    <td class="col-3">
+                        <strong>{{item.name}}</strong>
+                    </td>
+                    <td class="col-9">{{item.description}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

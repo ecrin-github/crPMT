@@ -1,0 +1,647 @@
+<div class="card">
+    <div class="card-header">
+        <div [ngClass]="sticky ? '' : ''"  id="navbar">
+            <div class="row upsert-navbar">
+                <div class="col-md-5">
+                    <h2>{{ isView ? ' Data Use Process' : isEdit ? 'Editing Data Use Process' : 'Adding new data use process'}}</h2>
+                </div>
+                <div class="col-md-7 text-right">
+                    <ng-container *ngIf="showUploadButton">
+                        <button class="btn btn-success mr-1" (click)="goToTsd()">Access Data</button>
+                    </ng-container>
+                    <ng-container *ngIf="isView">
+                        <ng-container *ngIf="role !== 'User'">
+                            <a [routerLink]="['/data-use', id, 'edit']" class="btn btn-primary mr-1">
+                                <i class="fa fa-edit"></i> Edit
+                            </a>
+                        </ng-container>
+                        <button class="btn btn-primary mr-1" (click)="printDocument()">
+                            <i class="fa fa-print"></i> PDF
+                        </button>
+                        <button class="btn btn-primary mr-1" (click)="jsonExport()">
+                            <i class="fa fa-code"></i> JSON
+                        </button>
+                        <button class="btn btn-warning" (click)="back()">Back</button>
+                    </ng-container>
+                    <ng-container *ngIf="!isView">
+                        <button class="btn btn-success mr-5" (click)="onSave()">{{isEdit ? 'Apply Changes' : 'Save'}}</button>
+                        <button class="btn btn-warning" (click)="back()">Cancel</button>
+                    </ng-container>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="pl-5">
+                    <h4>{{dupData?.displayName}}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="permanentNavbar"></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12 mb-5">
+                <ng-container *ngIf="isView || isEdit">
+                    <ul class="nav nav-pills maxw-fit-content nav-fill" style="border-bottom: 1px solid lightgray">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#overview" data-toggle="tab" id="overviews">Overview</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#setup" data-toggle="tab" id="setups">
+                                {{ isView ? 'Linked Objects and People' : 'Set up'}}</a>
+                        </li>
+                    </ul>
+                </ng-container>
+            </div>
+            <div class="tab-content w-100">
+                <div class="tab-pane fade show active" id="overview">
+                    <div class="col-md-12">
+                        <form [formGroup]="form">
+                            <div class="row form-group">
+                                <div class="col-md-6">
+                                    <label for="" class="font-style text-capitalize">organization<sup>*</sup></label>
+                                    <ng-select [items]="organizationList" bindLabel="defaultName" bindValue="id" formControlName="organisation"
+                                        [multiple]="false" [virtualScroll]="true" class="form-control ng-form-control"
+                                        notFoundText="No members found" placeholder="Select Organisation" *ngIf="!isView"
+                                        [ngClass]="{ 'is-invalid': submitted && g.organisation.errors }" [readonly]="isEdit">
+                                    </ng-select>
+                                    <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && g.organisation.errors">
+                                        <p *ngIf="submitted && g.organisation.errors.required"> Please select Organization</p>
+                                    </div>
+                                    <h6 *ngIf="isView" class="text-value">
+                                        {{findOrganization(dupData?.organisation?.id)}}</h6>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="" class="font-style text-capitalize">Display Name<sup>*</sup></label>
+                                    <input type="text" class="form-control" formControlName="displayName" *ngIf="!isView"
+                                        [ngClass]="{ 'is-invalid': submitted && g.displayName.errors }">
+                                    <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && g.displayName.errors">
+                                        <p *ngIf="submitted && g.displayName.errors.required"> Please enter the Display
+                                            Name</p>
+                                    </div>
+                                    <h6 *ngIf="isView" class="text-value">{{dupData?.displayName}}</h6>
+                                </div>
+                            </div>
+                            <div class="row form-group" *ngIf="isEdit || isView">
+                                <div class="col-md-6">
+                                    <label for="" class="font-style text-capitalize pr-5">Status</label>
+                                    <h6 class="text-value" *ngIf="!isView">{{g.status?.value?.name}}</h6>
+                                    <h6 class="text-value" *ngIf="isView">{{dupData?.status?.name}}</h6>
+                                </div>
+                            </div>
+                            <div class="stepper-nav border-bottom">
+                                <div class="stepper-steps p-8 p-lg-10">
+                                    <a class="stepper-step" href="javascript:;" data-stepper-state=""
+                                        title="Set up of the DUP record (associated studies, objects, and users)">
+                                        <div class="stepper-label">
+                                            <i class="stepper-icon flaticon2-setup"></i>
+                                            <h3 class="stepper-title">Set up of studies, objects, users</h3>
+                                            <i class="fa fa-check-circle stepper-exclamation-circle" *ngIf="lastCompletedStep > 0"></i>
+                                            <i class="fa fa-exclamation-circle stepper-check-circle" *ngIf="lastCompletedStep < 1"></i>
+                                        </div>
+                                    </a>
+                                    <a class="stepper-step" href="javascript:;" data-stepper-state=""
+                                        title="Check that prerequisites are met, preparation of the DUA">
+                                        <div class="stepper-label">
+                                            <i class="stepper-icon flaticon-responsive"></i>
+                                            <h3 class="stepper-title">Prereqs check, agreement preparation</h3>
+                                            <i class="fa fa-check-circle stepper-exclamation-circle" *ngIf="lastCompletedStep > 1"></i>
+                                            <i class="fa fa-exclamation-circle stepper-check-circle" *ngIf="lastCompletedStep === 1"></i>
+                                        </div>
+                                    </a>
+                                    <a class="stepper-step" href="javascript:;" data-stepper-state=""
+                                        title="Request and expiry of availability of the data">
+                                        <div class="stepper-label">
+                                            <i class="stepper-icon flaticon-globe"></i>
+                                            <h3 class="stepper-title">Availability of the data</h3>
+                                            <i class="fa fa-check-circle stepper-exclamation-circle" *ngIf="lastCompletedStep > 2"></i>
+                                            <i class="fa fa-exclamation-circle stepper-check-circle" *ngIf="lastCompletedStep === 2"></i>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center my-10 px-8 my-lg-15 px-lg-10">
+                                <div *ngIf="currentStep === 1" class="col-md-12">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="" class="font-style text-capitalize">Setup started</label>
+                                            <div class="form-group" *ngIf="!isView">
+                                                <div class="input-group">
+                                                    <input class="form-control" placeholder="yyyy-mm-dd"
+                                                        name="setUpStartDate" ngbDatepicker #setUpStartDate="ngbDatepicker"
+                                                        [ngClass]="{ 'is-invalid': submitted && g.setUpStartDate.errors }"
+                                                        (click)="setUpStartDate.toggle()" (dateSelect)="verifyStep()"
+                                                        (input)="verifyStep()"
+                                                        formControlName="setUpStartDate" [maxDate]="todayDate" container='body'>
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-primary"
+                                                            (click)="setUpStartDate.toggle()" type="button">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <h6 class="text-value" *ngIf="isView">
+                                                {{viewDate(dupData?.setUpStartDate)}}</h6>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="" class="font-style text-capitalize">Setup Completed</label>
+                                            <div class="form-group" *ngIf="!isView">
+                                                <div class="input-group">
+                                                    <input class="form-control" placeholder="yyyy-mm-dd"
+                                                        name="setUpCompleteDate" ngbDatepicker #setUpCompleteDate="ngbDatepicker"
+                                                        [ngClass]="{ 'is-invalid': submitted && g.setUpCompleteDate.errors }"
+                                                        (click)="setUpCompleteDate.toggle()" (dateSelect)="verifyStep()"
+                                                        (input)="verifyStep()"
+                                                        formControlName="setUpCompleteDate" [maxDate]="todayDate" container='body'>
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-primary"
+                                                            (click)="setUpCompleteDate.toggle()" type="button">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <h6 class="text-value" *ngIf="isView">
+                                                {{viewDate(dupData?.setUpCompleteDate)}}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div *ngIf="currentStep === 2"  class="col-md-12">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="" class="font-style text-capitalize">Prerequisites met</label>
+                                            <div class="form-group" *ngIf="!isView">
+                                                <div class="input-group">
+                                                    <input class="form-control" placeholder="yyyy-mm-dd"
+                                                        name="prereqsMetDate" ngbDatepicker #prereqsMetDate="ngbDatepicker"
+                                                        [ngClass]="{ 'is-invalid': submitted && g.prereqsMetDate.errors }"
+                                                        (click)="prereqsMetDate.toggle()" (dateSelect)="verifyStep()"
+                                                        (input)="verifyStep()"
+                                                        formControlName="prereqsMetDate" [maxDate]="todayDate" container='body'>
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-primary"
+                                                            (click)="prereqsMetDate.toggle()" type="button">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <h6 class="text-value" *ngIf="isView">
+                                                {{viewDate(dupData?.prereqsMetDate)}}</h6>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="" class="font-style text-capitalize">Data Use Agreement</label>
+                                            <div class="form-group" *ngIf="!isView">
+                                                <div class="input-group">
+                                                    <input class="form-control" placeholder="yyyy-mm-dd"
+                                                        name="duaAgreedDate" ngbDatepicker #duaAgreedDate="ngbDatepicker"
+                                                        [ngClass]="{ 'is-invalid': submitted && g.duaAgreedDate.errors }"
+                                                        (click)="duaAgreedDate.toggle()" (dateSelect)="verifyStep()"
+                                                        (input)="verifyStep()"
+                                                        formControlName="duaAgreedDate" [maxDate]="todayDate" container='body'>
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-primary"
+                                                            (click)="duaAgreedDate.toggle()" type="button">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <h6 class="text-value" *ngIf="isView">
+                                                {{viewDate(dupData?.duaAgreedDate)}}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div *ngIf="currentStep === 3" class="col-md-12">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="" class="font-style text-capitalize">Availability requested</label>
+                                            <div class="form-group" *ngIf="!isView">
+                                                <div class="input-group">
+                                                    <input class="form-control" placeholder="yyyy-mm-dd"
+                                                        name="availabilityRequestedDate" ngbDatepicker #availabilityRequestedDate="ngbDatepicker"
+                                                        [ngClass]="{ 'is-invalid': submitted && g.availabilityRequestedDate.errors }"
+                                                        (click)="availabilityRequestedDate.toggle()" (dateSelect)="verifyStep()"
+                                                        (input)="verifyStep()"
+                                                        formControlName="availabilityRequestedDate" [maxDate]="todayDate" container='body'>
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-primary"
+                                                            (click)="availabilityRequestedDate.toggle()" type="button">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <h6 class="text-value" *ngIf="isView">
+                                                {{viewDate(dupData?.availabilityRequestedDate)}}</h6>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="" class="font-style text-capitalize">Availability expires</label>
+                                            <div class="form-group" *ngIf="!isView">
+                                                <div class="input-group">
+                                                    <input class="form-control" placeholder="yyyy-mm-dd"
+                                                        name="availabilityExpiryDate" ngbDatepicker #availabilityExpiryDate="ngbDatepicker"
+                                                        [ngClass]="{ 'is-invalid': submitted && g.availabilityExpiryDate.errors }"
+                                                        (click)="availabilityExpiryDate.toggle()" (dateSelect)="verifyStep()"
+                                                        (input)="verifyStep()"
+                                                        formControlName="availabilityExpiryDate" [minDate]="todayDate" container='body'>
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-primary"
+                                                            (click)="availabilityExpiryDate.toggle()" type="button">
+                                                            <i class="fa fa-calendar"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <h6 class="text-value" *ngIf="isView">
+                                                {{viewDate(dupData?.availabilityExpiryDate)}}</h6>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between border-top pt-10">
+                                    <div class="mr-2">
+                                        <div class="btn btn-light-primary font-weight-bold text-uppercase px-9 py-4"
+                                            [hidden]="currentStep === 1" (click)="changeStep(false)">
+                                            Previous
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="btn btn-primary font-weight-bold text-uppercase px-9 py-4"
+                                            [hidden]="currentStep === maxSteps" (click)="changeStep(true)">
+                                            Next Step
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr *ngIf="!isEdit && !isView" />
+                            <ng-container *ngIf="isEdit || isView">
+                                <hr style="border-top: 2px solid;" />
+                                <br />
+                                <h3>Agreement Details</h3>
+                                <br />
+                                <div class="row form-group">
+                                    <div class="col-md-6">
+                                        <label for="filePath" class="font-style text-capitalize">Reason for secondary use</label>
+                                        <textarea cols="30" rows="4" class="form-control" id="secondaryUseReason" formControlName="secondaryUseReason"
+                                            *ngIf="!isView"></textarea>
+                                        <h6 class="text-value" *ngIf="isView">{{duaData ? duaData[0]?.secondaryUseReason : ''}}</h6>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-check-label font-style text-capitalize" for="repolsProxyProvider">
+                                            repo is proxy provider</label>
+                                        <input class="form-check-input ml-4" type="checkbox" id="repolsProxyProvider"
+                                            formControlName="repoIsProxyProvider" *ngIf="!isView">
+                                        <h6 class="text-value" *ngIf="isView">{{duaData && duaData[0]?.repoIsProxyProvider ? 'Yes' : 'No'}}</h6>
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    <div class="col-md-6">
+                                        <label class="form-check-label font-style text-capitalize" for="conformsToDefault">
+                                            conforms to default</label>
+                                        <input class="form-check-input ml-4" type="checkbox" id="conformsToDefault"
+                                            formControlName="conformsToDefault" (change)="conformsToDefaultChange()" *ngIf="!isView">
+                                        <h6 class="text-value" *ngIf="isView">{{duaData && duaData[0]?.conformsToDefault ? 'Yes' : 'No'}}</h6>
+                                    </div>
+                                    <div class="col-md-6" *ngIf="!showVariations">
+                                        <label for="variations" class="font-style text-capitalize">variations</label>
+                                        <textarea cols="30" rows="3" class="form-control" id="variations" formControlName="variations"
+                                            *ngIf="!isView"></textarea>
+                                        <h6 class="text-value" *ngIf="isView">{{duaData ? duaData[0]?.variations : ''}}</h6>
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    <div class="col-md-6">
+                                        <label for="filePath" class="font-style text-capitalize">DTA file path</label>
+                                        <input type="text" class="form-control" id="filePath" formControlName="duaFilePath" *ngIf="!isView">
+                                        <h6 class="text-value" *ngIf="isView">{{duaData ? duaData[0]?.duaFilePath : ''}}</h6>
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    <div class="col-md-6">
+                                        <label for="rsignatory1" class="font-style text-capitalize">Repository Signatory
+                                            1</label>
+                                        <ng-select id="rsignatory1" [items]="associatedUsers" formControlName="repoSignatory1" [multiple]="false" 
+                                            [virtualScroll]="true" class="form-control ng-form-control" [searchFn]="customSearchUsers"
+                                            bindValue="id" [compareWith]="compareUsers" notFoundText="No person found" placeholder="" *ngIf="!isView">
+                                            <ng-template ng-label-tmp let-item="item">
+                                                {{item.person?.firstName}} {{item.person?.lastName}}
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                                <div class="row m-0">
+                                                    <div class="col-md-8 col-8 p-0 m-0">
+                                                        <div class="col-md-12">{{item.person?.firstName}} {{item.person?.lastName}}</div>
+                                                        <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.person?.email}}</div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <h6 class="text-value" *ngIf="isView">
+                                            {{duaData && duaData[0]?.repoSignatory1?.id ? findPeopleById(duaData[0].repoSignatory1.id) : ''}}
+                                        </h6>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="rsignatory2" class="font-style text-capitalize">Repository Signatory
+                                            2</label>
+                                        <ng-select id="rsignatory2" [items]="associatedUsers" formControlName="repoSignatory2" [multiple]="false" 
+                                            [virtualScroll]="true" class="form-control ng-form-control" [searchFn]="customSearchUsers"
+                                            bindValue="id" [compareWith]="compareUsers" notFoundText="No person found" placeholder="" *ngIf="!isView">
+                                            <ng-template ng-label-tmp let-item="item">
+                                                {{item.person?.firstName}} {{item.person?.lastName}}
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                                <div class="row m-0">
+                                                    <div class="col-md-8 col-8 p-0 m-0">
+                                                        <div class="col-md-12">{{item.person?.firstName}} {{item.person?.lastName}}</div>
+                                                        <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.person?.email}}</div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <h6 class="text-value" *ngIf="isView">
+                                            {{duaData && duaData[0]?.repoSignatory2?.id ? findPeopleById(duaData[0].repoSignatory2.id) : ''}}
+                                        </h6>
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    <div class="col-md-6">
+                                        <label for="psignatory1" class="font-style text-capitalize">Provider Signatory
+                                            1</label>
+                                        <ng-select id="psignatory1" [items]="associatedUsers" formControlName="providerSignatory1" [multiple]="false" 
+                                            [virtualScroll]="true" class="form-control ng-form-control" [searchFn]="customSearchUsers"
+                                            bindValue="id" [compareWith]="compareUsers" notFoundText="No person found" placeholder="" *ngIf="!isView">
+                                            <ng-template ng-label-tmp let-item="item">
+                                                {{item.person?.firstName}} {{item.person?.lastName}}
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                                <div class="row m-0">
+                                                    <div class="col-md-8 col-8 p-0 m-0">
+                                                        <div class="col-md-12">{{item.person?.firstName}} {{item.person?.lastName}}</div>
+                                                        <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.person?.email}}</div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <h6 class="text-value" *ngIf="isView">
+                                            {{duaData && duaData[0]?.providerSignatory1?.id ? findPeopleById(duaData[0].providerSignatory1.id) : ''}}
+                                        </h6>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="psignatory2" class="font-style text-capitalize">Provider Signatory
+                                            2</label>
+                                        <ng-select id="psignatory2" [items]="associatedUsers" formControlName="providerSignatory2" [multiple]="false" 
+                                            [virtualScroll]="true" class="form-control ng-form-control" [searchFn]="customSearchUsers"
+                                            bindValue="id" [compareWith]="compareUsers" notFoundText="No person found" placeholder="" *ngIf="!isView">
+                                            <ng-template ng-label-tmp let-item="item">
+                                                {{item.person?.firstName}} {{item.person?.lastName}}
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                                <div class="row m-0">
+                                                    <div class="col-md-8 col-8 p-0 m-0">
+                                                        <div class="col-md-12">{{item.person?.firstName}} {{item.person?.lastName}}</div>
+                                                        <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.person?.email}}</div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <h6 class="text-value" *ngIf="isView">
+                                            {{duaData && duaData[0]?.providerSignatory2?.id ? findPeopleById(duaData[0].providerSignatory2.id) : ''}}
+                                        </h6>
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    <div class="col-md-6">
+                                        <label for="reqsignatory1" class="font-style text-capitalize">Requester Signatory
+                                            1</label>
+                                        <ng-select id="reqsignatory1" [items]="associatedUsers" formControlName="requesterSignatory1" [multiple]="false" 
+                                            [virtualScroll]="true" class="form-control ng-form-control" [searchFn]="customSearchUsers"
+                                            bindValue="id" [compareWith]="compareUsers" notFoundText="No person found" placeholder="" *ngIf="!isView">
+                                            <ng-template ng-label-tmp let-item="item">
+                                                {{item.person?.firstName}} {{item.person?.lastName}}
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                                <div class="row m-0">
+                                                    <div class="col-md-8 col-8 p-0 m-0">
+                                                        <div class="col-md-12">{{item.person?.firstName}} {{item.person?.lastName}}</div>
+                                                        <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.person?.email}}</div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <h6 class="text-value" *ngIf="isView">
+                                            {{duaData && duaData[0]?.requesterSignatory1?.id ? findPeopleById(duaData[0].requesterSignatory1.id) : ''}}
+                                        </h6>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="reqsignatory2" class="font-style text-capitalize">Requester Signatory
+                                            2</label>
+                                        <ng-select id="reqsignatory2" [items]="associatedUsers" formControlName="requesterSignatory2" [multiple]="false" 
+                                            [virtualScroll]="true" class="form-control ng-form-control" [searchFn]="customSearchUsers"
+                                            bindValue="id" [compareWith]="compareUsers" notFoundText="No person found" placeholder="" *ngIf="!isView">
+                                            <ng-template ng-label-tmp let-item="item">
+                                                {{item.person?.firstName}} {{item.person?.lastName}}
+                                            </ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                                <div class="row m-0">
+                                                    <div class="col-md-8 col-8 p-0 m-0">
+                                                        <div class="col-md-12">{{item.person?.firstName}} {{item.person?.lastName}}</div>
+                                                        <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.person?.email}}</div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                        <h6 class="text-value" *ngIf="isView">
+                                            {{duaData && duaData[0]?.requesterSignatory2?.id ? findPeopleById(duaData[0].requesterSignatory2.id) : ''}}
+                                        </h6>
+                                    </div>
+                                </div>
+                            </ng-container>
+                            <ng-container *ngIf="isEdit || isView">
+                                <hr style="border-top: 2px solid;" />
+                                <h3>Notes</h3>
+                                <div formArrayName="notes">
+                                    <div class="row form-group">
+                                        <div class="col-md-12 text-right pb-2">
+                                            <button class="btn btn-primary p-2" (click)="addDupNote()" *ngIf="!isView"><i class="fa fa-plus p-0"></i></button>
+                                        </div>
+                                        <div class="col-md-12" *ngFor="let note of notes().controls;let i = index" [formGroupName]="i">
+                                            <div class="card border-0">
+                                                <div class="card-body pl-0 pr-0 pb-0 pt-5">
+                                                    <i class="fa fa-times float-right pr-1 text-danger" style="cursor: pointer;"
+                                                        (click)="deleteDupNote(i)" *ngIf="!isView"></i>
+                                                    <i class="fa fa-check float-right pr-2 text-success" style="cursor: pointer;"
+                                                        (click)="saveDupNote(note)" *ngIf="!isView"></i>
+                                                    <h6>{{(note.value.author?.firstName || note.value.author?.lastName ? 
+                                                        (note.value.author?.firstName ? note.value.author.firstName + ' ' : '') 
+                                                        + (note.value.author?.lastName ? note.value.author.lastName : '') : 'Missing author')}} <small>{{note.value.createdOn}}</small></h6>
+                                                    <textarea id="notes" cols="30" rows="3" class="form-control" formControlName="text"
+                                                        *ngIf="!isView"></textarea>
+                                                    <span class="text-value" *ngIf="isView">{{note.value.text}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <div formArrayName="notes">
+                                    <div class="row form-group">
+                                        <div class="col-md-12 text-right pb-2"><button class="btn btn-primary p-2" (click)="addDupNote()"
+                                                *ngIf="!isView"><i class="fa fa-plus p-0"></i></button></div>
+                                        <div class="col-md-12" *ngFor="let note of notes().controls;let i = index" [formGroupName]="i">
+                                            <div class="card border-0">
+                                                <div class="card-body pl-0 pr-0 pb-0 pt-5">
+                                                    <i class="fa fa-times float-right pr-1 text-danger" style="cursor: pointer;"
+                                                        (click)="deleteDupNote(i)" *ngIf="!isView"></i>
+                                                    <i class="fa fa-check float-right pr-2 text-success" style="cursor: pointer;"
+                                                        (click)="saveDupNote(note)" *ngIf="!isView"></i>
+                                                    <h6>{{findPeopleById(dupNotes[i]?.author)}} <small>{{dupNotes[i]?.createdOn | date}}</small></h6>
+                                                    <textarea id="notes" cols="30" rows="3" class="form-control" formControlName="text"
+                                                        *ngIf="!isView"></textarea>
+                                                    <span class="text-value" *ngIf="isView">
+                                                        {{dupNotes[i]?.text}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> -->
+                            </ng-container>
+                            <hr />
+                        </form>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="setup">
+                    <div class="col-md-12">
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <span class="font-style">Associated Studies</span>
+                                <button class="btn btn-primary float-right" (click)="addStudy()" *ngIf="!isView">Add
+                                    Study</button>
+                                <ng-container *ngIf="associatedStudies.length <= 0">
+                                    <p>No Associated Study</p>
+                                </ng-container>
+                                <ng-container *ngIf="associatedStudies.length > 0">
+                                    <ul>
+                                        <li *ngFor="let study of associatedStudies; let i = index" class="pl-4">
+                                            <a [routerLink]="['/studies', study.study?.sdSid, 'view']">
+                                                {{study.study?.sdSid}}
+                                            </a>
+                                            <span title="{{study.study?.displayTitle}}">({{(study.study?.displayTitle && study.study?.displayTitle.length <= sliceLength) ? study.study?.displayTitle : (study.study?.displayTitle | slice:0:sliceLength) + '...'}})</span>
+                                            <i class="fa fa-times pl-3" (click)="removeDupStudy(study)"
+                                                *ngIf="!isView"></i>
+                                        </li>
+                                    </ul>
+                                </ng-container>
+
+                                <hr>
+                                <span class="font-style">Associated Data Objects</span>
+                                <button class="btn btn-primary float-right" (click)="addDataObject()"
+                                    *ngIf="!isView" [disabled]="addDOButtonDisabled">Add Data Objects</button>
+                                <ng-container *ngIf="associatedObjects.length <= 0">
+                                    <p>No Associated Data Object</p>
+                                </ng-container>
+                                <ng-container *ngIf="associatedObjects.length > 0">
+                                    <ul>
+                                        <li *ngFor="let object of associatedObjects; let i = index" class="pl-2 pt-5">
+                                            <a [routerLink]="['/data-objects', object.dataObject?.sdOid, 'view']">
+                                                {{object.dataObject?.sdOid}} -
+                                            </a>
+                                            <span class="associated-do-title" title="{{object.dataObject?.displayTitle}}">{{(object.dataObject?.displayTitle && object.dataObject?.displayTitle.length <= sliceLength) ? object.dataObject?.displayTitle : (object.dataObject?.displayTitle | slice:0:sliceLength) + '...'}}</span>
+                                            <i class="fa fa-times pl-3" (click)="removeDupObject(object.id)"
+                                                *ngIf="!isView"></i>
+
+                                            <!-- DO Instances -->
+                                            <ul style="list-style-type: circle;">
+                                                <li class="li-subtitle pt-1">Data object instances</li>
+                                                <ng-container *ngIf="associatedObjects[i]?.dataObject?.objectInstances?.length > 0; else noInstances">
+                                                    <ul style="list-style-type: square;">
+                                                        <li *ngFor="let instance of associatedObjects[i]?.dataObject?.objectInstances" class="dup-associated-do-li">
+                                                            {{instance.sdIid ? instance.sdIid : '\<No instance ID\>'}}: 
+                                                            {{instance.title ? instance.title : '\<No title\>'}} ({{instance.resourceType?.name ? instance.resourceType?.name : '\<No resource type defined\>'}})
+                                                            <ng-container *ngIf="checkUrl(instance.url); else notUploaded">
+                                                                <ng-container *ngIf="isView; else notView">
+                                                                    <ng-container *ngIf="lastCompletedStep >= 2; else missingSteps">
+                                                                        <ng-container *ngIf="canAccess(); else unauthorized">
+                                                                            <span class="pl-2" title="Data upload to the TSD Repository">
+                                                                                <a class="btn btn-sm btn-success" target="_blank" href="{{instance.url}}">Access data</a>
+                                                                            </span>
+                                                                        </ng-container>
+                                                                        <ng-template #unauthorized>
+                                                                            <span class="pl-2" title="You have to be part of the associated people (below) of the DUP to be able to get access to the data">
+                                                                                <button class="btn btn-sm btn-secondary" disabled>Access data</button>
+                                                                            </span>
+                                                                        </ng-template>
+                                                                    </ng-container>
+                                                                    <ng-template #missingSteps>
+                                                                        <span class="pl-2" title="DUP step should be at 'Availability of the data' to be able to access the data">
+                                                                            <button class="btn btn-sm btn-secondary" disabled>Access data</button>
+                                                                        </span>
+                                                                    </ng-template>
+                                                                </ng-container>
+                                                                <ng-template #notView>
+                                                                    <span class="pl-2" title="Data access is not enabled when editing the DUP">
+                                                                        <button class="btn btn-sm btn-secondary" disabled>Access data</button>
+                                                                    </span>
+                                                                </ng-template>
+                                                            </ng-container>
+                                                            <ng-template #notUploaded>
+                                                                <span class="pl-2" title="Data needs to be uploaded to TSD before accessing it">
+                                                                    <button class="btn btn-sm btn-secondary" disabled>Data not uploaded</button>
+                                                                </span>
+                                                            </ng-template>
+                                                        </li>
+                                                    </ul>
+                                                </ng-container>
+                                                <ng-template #noInstances>
+                                                    <ul style="list-style-type: none;">
+                                                        <li style="font-style:italic" class="dup-associated-do-li">There are no instances related to the data object, please create at least one before uploading and requesting access
+                                                            <span class="pl-2">
+                                                                <a [routerLink]="['/data-objects', object.dataObject?.sdOid, 'edit']" style="font-style:normal" class="btn btn-success btn-sm">Go to data object</a>
+                                                            </span>
+                                                        </li>
+                                                    </ul>
+                                                </ng-template>
+                                                <!-- Prereqs-->
+                                                <li class="li-subtitle">Access prerequisites</li>
+                                                <ng-container *ngIf="prereqs[i]?.length > 0">
+                                                    <ul style="list-style-type: square;">
+                                                        <li *ngFor="let prereq of prereqs[i]">
+                                                            {{prereq.prereqType?.name ? prereq.prereqType.name : 'Unknown prerequisite type'}}
+                                                            <span title="{{prereq.prereqNotes}}">: {{(prereq.prereqNotes?.length > sliceLength) ? ((prereq.prereqNotes | slice:0:sliceLength) + '...'): (prereq.prereqNotes)}}</span>
+                                                        </li>
+                                                    </ul>
+                                                </ng-container>
+                                            </ul>
+
+                                        </li>
+                                    </ul>
+                                </ng-container>
+                                <hr>
+                                <span class="font-style">Associated People</span>
+                                <button class="btn btn-primary float-right" (click)="addUser()" *ngIf="!isView">Add
+                                    People</button>
+                                <ng-container *ngIf="associatedUsers.length <= 0">
+                                    <p>No Associated Users</p>
+                                </ng-container>
+                                <ng-container *ngIf="associatedUsers.length > 0">
+                                    <ul>
+                                        <li *ngFor="let user of associatedUsers; let i = index" class="pl-4">
+                                            <ng-container *ngIf="isManager; else displayUserInfo">
+                                                <a [routerLink]="['/people', user.person?.id, 'view']">
+                                                    {{user.person?.firstName}} {{user.person?.lastName}}
+                                                </a> ({{user.person?.email}})
+                                                <i class="fa fa-times pl-3" (click)="removeDupUser(user.id)"
+                                                    *ngIf="!isView"></i>
+                                            </ng-container>
+                                            <ng-template #displayUserInfo>
+                                                {{user.person?.firstName}} {{user.person?.lastName}} ({{user.person?.email}})
+                                            </ng-template>
+                                        </li>
+                                    </ul>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<br />

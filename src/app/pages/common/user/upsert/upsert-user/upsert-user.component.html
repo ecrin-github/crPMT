@@ -1,0 +1,93 @@
+<div class="container py-5">
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="my-3">{{userData?.firstName}}</h5>
+                    <p class="text-muted mb-1">{{userData?.userProfile?.designation}}</p>
+                    <p class="text-muted mb-1">{{userData?.userProfile?.organisation?.defaultName}}</p>
+                    <p class="text-muted mb-1">{{userData?.email}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-7">
+                            <h2>{{isView ? 'View User Data' : isEdit ? 'Edit User Data' : 'Add User Data'}}</h2>
+                        </div>
+                        <div class="col-md-5 text-right">
+                            <ng-container *ngxPermissionsOnly="['Admin', 'Manager']">
+                                <a [routerLink]="['/people', id, 'edit']" *ngIf="isView" class="btn btn-primary mr-1">
+                                    <i class="fa fa-edit"></i>Edit
+                                </a>
+                                <button class="btn btn-success mr-5" *ngIf="!isView" (click)="onSave()">{{isEdit ?'Apply Changes' : 'Save'}}</button>
+                            </ng-container>
+                            <button class="btn btn-warning" (click)="back()">{{isEdit ? 'Cancel' : 'Back'}}</button>
+                        </div>
+                    </div>
+                </div>    
+                <form [formGroup]="userForm">
+                    <div class="card-body">
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <label for="lsAaiId" class="font-style text-capitalize">LS AAI ID</label>
+                                <h6 class="text-value">{{userData?.userProfile?.lsAaiId}}</h6>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <label for="email" class="font-style text-capitalize" *ngIf="isView">email</label>
+                                <label for="email" class="font-style text-capitalize" *ngIf="!isView">email <sup>*</sup> </label>
+                                <input id="email" type="text" class="form-control" formControlName="email" *ngIf="!isView">
+                                <h6 class="text-value" *ngIf="isView">{{userData?.email}}</h6>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <label for="firstName" class="font-style text-capitalize">first name</label>
+                                <input id="firstName" type="text" class="form-control" formControlName="firstName" *ngIf="!isView">
+                                <h6 class="text-value" *ngIf="isView">{{userData?.firstName}}</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="lastName" class="font-style text-capitalize">last name</label>
+                                <input id="lastName" type="text" class="form-control" formControlName="lastName" *ngIf="!isView">
+                                <h6 class="text-value" *ngIf="isView">{{userData?.lastName}}</h6>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <label for="profTitle" class="font-style text-capitalize">Title</label>
+                                <input id="profTitle" type="text" class="form-control" formControlName="profTitle" *ngIf="!isView">
+                                <h6 class="text-value" *ngIf="isView">{{userData?.userProfile?.profTitle}}</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="designation" class="font-style text-capitalize">Designation</label>
+                                <input id="designation" type="text" class="form-control" formControlName="designation" *ngIf="!isView">
+                                <h6 class="text-value" *ngIf="isView">{{userData?.userProfile?.designation}}</h6>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <label for="email" class="font-style text-capitalize">organisation</label>
+                                <ng-select [items]="organizationList" bindLabel="defaultName" bindValue="id" [multiple]="false" formControlName="organisation"
+                                    [virtualScroll]="true" class="form-control ng-form-control" notFoundText="No organisation found"
+                                    placeholder="Select Organisation" *ngIf="!isView">
+                                </ng-select>
+                                <h6 class="text-value" *ngIf="isView">{{userData?.userProfile?.organisation?.defaultName}}</h6>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <label for="isSuperuser" class="font-style text-capitalize">Is Super User? (Manager)</label>
+                                <input id="isSuperuser" type="checkbox" class="form-control checkbox-input" formControlName="isSuperuser" *ngIf="!isView">
+                                <h6 class="text-value" *ngIf="isView">{{userData?.isSuperuser ? 'Yes' : 'No'}}</h6>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

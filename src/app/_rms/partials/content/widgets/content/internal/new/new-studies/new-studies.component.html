@@ -1,0 +1,61 @@
+<!-- <div class="card card-custom h-100" [ngClass]="cssClass">
+  <div class="card-body p-0">
+    <div
+      class="d-flex align-items-center justify-content-between card-spacer flex-grow-1"
+    >
+      <span [ngClass]="symbolCSSClasses">
+        <span class="symbol-label">
+          <span
+            [inlineSVG]="'./assets/media/svg/icons/Files/File.svg'"
+            [ngClass]="svgCSSClasses"
+          ></span>
+        </span>
+      </span>
+      <div class="d-flex flex-column text-right">
+        <span class="text-dark-75 font-weight-bolder font-size-h1">18</span>
+        <span class="text-muted font-weight-bold mt-2">New studies this month</span>
+      </div>
+    </div>
+    <div
+      id="kt_stats_widget_10_chart"
+      class="card-rounded-bottom"
+      [style.height]="'150px'"
+    >
+      <apx-chart
+        [series]="chartOptions.series"
+        [chart]="chartOptions.chart"
+        [xaxis]="chartOptions.xaxis"
+        [yaxis]="chartOptions.yaxis"
+        [dataLabels]="chartOptions.dataLabels"
+        [stroke]="chartOptions.stroke"
+        [legend]="chartOptions.legend"
+        [fill]="chartOptions.fill"
+        [states]="chartOptions.states"
+        [tooltip]="chartOptions.tooltip"
+        [colors]="chartOptions.colors"
+        [markers]="chartOptions.markers"
+        [plotOptions]="chartOptions.plotOptions"
+      >
+      </apx-chart>
+    </div>
+  </div>
+</div> -->
+
+<div class="card h-100">
+  <div class="card-header border-0 text-center" style="font-weight: 600; font-size: 1.27rem; color: #181c32;">
+    Total Studies
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-12">
+        <ng-container *ngIf="dataCompleted">
+        <apx-chart [series]="chartOptions.series" [chart]="chartOptions.chart" [xaxis]="chartOptions.xaxis"
+          [yaxis]="chartOptions.yaxis" [dataLabels]="chartOptions.dataLabels" [stroke]="chartOptions.stroke"
+          [legend]="chartOptions.legend" [fill]="chartOptions.fill" [states]="chartOptions.states"
+          [tooltip]="chartOptions.tooltip" [colors]="chartOptions.colors" [markers]="chartOptions.markers"
+          [plotOptions]="chartOptions.plotOptions"></apx-chart>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+</div>

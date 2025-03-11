@@ -1,0 +1,88 @@
+<div class="row pb-4" *ngIf="!isView">
+    <div class="col-12 text-right justify-content-center">
+        <button class="btn btn-primary" (click)="addStudyIdentifier(); scrollToElement()">
+            <i class="fa fa-plus"></i> Add Identifier
+        </button>
+    </div>
+</div>
+<form [formGroup]="form">
+    <ng-template [ngIf]="studyIdentifiers().length <= 0">
+        <div class="row">
+            <div class="col-12 mb-3 mt-3 text-center justify-content-center">
+                <p>No study identifiers yet</p>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template [ngIf]="studyIdentifiers().length > 0">
+        <div formArrayName="studyIdentifiers" >
+            <div class="row" *ngFor="let studyIdentifier of studyIdentifiers().controls; let i = index" [formGroupName]="i">
+                <div class="col-12 mb-5" [id]="'idenpanel'+i">
+                    <mat-expansion-panel [expanded]="studyIdentifier.value.alreadyExist ? false : true">
+                        <mat-expansion-panel-header class="text-truncate">
+                            {{findIdentifierType(studyIdentifier.value.identifierType)}}: {{studyIdentifier.value.identifierValue}}
+                        </mat-expansion-panel-header> 
+
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <label for="identifierType" class="font-style text-capitalize">Identifier type</label>
+                                <select class="form-control" formControlName="identifierType" *ngIf="!isView" id="identifierType" (change)="onChange(i)">
+                                    <option selected disabled value="null">Please select type</option>
+                                    <option [value]=identifier.id *ngFor="let identifier of identifierTypes">{{identifier.name}}</option>
+                                </select>
+                                <h6 class="text-value" *ngIf="isView">{{findIdentifierType(studyIdentifier.value.identifierType)}}</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="identifierValue" class="font-style text-capitalize">Identifier value</label>
+                                <input type="text" id="identifierValue" class="form-control" placeholder="Please enter identifier"
+                                formControlName="identifierValue" *ngIf="!isView"/>
+                            <h6 class="text-value" *ngIf="isView">{{studyIdentifier.value.identifierValue}}</h6>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="identifierOrg" class="font-style text-capitalize">Identifier organisation</label>
+                                <ng-select [items]="organizationList" bindLabel="defaultName" bindValue="id" formControlName="identifierOrg"
+                                    [multiple]="false" [virtualScroll]="true" class="form-control ng-form-control" notFoundText="No organization found"
+                                    appendTo="body" placeholder="Select Organization" *ngIf="!isView">
+                                </ng-select>
+                                <h6 class="text-value" *ngIf="isView">{{findOrganization(studyIdentifier.value.identifierOrg)}}</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="identifierDate" class="font-style text-capitalize">Identifier date</label>
+                                <div *ngIf="!isView">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <input class="form-control" placeholder="yyyy-mm-dd" name="identifierDate"
+                                                ngbDatepicker #identifierDate="ngbDatepicker"
+                                                formControlName="identifierDate" container='body'>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary" (click)="identifierDate.toggle()"
+                                                    type="button">
+                                                    <i class="fa fa-calendar"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <h6 class="text-value" *ngIf="isView">{{dateToString(studyIdentifier.value.identifierDate)}}</h6>
+                            </div>
+                        </div>
+                        <div class="row" *ngIf="showIdentifierLinks[i]">
+                            <div class="col-md-6">
+                                <label for="identifierLink" class="font-style text-capitalize">Identifier link</label>
+                                <input type="text" id="identifierLink" class="form-control" placeholder="Enter a parameter..."
+                                    formControlName="identifierLink" *ngIf="!isView"/>
+                                <h6 class="text-value" *ngIf="isView">{{studyIdentifier.value.identifierLink}}</h6>
+                            </div>
+                        </div>
+                        <mat-action-row *ngIf="!isView">
+                            <button mat-button color="primary" (click)="studyIdentifier.value.alreadyExist ? editIdentifier(studyIdentifier) : addIdentifier(i)">Save</button>
+                            <button mat-button color="warn" (click)="removeStudyIdentifier(i)">Remove</button>
+                        </mat-action-row>
+                    </mat-expansion-panel>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+</form>

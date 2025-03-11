@@ -1,0 +1,65 @@
+<div class="row mt-5 pb-4">
+    <div class="col-2 text-left">
+        <h4 class="view-sub-sub-title">Study countries</h4>
+    </div>
+    <div class="col-10 text-right justify-content-center"  *ngIf="!isView">
+        <button class="btn btn-primary" (click)="addStudyCountry()">
+            <i class="fa fa-plus"></i>Add study country
+        </button>
+    </div>
+</div>
+<form [formGroup]="form">
+    <div formArrayName="studyCountries">
+        <div class="row" *ngFor="let sc of getStudyCountriesForm().controls; let i = index;"
+            [formGroupName]="i">
+            <div class="col-12" [id]="'featpanel'+i">
+                <hr>
+                <div class="row">
+                    <div class="col-md-2">
+                        <label for="country" class="font-style text-capitalize" *ngIf="!isView">Country</label>
+                        <ng-select [items]="countries" formControlName="country"
+                            [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
+                            notFoundText="No countries found" placeholder="Select country" *ngIf="!isView" 
+                            appendTo="body">
+                        </ng-select>
+                        <h4 *ngIf="isView" class="text-value view-sub-sub-title">{{sc.value.country}}{{sc.value.leadCountry ? ' (Lead)' : ''}}</h4>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="submissionDate" class="font-style text-capitalize">Submission date</label>
+                        <div class="input-group" *ngIf="!isView">
+                            <input class="form-control" placeholder="yyyy-mm-dd"
+                                name="submissionDate" ngbDatepicker #submissionDate="ngbDatepicker"
+                                (click)="submissionDate.toggle()" formControlName="submissionDate" container='body'>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary"
+                                    (click)="submissionDate.toggle()" type="button">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h6 *ngIf="isView" class="text-value">{{dateToString(sc.value.submissionDate)}}</h6>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="approvalDate" class="font-style text-capitalize">Approval date</label>
+                        <div class="input-group" *ngIf="!isView">
+                            <input class="form-control" placeholder="yyyy-mm-dd"
+                                name="approvalDate" ngbDatepicker #approvalDate="ngbDatepicker"
+                                (click)="approvalDate.toggle()" formControlName="approvalDate" container='body'>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary"
+                                    (click)="approvalDate.toggle()" type="button">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <h6 *ngIf="isView" class="text-value">{{dateToString(sc.value.approvalDate)}}</h6>
+                    </div>
+                    <div class="col-md-2 form-check m-auto" *ngIf="!isView">
+                        <label class="form-check-label font-style text-capitalize" for="leadCountry">Lead country?</label>
+                        <input class="form-check-input ml-4" type="checkbox" id="leadCountry" formControlName="leadCountry">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

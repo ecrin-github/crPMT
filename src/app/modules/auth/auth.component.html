@@ -1,0 +1,62 @@
+<div id="auth-container">
+  <header>
+    <div class="row hop">
+      <div class="col-4 pl-10 pt-5 hop">
+        <div class="dropdown show mt-auto">
+          <i class="fas fa-align-justify dropdown-toggle" style="cursor: pointer; font-size: 25px;" aria-hidden="true"
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToAbout()">About</a>
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToUserGuide()">User Guide</a>
+            <!-- tbc
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToLegalNotice()">Legal Notice</a>
+            -->
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToDataSharingPolicy()">Data Sharing Policy</a>
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToDTP()">Data Transfer Process</a>
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToMdr()">MetaData Repository crMDR</a>
+            <span class="dropdown-item" id="version">{{appVersion}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-8 text-right pr-10 hop">
+        <a href="https://ecrin.org/" target="_blank"><img src="./assets/media/logos/ecrin-logo.png" class="tr-logos" alt="ECRIN logo"/></a>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="row justify-content-center pt-10" id="logo-div">
+      <img src="./assets/media/logos/crPMT.png" id="main-logo" alt="Clinical Research Data Sharing Repository">
+    </div>
+    <div class="row pt-4">
+      <div class="col-12 text-center">
+        <span id="tagline">Clinical Research Project Management Tool (crPMT)</span>
+      </div>
+    </div>
+    <div class="row pt-10">
+      <div class="col-md-12 text-center p-2">
+        <button class="btn btn-primary home-buttons blue" (click)="login()">Login</button>
+      </div>
+      <!-- <div class="col-md-4 text-center p-2">
+        <button class="btn btn-primary home-buttons blue" (click)="login()">Login</button>
+      </div>
+      <div class="col-md-4 text-center p-2">
+        <button class="btn btn-primary home-buttons blue" (click)="goToContact()">Contact Us</button>
+      </div>
+      <div class="col-md-4 text-center p-2">
+        <button class="btn btn-primary home-buttons blue" (click)="goToBrowse()">Browse</button>
+      </div> -->
+    </div>
+    <!-- <div class="row pt-10">
+      <div class="col-md-12 pl-20 pr-20 pt-5 text-center display-text">
+        <span id="dsr-desc">
+        The clinical research Data Sharing Repository is capable of holding any type of digital object 
+        -data sets, documents, media file etc- in a secure research environment (TRE). 
+        The repository collects the metadata necessary for the Findability of the objects, promoting data sharing in clinical research.
+        </span>
+      </div>
+    </div> -->
+  </main>
+  <footer class="blue">
+    yes
+  </footer>
+</div>

@@ -1,0 +1,126 @@
+<div class="card">
+    <div class="card-header">
+        <div id="navbar">
+            <div class="row upsert-navbar">
+                <div class="col-md-4">
+                    <h2 class="text-capitalize">{{ isView ? 'Project and Study Details' : isEdit ? 'Editing Project and Study Details' : 'Add a new project and study'}}</h2>
+                </div>
+                <div class="col-md-8 text-right">
+                    <ng-container *ngIf="isView">
+                        <a [routerLink]="['/projects', id, 'edit']" class="btn btn-primary mr-1">
+                            <i class="fa fa-edit"></i> Edit
+                        </a>
+                        <!-- <button class="btn btn-primary mr-1" (click)="print()">
+                            <i class="fa fa-print"></i> PDF
+                        </button>
+                        <button class="btn btn-primary mr-1" (click)="jsonExport()">
+                            <i class="fa fa-code"></i> JSON
+                        </button> -->
+                        <button class="btn btn-warning" (click)="back()">Back</button>
+                    </ng-container>
+                    <ng-container *ngIf="!isView">
+                        <button class="btn btn-success mr-5" (click)="onSave()">{{isEdit ? 'Apply Changes' : 'Save'}}</button>
+                        <button class="btn btn-warning" (click)="back()">Cancel</button>
+                    </ng-container>
+                </div>
+            </div>
+            <div class="row mt-5">
+                <div class="pl-5">
+                    <h4>{{projectData?.name}}</h4>
+                </div>   
+            </div>
+        </div>
+    </div>
+    <div id="permanentNavbar"></div>
+
+    <div class="card-body" id="content">
+        <form [formGroup]="projectForm">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h3 class="text-value" class="mb-5 pb-5 view-sub-title">Project</h3>
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col-md-4">
+                    <label for="shortName" class="font-style text-capitalize">Short name</label>
+                    <input type="text" id="shortName" class="form-control" placeholder="e.g. INVENTS"
+                        formControlName="shortName" *ngIf="!isView" />
+                    <h6 *ngIf="isView" class="text-value">{{projectData?.shortName ? projectData?.shortName : ''}}</h6>
+                </div>
+                <div class="col-md-8">
+                    <label for="name" class="font-style text-capitalize">Name<sup>*</sup></label>
+                    <textarea cols="30" rows="2" class="form-control" placeholder="Full project name"
+                        formControlName="name" *ngIf="!isView" id="name" (change)="onChange()" [ngClass]="{ 'is-invalid': submitted && g.name.errors }"></textarea>
+                        <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && g.name.errors">
+                            <p *ngIf="submitted && g.name.errors.required">Please enter the project name</p>
+                        </div>
+                    <h6 *ngIf="isView" class="text-value">{{projectData?.name}}</h6>
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col-md-2">
+                    <label for="gaNumber" class="font-style text-capitalize">GA number</label>
+                    <input type="text" id="gaNumber" class="form-control" placeholder="e.g. 101136365"
+                        formControlName="gaNumber" *ngIf="!isView" />
+                    <h6 *ngIf="isView" class="text-value">{{projectData?.gaNumber ? projectData?.gaNumber : ''}}</h6>
+                </div>
+                <div class="col-md-2">
+                    <label for="startDate" class="font-style text-capitalize">Start date</label>
+                    <div class="input-group" *ngIf="!isView">
+                        <input class="form-control" placeholder="yyyy-mm-dd"
+                            name="startDate" ngbDatepicker #startDate="ngbDatepicker"
+                            [ngClass]="{ 'is-invalid': submitted && g.startDate.errors }"
+                            (click)="startDate.toggle()" formControlName="startDate" container='body'>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary"
+                                (click)="startDate.toggle()" type="button">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h6 *ngIf="isView" class="text-value">{{projectData?.startDate}}</h6>
+                    <!-- <h6 *ngIf="isView" class="text-value">{{dateToString(projectData?.startDate)}}</h6> -->
+                </div>
+                <div class="col-md-2">
+                    <label for="endDate" class="font-style text-capitalize">End date</label>
+                    <div class="input-group" *ngIf="!isView">
+                        <input class="form-control" placeholder="yyyy-mm-dd"
+                            name="endDate" ngbDatepicker #endDate="ngbDatepicker"
+                            [ngClass]="{ 'is-invalid': submitted && g.endDate.errors }"
+                            (click)="endDate.toggle()" formControlName="endDate" container='body'>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary"
+                                (click)="endDate.toggle()" type="button">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- <h6 *ngIf="isView" class="text-value">{{dateToString(projectData?.endDate)}}</h6> -->
+                    <h6 *ngIf="isView" class="text-value">{{projectData?.endDate}}</h6>
+                </div>
+                <div class="col-md-6">
+                    <label for="url" class="font-style text-capitalize">URL</label>
+                    <input type="text" id="url" class="form-control" placeholder="Link the the project's website"
+                        formControlName="url" *ngIf="!isView" />
+                    <a href="{{projectData?.url}}" target="_blank">
+                        <h6 *ngIf="isView" class="text-value">{{projectData?.url}}</h6>
+                    </a>
+                </div>
+            </div>
+            <!-- <hr *ngIf="isEdit || isView" class="hr-big"/>
+            <ng-container *ngIf="isEdit || isView">
+                <div class="mt-8">
+                    <mat-expansion-panel [expanded]="studyData?.studyIdentifiers?.length > 0 ? true : false" [disabled]="(isView && studyData?.studyIdentifiers?.length === 0) ? true : false">
+                        <mat-expansion-panel-header>
+                            <h6 class="pt-3 font-style">Study identifier(s)</h6>
+                        </mat-expansion-panel-header>
+                        <app-study-identifier [studyId]="id" *ngIf="id" [isView]="isView" [isEdit]="isEdit"></app-study-identifier>
+                    </mat-expansion-panel>
+                </div>
+            </ng-container> -->
+        </form>
+        <hr>
+        <app-upsert-study [studies]="projectData?.studies" [isView]="isView" [isEdit]="isEdit"></app-upsert-study>
+    </div>
+</div>
+<br />

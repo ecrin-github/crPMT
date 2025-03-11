@@ -79,3 +79,9 @@ typings/
 
 # Angular builds
 dist/
+
+# VSCode
+.vscode
+
+# Mac OS
+.DS_STORE

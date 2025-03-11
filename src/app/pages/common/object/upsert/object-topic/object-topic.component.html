@@ -1,0 +1,89 @@
+<div class="row pb-4" *ngIf="!isView">
+    <div class="col-12 text-right justify-content-center">
+        <button class="btn btn-primary" (click)="addObjectTopic(); scrollToElement()">
+            <i class="fa fa-plus"></i>
+            Add Topic
+        </button>
+    </div>
+</div>
+<form [formGroup]="form">
+    <ng-template [ngIf]="objectTopics().length <= 0">
+        <div class="row">
+            <div class="col-12 mb-3 mt-3 text-center justify-content-center">
+                <p>No object topics yet</p>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template [ngIf]="objectTopics().length > 0">
+        <div formArrayName="objectTopics">
+            <div class="row" *ngFor="let objectTopic of objectTopics().controls; let i = index;" [formGroupName]="i">
+                <div class="col-12 mb-5" [id]="'objecttopic'+i">
+                    <mat-expansion-panel [expanded]="objectTopic.value.alreadyExist ? false : true">
+                        <mat-expansion-panel-header class="text-truncate">
+                            {{findTopicType(objectTopic.value.topicType)}}
+                        </mat-expansion-panel-header>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="topicType" class="font-style text-capitalize">Topic type</label>
+                                <select id="topicType" class="form-control" formControlName="topicType" *ngIf="!isView">
+                                    <option selected disabled value="">Select an option...</option>
+                                    <option [value]=topic.id *ngFor="let topic of topicType">{{topic.name}}</option>
+                                </select>
+                                <h6 class="text-value" *ngIf="isView">{{findTopicType(objectTopic.value.topicType)}}</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="meshValue" class="font-style text-capitalize">Topic value</label>
+                                <input id="meshValue" type="text" class="form-control" placeholder="Enter a parameter..."
+                                formControlName="meshValue" *ngIf="!isView">
+                                <h6 class="text-value" *ngIf="isView">{{objectTopic.value.meshValue}}</h6>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="originalValue" class="font-style text-capitalize">Controlled Terminology</label>
+                                <ng-select [items]="controlledTerminology" formControlName="originalValue" [multiple]="false" [virtualScroll]="true" 
+                                    appendTo="body" class="form-control ng-form-control" notFoundText="No CTs found"
+                                    [compareWith]="compareCTs" [searchFn]="customSearchCTs" placeholder="Please select a CT" *ngIf="!isView">
+                                    <ng-template ng-label-tmp let-item="item">
+                                        {{item.name}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                        <div class="row m-0">
+                                            <div class="col-md-8 col-8 p-0 m-0">
+                                                <div class="col-md-12">{{item.name}}</div>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </ng-select>
+                                <h6 class="text-value" *ngIf="isView">{{objectTopic.value.originalValue?.name}}</h6>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="meshCode" class="font-style text-capitalize">CT Code</label>
+                                <input id="meshCode" type="text" class="form-control" placeholder="Enter a parameter..."
+                                formControlName="meshCode" *ngIf="!isView">
+                                <h6 class="text-value" *ngIf="isView">{{objectTopic.value.meshCode}}</h6>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="meshCoded" class="font-style text-capitalize">Mesh Coded</label>
+                                <select id="meshCoded" class="form-control" formControlName="meshCoded" *ngIf="!isView">
+                                    <option selected disabled value="">Select an option...</option>
+                                    <option value=false>No</option>
+                                    <option value=true>Yes</option>
+                                </select>
+                                <h6 class="text-value" *ngIf="isView">{{(objectTopic.value.meshCoded==='true' || objectTopic.value.meshCoded===true) ? 'Yes' : 'No'}}</h6>
+                            </div>
+                        </div>
+
+                        <mat-action-row *ngIf="!isView">
+                            <button mat-button color="primary" (click)="objectTopic.value.alreadyExist ? editTopic(objectTopic) : addTopic(i)">Save</button>
+                            <button mat-button color="warn" (click)="removeObjectTopic(i)">Remove</button>
+                        </mat-action-row>
+                    </mat-expansion-panel>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+</form>

@@ -1,0 +1,30 @@
+<!--begin::Tiles Widget 11-->
+<!-- <div class="card card-custom bg-" [ngClass]="cssClass" [ngStyle]="{ height: widgetHeight }">
+  <div class="card-body">
+    <span [inlineSVG]="'./assets/media/svg/icons/General/Shield-check.svg'"
+      class="svg-icon svg-icon-3x svg-icon-white ml-n2"></span>
+
+    <div [ngClass]="textInverseCSSClass" class="font-weight-bolder font-size-h2 mt-3">
+      18
+    </div>
+
+    <span [ngClass]="textInverseCSSClass" class="font-weight-bold font-size-lg mt-1">New Data Uses this month</span>
+  </div>
+</div> -->
+<!--end::Tiles Widget 11-->
+<div class="card" [ngClass]="cssClass">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-12">
+        <span [inlineSVG]="'./assets/media/svg/icons/General/Shield-check.svg'"
+          class="svg-icon svg-icon-3x svg-icon-white ml-n2"></span>
+      </div>
+      <div class="col-md-12 font-weight-bolder font-size-h2" [ngClass]="textInverseCSSClass">
+        &lt;number&gt;
+      </div>
+      <div class="col-md-12 font-weight-bold font-size-lg" [ngClass]="textInverseCSSClass">
+        New Data Uses this month
+      </div>
+    </div>
+  </div>
+</div>

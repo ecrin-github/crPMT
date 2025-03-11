@@ -1,0 +1,57 @@
+<!--begin::Advance Table Widget 9-->
+<div class="card card-custom" [ngClass]="cssClass">
+  <!--begin::Header-->
+  <div class="card-header border-0 py-5">
+    <h3 class="card-title align-items-start flex-column">
+      <span class="card-label font-weight-bolder text-dark">Recent Users</span>
+      <span class="text-muted mt-3 font-weight-bold font-size-sm">Showing the 10 most recently added people, from a total of {{peopleTotal}}.</span>
+    </h3>
+    <div class="card-toolbar">
+      <a [routerLink]="['/people', 'add']"
+        class="btn btn-success font-weight-bolder font-size-sm mr-3">Add</a>
+      <a [routerLink]="['/people']" class="btn btn-info font-weight-bolder font-size-sm">See All</a>
+
+    </div>
+  </div>
+  <!--end::Header-->
+
+  <!--begin::Body-->
+  <div class="card-body pt-0 pb-3" style="height: 500px; overflow: auto;">
+    <mat-table [dataSource]="dataSource">
+
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
+        <mat-cell *matCellDef="let row"> <a [routerLink]="['/people', row.id, 'view']">{{row.firstName}} {{row.lastName}}</a> </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="roleName">
+        <mat-header-cell *matHeaderCellDef> Role </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{row.userProfile?.role}} </mat-cell>
+      </ng-container>
+
+      <!-- <ng-container matColumnDef="email">
+        <mat-header-cell *matHeaderCellDef> Email </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{row.email}} </mat-cell>
+      </ng-container> -->
+
+      <ng-container matColumnDef="orgName">
+        <mat-header-cell *matHeaderCellDef> Organization </mat-header-cell>
+        <mat-cell *matCellDef="let row"> {{row.userProfile?.organisation?.defaultName}} </mat-cell>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef> </mat-header-cell>
+        <mat-cell *matCellDef="let row">
+          <a [routerLink]="['/people', row.id, 'view']" class="btn btn-light-primary font-weight-bolder font-size-sm mr-3">View</a>
+          <a [routerLink]="['/people', row.id, 'edit']" class="btn btn-light-success font-weight-bolder font-size-sm">Edit</a>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;">
+      </mat-row>
+    </mat-table>
+  </div>
+  <!--end::Body-->
+</div>
+<!--end::Advance Table Widget 9-->

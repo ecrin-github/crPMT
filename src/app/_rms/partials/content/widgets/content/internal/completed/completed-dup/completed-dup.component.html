@@ -1,0 +1,53 @@
+<!-- <div class="card card-custom card-stretch gutter-b" style="max-height: 342px !important;">
+  <div class="card-header border-0 pt-5">
+    <h3 class="card-title font-weight-bolder">Completed Data use processes</h3>
+  <div class="card-body d-flex flex-column">
+    <div class="flex-grow-1">
+      <div id="kt_mixed_widget_14_chart" style="height: '150px';">
+        <apx-chart
+          [series]="chartOptions.series"
+          [chart]="chartOptions.chart"
+          [xaxis]="chartOptions.xaxis"
+          [yaxis]="chartOptions.yaxis"
+          [dataLabels]="chartOptions.dataLabels"
+          [stroke]="chartOptions.stroke"
+          [legend]="chartOptions.legend"
+          [fill]="chartOptions.fill"
+          [states]="chartOptions.states"
+          [tooltip]="chartOptions.tooltip"
+          [colors]="chartOptions.colors"
+          [markers]="chartOptions.markers"
+          [plotOptions]="chartOptions.plotOptions"
+        ></apx-chart>
+      </div>
+    </div>
+    <div class="pt-5 mt-5">
+      <a
+              [routerLink]="['/reports']"
+        class="btn btn-success btn-shadow-hover font-weight-bolder w-100 py-3 cursor-pointer"
+        >Generate Report</a
+      >
+    </div>
+  </div>
+</div> -->
+<div class="card h-100">
+  <div class="card-header border-0 text-center" style="font-weight: 600; font-size: 1.27rem; color: #181c32;">
+    Completed Data use processes
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-12">
+        <ng-container *ngIf="dataCompleted">
+          <apx-chart #chart [series]="chartOptions.series" [chart]="chartOptions.chart" [xaxis]="chartOptions.xaxis"
+            [yaxis]="chartOptions.yaxis" [dataLabels]="chartOptions.dataLabels" [stroke]="chartOptions.stroke"
+            [legend]="chartOptions.legend" [fill]="chartOptions.fill" [states]="chartOptions.states"
+            [tooltip]="chartOptions.tooltip" [colors]="chartOptions.colors" [markers]="chartOptions.markers"
+            [plotOptions]="chartOptions.plotOptions"></apx-chart>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  <!-- <div class="card-footer border-0">
+    <a [routerLink]="['/reports']" class="btn btn-success btn-shadow-hover font-weight-bolder w-100 py-3 cursor-pointer">Generate Report</a>
+  </div> -->
+</div>

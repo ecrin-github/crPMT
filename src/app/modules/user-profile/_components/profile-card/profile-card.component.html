@@ -1,0 +1,114 @@
+<!-- <div class="card card-custom card-stretch" >
+  <div class="card-body pt-4">
+    <div class="d-flex align-items-center">
+      <div class="symbol symbol-60 symbol-xxl-100 mr-5 align-self-start align-self-xxl-center">
+        <div class="symbol-label" [style.backgroundImage]="'url('+ user.pic +')'"></div>
+        <i class="symbol-badge bg-success"></i>
+      </div>
+      <div>
+        <a class="font-weight-bolder font-size-h5 text-dark-75 text-hover-primary cursor-pointer">
+          {{user.given_name}} {{user.family_name}}
+        </a>
+        <div class="text-muted">
+          {{user.companyName}}
+        </div>
+      </div>
+    </div>
+
+    <div class="py-9">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="font-weight-bold mr-2">Email:</span>
+        <a class="text-muted text-hover-primary">{{user.email}}</a>
+      </div>
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="font-weight-bold mr-2">Phone:</span>
+        <span class="text-muted">{{user.phone}}</span>
+      </div>
+      <div class="d-flex align-items-center justify-content-between">
+        <span class="font-weight-bold mr-2">Location:</span>
+        <span class="text-muted">{{user.address?.city}}</span>
+      </div>
+    </div>
+
+    <div class="navi navi-bold navi-hover navi-active navi-link-rounded">
+      <div class="navi-item mb-2">
+        <a class="navi-link py-4" routerLink="/user-profile/personal-information" routerLinkActive="active">
+          <span class="navi-icon mr-2">
+            <span [inlineSVG]="'./assets/media/svg/icons/General/User.svg'" cacheSVG="true" class="svg-icon"></span>
+          </span>
+          <span class="navi-text font-size-lg">
+            Personal Information
+          </span>
+        </a>
+      </div>
+      <div class="navi-item mb-2">
+        <a class="navi-link py-4" routerLink="/user-profile/account-information" routerLinkActive="active">
+          <span class="navi-icon mr-2">
+            <span [inlineSVG]="'./assets/media/svg/icons/Code/Compiling.svg'" cacheSVG="true" class="svg-icon"></span>
+          </span>
+          <span class="navi-text font-size-lg">
+            Account Information
+          </span>
+        </a>
+      </div>
+      <div class="navi-item mb-2">
+        <a class="navi-link py-4" routerLink="/user-profile/organization-information" routerLinkActive="active">
+          <span class="navi-icon mr-2">
+            <span [inlineSVG]="'./assets/media/svg/icons/Home/Building.svg'" cacheSVG="true" class="svg-icon"></span>
+          </span>
+          <span class="navi-text font-size-lg">
+            Organization Information
+          </span>
+        </a>
+      </div>
+      <div class="navi-item mb-2">
+        <a class="navi-link py-4" routerLink="/user-profile/email-settings" routerLinkActive="active">
+          <span class="navi-icon mr-2">
+            <span [inlineSVG]="'./assets/media/svg/icons/Communication/Mail-opened.svg'" cacheSVG="true"
+              class="svg-icon"></span>
+          </span>
+          <span class="navi-text font-size-lg">
+            Email settings
+          </span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div> -->
+<div class="row">
+<div class="col-md-4">
+  <div class="card">
+    <div class="card-body">
+      <div class="d-flex align-items-center">
+        <div class="symbol symbol-60 symbol-xxl-100 mr-5 align-self-start align-self-xxl-center">
+          <div class="symbol-label" [style.backgroundImage]="'url('+ user.pic +')'"></div>
+          <i class="symbol-badge bg-success"></i>
+        </div>
+        <div>
+          <a class="font-weight-bolder font-size-h5 text-dark-75 text-hover-primary cursor-pointer">
+            {{user.firstName}} {{user.lastName}}
+          </a>
+          <div class="text-muted">
+            {{user.companyName}}
+          </div>
+        </div>
+      </div>
+      <div class="py-9">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="font-weight-bold mr-2">Email:</span>
+          <a class="text-muted text-hover-primary">{{user.email}}</a>
+        </div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="font-weight-bold mr-2">Phone:</span>
+          <span class="text-muted">{{user.phone}}</span>
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+          <span class="font-weight-bold mr-2">Location:</span>
+          <span class="text-muted">{{user.address?.city}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="col-md-8"></div>
+</div>

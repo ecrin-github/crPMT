@@ -1,0 +1,17 @@
+:host {
+  .aside {
+    height: 100%;
+
+    .aside-menu {
+      margin: 0;
+    }
+  }
+
+  // fixed text line break issue on minimized aside hover
+  .menu-text {
+    white-space: nowrap;
+  }
+}
+a.menu-link.active{
+  background-color: rgb(138, 125, 125) !important;
+}

@@ -1,0 +1,148 @@
+  <div id="flex-container">
+    <header>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="dropdown show mt-auto">
+            <i class="fas fa-less-than p-5" style="cursor: pointer; font-size: 25px;" (click)="goToLogin()"></i>
+            <i class="fas fa-align-justify dropdown-toggle" style="cursor: pointer; font-size: 25px;" aria-hidden="true"
+              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+              <a class="dropdown-item" href="javascript:void(0)">About</a>
+              <a class="dropdown-item" href="javascript:void(0)" (click)="goToUserGuide()">User Guide</a>
+              <a class="dropdown-item" href="javascript:void(0)" (click)="goToMdr()">MDR</a>
+              <a class="dropdown-item" href="javascript:void(0)" (click)="goToLegalNotice()">Legal Notice</a>
+              <a class="dropdown-item" href="javascript:void(0)" (click)="goToPrivacy()">Data Privacy Policy</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 text-right">
+          <a href="https://ecrin.org/" target="_blank"><img src="./assets/media/logos/ecrin-logo.png"
+              style="height: 55px;" /></a>
+          <a href="https://www.uio.no/english/services/it/research/sensitive-data/" target="_blank"><img
+              src="./assets/media/logos/uio-english.jpg" style="height: 55px;" /></a>
+        </div>
+      </div>
+    </header>
+    <article>
+      <div class="row">
+        <!-- <div class="col-md-6 p-10">
+        </div> -->
+        <div class="col-md-12 p-10 m-auto" style="max-width: 810px;">
+            <form [formGroup]="contactForm">
+                <div class="row form-group">
+                    <div class="col-md-12">
+                        <h1 class="text-bold text-uppercase text-center" style="color: #315492 !important;">Contact the Clinical
+                            Research Repository
+                        </h1>
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-md-12">
+                        <label for="reason" class="text-capitalize"
+                            style="font-size: 12px; color: #5979af !important; font-weight: bold;">Reason for contacting the
+                            repository</label>
+                        <select class="form-control" id="reason" formControlName="reason" (change)="onChange()" [ngClass]="{ 'is-invalid': isSubmitted && g.reason.errors }">
+                            <option disabled selected value="">Select an option...</option>
+                            <option value="I would like to upload data">I would like to upload data</option>
+                            <option value="I would like to access data">I would like to access data</option>
+                            <option value="I would like more information">I would like more information</option>
+                        </select>
+                        <div class="col-md-12 invalid-feedback d-block" *ngIf="isSubmitted && g.reason.errors">
+                            <p *ngIf="isSubmitted && g.reason.errors.required"> Please select an option</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-md-12">
+                        <label for="message" class="text-capitalize"
+                            style="font-size: 12px; color: #5979af !important; font-weight: bold;">{{reason === 'upload' ? 'Please enter your proposed study title' : reason === 'access' ? 'Please enter the study/data that you would like to access' : 'Message'}}</label>
+                        <textarea id="message" cols="30" rows="5" class="form-control" formControlName="message" [ngClass]="{ 'is-invalid': isSubmitted && g.message.errors }"></textarea>
+                        <div class="col-md-12 invalid-feedback d-block" *ngIf="isSubmitted && g.message.errors">
+                            <p *ngIf="isSubmitted && g.message.errors.required"> Please enter the message</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-md-6">
+                        <label for="firstName" class="text-capitalize"
+                            style="font-size: 12px; color: #5979af !important; font-weight: bold;">First name</label>
+                        <input type="text" class="form-control" placeholder="First Name" id="firstName" formControlName="firstName" [ngClass]="{ 'is-invalid': isSubmitted && g.firstName.errors }">
+                        <div class="col-md-12 invalid-feedback d-block" *ngIf="isSubmitted && g.firstName.errors">
+                            <p *ngIf="isSubmitted && g.firstName.errors.required"> Please enter Your first name</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="text-capitalize"
+                            style="font-size: 12px; color: #5979af !important; font-weight: bold;">Last name</label>
+                        <input type="text" class="form-control" placeholder="Last Name" id="lastName" formControlName="lastName" [ngClass]="{ 'is-invalid': isSubmitted && g.lastName.errors }">
+                        <div class="col-md-12 invalid-feedback d-block" *ngIf="isSubmitted && g.lastName.errors">
+                            <p *ngIf="isSubmitted && g.lastName.errors.required"> Please enter your last name</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-md-12">
+                        <label for="" class="text-capitalize"
+                            style="font-size: 12px; color: #5979af !important; font-weight: bold;" for="organization">Organization</label>
+                        <input type="text" class="form-control" placeholder="Organization" form="organization" formControlName="organization">
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-md-12">
+                        <label for="" class="text-capitalize"
+                            style="font-size: 12px; color: #5979af !important; font-weight: bold;" for="email">Email <small>(*Please enter your organization email address)</small> </label>
+                        <input type="text" class="form-control" placeholder="Email" id="email" formControlName="email" [ngClass]="{ 'is-invalid': isSubmitted && g.email.errors }">
+                        <div class="col-md-12 invalid-feedback d-block" *ngIf="isSubmitted && g.email.errors">
+                            <p *ngIf="isSubmitted && g.email.errors.required"> Please enter your email</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-group">
+                  <div class="col-md-12">
+                      <label for="" class="text-capitalize"
+                          style="font-size: 12px; color: #5979af !important; font-weight: bold;" for="confirmEmail">Confirm Email <small>(*Please re-enter your organization email address)</small> </label>
+                      <input type="text" class="form-control" placeholder="Email" id="confirmEmail" formControlName="confirmEmail" [ngClass]="{ 'is-invalid': isSubmitted && g.confirmEmail.errors }">
+                      <div class="col-md-12 invalid-feedback d-block" *ngIf="isSubmitted && g.confirmEmail.errors">
+                          <p *ngIf="isSubmitted && g.confirmEmail.errors.required"> Please re-enter your email</p>
+                      </div>
+                  </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-md-12 text-center">
+                        <span class="pr-2"><button class="btn-primary btn w-25" (click)="submitContact()">Send</button></span>
+                        <button class="btn-warning btn w-25" (click)="goToLogin()">Back</button>
+                    </div>
+                </div>
+            </form>            
+        </div>
+      </div>
+    </article>
+    <footer>
+      <div class="row" style="background-color: #000091;">
+        <div class="col-2 col-md-2 m-auto p-0" style="background: white;">
+          <img src="./assets/media/logos/funded.png" alt="" class="img-fluid">
+        </div>
+        <div class="col-2 col-md-2 m-auto">
+          <ul style="color: white; list-style: none; font-size: 14px; margin-bottom: 0;">
+            <li style="cursor: pointer;">About</li>
+            <li style="cursor: pointer;" (click)="goToUserGuide()">User Guide</li>
+            <li style="cursor: pointer;" (click)="goToMdr()">MDR</li>
+          </ul>
+        </div>
+        <div class="col-5 col-md-5 text-right display-text">
+          <span style="font-size: 9px; color: white;">All Projects are supported by the Horizon Europe and Horizon 2020
+            Programme.<br> Canserv under GA 101058620, BY-COVID under GA 101046203 <br> EOSC-Life under GA 824087</span>
+        </div>
+        <div class="col-3 col-md-3 m-auto">
+          <div class="row">
+            <div class="col-4 col-md-4 p-0"><a href="https://www.eosc-life.eu/" target="_blank"><img
+                  src="./assets/media/logos/eoscBW.png" alt="" class="img-fluid"></a></div>
+            <div class="col-4 col-md-4 p-0"><a href="https://by-covid.org/" target="_blank"><img
+                  src="./assets/media/logos/bycovdBW.png" alt="" class="img-fluid"></a></div>
+            <div class="col-4 col-md-4 p-0"><a href="https://www.canserv.eu/" target="_blank"><img
+                  src="./assets/media/logos/canservBW.png" alt="" class="img-fluid"></a></div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>

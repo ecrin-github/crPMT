@@ -1,0 +1,100 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row" [ngClass]="sticky ? '' : ''"  id="navbar">
+            <div class="col-md-6">
+                <h2>Studies</h2>
+            </div>
+            <div class="col-md-6 text-right">
+                <a [routerLink]="['/studies', 'add']" class="btn btn-success">
+                    <i class="fa fa-plus"></i> New study (TODO)
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="permanentNavbar"></div>
+
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <select class="form-control" [(ngModel)]="filterColumn" (change)="filterSearch()">
+                    <option selected disabled value="">Search by...</option>
+                    <option [value]=searchColumn.value *ngFor="let searchColumn of searchColumns">
+                        {{searchColumn.text}}</option>
+                </select>
+            </div>
+            <div class="col-md-9">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Search study..." [(ngModel)]="searchText" (keyup)="onInputChange($event)"/>
+                </div>
+            </div>
+        </div>
+
+        <mat-table [dataSource]="dataSource">
+            <ng-container matColumnDef="shortTitle">
+                <mat-header-cell *matHeaderCellDef>Short Title</mat-header-cell>
+                <mat-cell *matCellDef="let row"> 
+                    <a [routerLink]="['/studies', row.id, 'view']">{{row.shortTitle}}</a> 
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="status">
+                <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <mat-cell *matCellDef="let row">{{row.status}}</mat-cell>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="category">
+                <mat-header-cell *matHeaderCellDef>Category</mat-header-cell>
+                <mat-cell *matCellDef="let row">{{row.category}}</mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="project">
+                <mat-header-cell *matHeaderCellDef>Project</mat-header-cell>
+                <mat-cell *matCellDef="let row"> 
+                    <a [routerLink]="['/projects', row.project?.id, 'view']">{{row.project?.shortName}}</a> 
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <a [routerLink]="['/studies', row.id, 'view']">
+                        <i class="fa fa-eye mr-4" style="color:#0688fa;"></i>
+                    </a>
+                    <a [routerLink]="['/studies', row.id, 'edit']">
+                        <i class="fa fa-edit mr-4" style="color:#0688fa;"></i>
+                    </a>
+                    <i class="fa fa-trash mr-4" style="color:#f24437; cursor: pointer;" (click)="deleteRecord(row.id)">
+                    </i>
+                </mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;">
+            </mat-row>
+        </mat-table>
+        <mat-paginator #studyPaginator [pageSizeOptions]="[10, 25, 50, 100]" [length]="studyLength" [pageSize]="25"></mat-paginator>
+    </div>
+</div>
+
+<br />
+
+<!-- Modal -->
+<ng-template #studyDeleteModal let-modal>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title">Delete Record</h5>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <h6>{{title}}</h6>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" (click)="closeModal()">Close</button>
+        </div>
+    </div>
+</ng-template>

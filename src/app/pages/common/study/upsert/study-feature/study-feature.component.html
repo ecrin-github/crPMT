@@ -1,0 +1,47 @@
+<form [formGroup]="form">
+    <ng-template [ngIf]="getStudyFeaturesForm().length <= 0">
+        <div class="row">
+            <div class="col-12 mb-3 mt-3 text-center justify-content-center">
+                <p>No study features yet</p>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template [ngIf]="getStudyFeaturesForm().length > 0">
+        <div formArrayName="studyFeatures">
+            <div class="row" *ngFor="let studyFeature of getStudyFeaturesForm().controls; let i = index;"
+                [formGroupName]="i">
+                <div class="col-12 mb-5" [id]="'featpanel'+i">
+                    <mat-expansion-panel [expanded]="studyFeature.value.alreadyExist ? false : true">
+                        <mat-expansion-panel-header class="text-truncate font-style text-capitalize">
+                            {{featureTypesFiltered[i]?.name}}
+                        </mat-expansion-panel-header>
+                        <div class="row">
+                            <div class="col-md-6 pt-2">
+                                <ng-select [items]="featureValFiltered[i]" bindLabel="id" bindValue="id" formControlName="featureValue"
+                                    [multiple]="false" [virtualScroll]="true" class="form-control ng-form-control" 
+                                    notFoundText="No feature types values found" placeholder="Select feature type value" *ngIf="!isView" 
+                                    appendTo="body" [searchFn]="customSearchFeatVals" [compareWith]="compareFeatVals">
+                                    <ng-template ng-label-tmp let-item="item">
+                                        {{item.name}}
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                        <div class="row m-0">
+                                            <div class="col-md-8 col-8 p-0 m-0">
+                                                <div class="col-md-12">{{item.name}}</div>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </ng-select>
+                                <h6 class="text-value" *ngIf="isView">{{studyFeature.value.featureValue?.name}}</h6>
+                            </div>
+                        </div>
+                        <mat-action-row *ngIf="!isView">
+                            <button mat-button color="primary" (click)="onSave()">Save</button>
+                        </mat-action-row>
+                    </mat-expansion-panel>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+</form>

@@ -1,0 +1,81 @@
+<form [formGroup]="studyForm">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h3 class="text-value" class="mt-3 pt-3 mb-4 pb-4 view-sub-title">Studies</h3>
+        </div>
+    </div>
+    <div class="row form-group">
+        <div class="col-md-4">
+            <label for="shortTitle" class="font-style text-capitalize">Short title</label>
+            <input type="text" id="shortTitle" class="form-control" placeholder="e.g. RECOVERY"
+                formControlName="shortTitle" *ngIf="!isView" />
+            <h6 *ngIf="isView" class="text-value">{{studyData?.shortTitle ? studyData?.shortTitle : ''}}</h6>
+        </div>
+        <div class="col-md-8">
+            <label for="title" class="font-style text-capitalize">Title</label>
+            <textarea cols="30" rows="2" class="form-control" placeholder="Full study title"
+                formControlName="title" *ngIf="!isView" id="title" (change)="onChange()" 
+                [ngClass]="{ 'is-invalid': submitted && g.title.errors }"></textarea>
+                <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && g.title.errors">
+                    <p *ngIf="submitted && g.title.errors.required">Please enter the study title</p>
+                </div>
+            <h6 *ngIf="isView" class="text-value">{{studyData?.title}}</h6>
+        </div>
+    </div>
+    <div class="row form-group">
+        <div class="col-md-4">
+            <label for="trialId" class="font-style text-capitalize">Trial ID</label>
+            <input type="text" id="trialId" class="form-control" placeholder=""
+                formControlName="trialId" *ngIf="!isView" />
+            <h6 *ngIf="isView" class="text-value">{{studyData?.trialId ? studyData?.trialId : ''}}</h6>
+        </div>
+        <div class="col-md-4">
+            <label for="category" class="font-style text-capitalize">Category</label>
+            <input type="text" id="category" class="form-control" placeholder="study type?"
+                formControlName="category" *ngIf="!isView" />
+            <h6 *ngIf="isView" class="text-value">{{studyData?.category ? studyData?.category : ''}}</h6>
+        </div>
+        <div class="col-md-4">
+            <label for="status" class="font-style text-capitalize">Status</label>
+            <input type="text" id="status" class="form-control" placeholder="e.g. active, recruiting"
+                formControlName="status" *ngIf="!isView" />
+            <h6 *ngIf="isView" class="text-value">{{studyData?.status ? studyData?.status : ''}}</h6>
+        </div>
+    </div>
+    <div class="row form-group">
+        <div class="col-md-4">
+            <label for="pi" class="font-style text-capitalize">PI</label>
+            <input type="text" id="pi" class="form-control" placeholder="(this will link to a 'Person' object)"
+                formControlName="pi" *ngIf="!isView" disabled/>
+            <h6 *ngIf="isView" class="text-value" disabled></h6>
+            <!-- <h6 *ngIf="isView" class="text-value">{{studyData?.pi ? studyData?.pi : ''}}</h6> -->
+        </div>
+        <div class="col-md-4">
+            <label for="sponsor" class="font-style text-capitalize">Sponsor</label>
+            <input type="text" id="sponsor" class="form-control" placeholder="Sponsor name"
+                formControlName="sponsor" *ngIf="!isView" />
+            <h6 *ngIf="isView" class="text-value">{{studyData?.sponsor ? studyData?.sponsor : ''}}</h6>
+        </div>
+        <div class="col-md-4">
+            <label for="regulatoryFramework" class="font-style text-capitalize">Regulatory Framework</label>
+            <ng-select [items]="regulatoryFrameworks" formControlName="regulatoryFramework"
+                [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
+                notFoundText="No regulatory frameworks found" placeholder="Select regulatory framework" *ngIf="!isView" 
+                appendTo="body">
+            </ng-select>
+            <h6 class="text-value" *ngIf="isView">{{studyData?.regulatoryFramework}}</h6>
+        </div>
+    </div>
+    <div class="row form-group">
+        <div class="col-md-12">
+            <label for="summary" class="font-style text-capitalize">Summary</label>
+            <textarea cols="30" rows="3" class="form-control" placeholder="Study summary"
+                formControlName="summary" *ngIf="!isView" id="summary" [ngClass]="{ 'is-invalid': submitted && g.summary.errors }"></textarea>
+                <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && g.summary.errors">
+                    <p *ngIf="submitted && g.summary.errors.required">Please enter the study summary</p>
+                </div>
+            <h6 *ngIf="isView" class="text-value">{{studyData?.summary}}</h6>
+        </div>
+    </div>
+    <app-study-country [studyCountriesData]="studyData?.studyCountries"></app-study-country>
+</form>
