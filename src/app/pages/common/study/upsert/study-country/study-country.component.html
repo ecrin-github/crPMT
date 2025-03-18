@@ -1,6 +1,6 @@
 <div class="row mt-5 pb-4">
     <div class="col-2 text-left">
-        <h4 class="view-sub-sub-title">Study countries</h4>
+        <h4 class="view-sub-sub-title text-decoration-underline">Study countries</h4>
     </div>
     <div class="col-10 text-right justify-content-center"  *ngIf="!isView">
         <button class="btn btn-primary" (click)="addStudyCountry()">
@@ -13,7 +13,7 @@
         <div class="row" *ngFor="let sc of getStudyCountriesForm().controls; let i = index;"
             [formGroupName]="i">
             <div class="col-12" [id]="'featpanel'+i">
-                <hr>
+                <hr *ngIf="i > 0">
                 <div class="row">
                     <div class="col-md-2">
                         <label for="country" class="font-style text-capitalize" *ngIf="!isView">Country</label>
@@ -22,7 +22,7 @@
                             notFoundText="No countries found" placeholder="Select country" *ngIf="!isView" 
                             appendTo="body">
                         </ng-select>
-                        <h4 *ngIf="isView" class="text-value view-sub-sub-title">{{sc.value.country}}{{sc.value.leadCountry ? ' (Lead)' : ''}}</h4>
+                        <h4 *ngIf="isView" class="text-value view-sub-sub-sub-title">{{sc.value.country}}{{sc.value.leadCountry ? ' (Lead)' : ''}}</h4>
                     </div>
                     <div class="col-md-2">
                         <label for="submissionDate" class="font-style text-capitalize">Submission date</label>

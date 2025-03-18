@@ -98,7 +98,6 @@ export class StudyCountryComponent implements OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log(`STUDYCOUNTRY ngOnChanges: ${JSON.stringify(changes)}`);
     if (changes.studyCountriesData?.currentValue?.length > 0) {
       this.studyCountries = this.studyCountriesData;
       // this.studyId = this.studyCountriesData[0].study.id;
