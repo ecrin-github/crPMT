@@ -137,7 +137,10 @@ export class StudyCountryComponent implements OnInit {
       }
     });
 
-    return combineLatest(saveObs$);
+    if (saveObs$.length > 0) {
+      return combineLatest(saveObs$);
+    }
+    return combineLatest([of(true)]);
   }
   
   // addStudyCountries() {
