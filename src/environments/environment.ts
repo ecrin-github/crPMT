@@ -7,8 +7,7 @@ export const environment = {
   production: false,
   // LS AAI V2
   authority: 'https://login.aai.lifescience-ri.eu/oidc',  // No trailing slash
-  // TODO: to change once project started
-  clientId: '7cf4d894-7b95-4daf-b80f-96a350b2980d',  // Dev
+  clientId: '36e46fde-ae2e-46a5-a449-0c10da2cc9a6',  // Dev
   userInfoUrl: 'https://login.aai.lifescience-ri.eu/oidc/userinfo',
   appVersion: appVersion,
   appTitle: 'crPMT: clinOps Project Management Tool',
