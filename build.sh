@@ -5,9 +5,9 @@
 # Default variable values
 production=false
 verbose=false
-build_path="dist/rms-portal"
-backup_path="dist/rms-portal-backup"
-target_path="/var/www/rms-portal-new/dist"
+build_path="dist/crpmt"
+backup_path="dist/crpmt-backup"
+target_path="/var/www/crpmt/dist"
 
 
 usage() {
@@ -37,6 +37,7 @@ build() {
         sudo mv $target_path $backup_path
         sudo mkdir -p $target_path
     else
+    echo "mkdir target path: $target_path"
         sudo mkdir -p $target_path
     fi
     if [[ -d $build_path ]]; then
