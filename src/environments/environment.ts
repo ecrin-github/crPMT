@@ -2,7 +2,7 @@ import { appVersion } from './version';
 
 // Note: constants relating to LS AAI must be the same as the constants in the BE
 // const baseUrl = 'https://api-crpmtdev.ecrin.org';  // No trailing slash
-const baseUrl = 'https://api-dsrdev.ecrin.org';  // No trailing slash
+const baseUrl = 'https://api-crpmtdev.ecrin.org';  // No trailing slash
 export const environment = {
   production: false,
   // LS AAI V2
@@ -14,7 +14,7 @@ export const environment = {
   appTitle: 'crPMT: clinOps Project Management Tool',
   baseUrl: baseUrl,
   baseUrlApi: baseUrl + '/api',  // No trailing slash
-  wsBaseUrl: 'wss://api-dsrdev.ecrin.org/',
+  wsBaseUrl: 'wss://api-crpmtdev.ecrin.org/',
   apiUrl: 'api',
   tsdUploadPath: 'test',
   apiVersion: 'v1'
