@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "cr-pmt": {
+    "crpmt": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/cr-pmt",
+            "outputPath": "dist/crpmt",
             "allowedCommonJsDependencies": [
               "object-path",
               "apexcharts",
@@ -87,18 +87,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "cr-pmt:build"
+            "browserTarget": "crpmt:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "cr-pmt:build:production"
+              "browserTarget": "crpmt:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "cr-pmt:build"
+            "browserTarget": "crpmt:build"
           }
         },
         "test": {
@@ -123,11 +123,11 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "cr-pmt:serve"
+            "devServerTarget": "crpmt:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "cr-pmt:serve:production"
+              "devServerTarget": "crpmt:serve:production"
             }
           }
         }
