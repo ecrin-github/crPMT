@@ -6,14 +6,15 @@
           <i class="fas fa-align-justify dropdown-toggle" style="cursor: pointer; font-size: 25px;" aria-hidden="true"
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
           <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-            <a class="dropdown-item" href="javascript:void(0)" (click)="goToAbout()">About</a>
-            <a class="dropdown-item" href="javascript:void(0)" (click)="goToUserGuide()">User Guide</a>
+            <!-- <a class="dropdown-item" href="javascript:void(0)" (click)="goToAbout()">About</a>
+            <a [routerLink]="['/user-guide']" class="dropdown-item">Login User Guide</a> -->
+            <!-- <a class="dropdown-item" href="javascript:void(0)" (click)="goToUserGuide()">Login User Guide</a> -->
             <!-- tbc
             <a class="dropdown-item" href="javascript:void(0)" (click)="goToLegalNotice()">Legal Notice</a>
             -->
-            <a class="dropdown-item" href="javascript:void(0)" (click)="goToDataSharingPolicy()">Data Sharing Policy</a>
+            <!-- <a class="dropdown-item" href="javascript:void(0)" (click)="goToDataSharingPolicy()">Data Sharing Policy</a>
             <a class="dropdown-item" href="javascript:void(0)" (click)="goToDTP()">Data Transfer Process</a>
-            <a class="dropdown-item" href="javascript:void(0)" (click)="goToMdr()">MetaData Repository crMDR</a>
+            <a class="dropdown-item" href="javascript:void(0)" (click)="goToMdr()">MetaData Repository crMDR</a> -->
             <span class="dropdown-item" id="version">{{appVersion}}</span>
           </div>
         </div>
@@ -33,6 +34,9 @@
       </div>
     </div>
     <div class="row pt-10">
+      <!-- <div class="col-md-6 text-right p-2">
+        <a [routerLink]="['/user-guide']" class="btn btn-primary home-buttons light-blue">Login Guide</a>
+      </div> -->
       <div class="col-md-12 text-center p-2">
         <button class="btn btn-primary home-buttons blue" (click)="login()">Login</button>
       </div>
