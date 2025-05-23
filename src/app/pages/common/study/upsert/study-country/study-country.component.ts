@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
@@ -8,6 +8,9 @@ import { dateToString, stringToDate } from 'src/assets/js/util';
 import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
 import { StudyLookupService } from 'src/app/_rms/services/entities/study-lookup/study-lookup.service';
 import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
+import { ConfirmationWindowComponent } from '../../../confirmation-window/confirmation-window.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { mergeMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-study-country',
@@ -15,26 +18,27 @@ import { StudyService } from 'src/app/_rms/services/entities/study/study.service
   styleUrls: ['./study-country.component.scss']
 })
 export class StudyCountryComponent implements OnInit {
+  @Input() studyCountriesData: Array<StudyCountryInterface>;
+  @Input() countries: Array<String>;
+  @Input() studyId: string;
+
   form: UntypedFormGroup;
-  countries = ["France", "Spain", "Switzerland", "Italy", "Belgium", "Netherlands", "Poland", "Hungary", "Slovakia", "Czechia", "Norway", "Ireland", "Germany"];
   subscription: Subscription = new Subscription();
   arrLength = 0;
+  hovered: boolean = false;
   len: any;
   submitted: boolean = false;
   isEdit: boolean = false;
   isView: boolean = false;
   isAdd: boolean = false;
-
-  @Input() studyCountriesData: Array<StudyCountryInterface>;
-
+  leadCountryInd: number = -1;
   studyCountries = [];
 
-
   constructor(
-    private fb: UntypedFormBuilder, 
+    private fb: UntypedFormBuilder,
+    private modalService: NgbModal,
     private router: Router,
     private studyService: StudyService, 
-    private studyLookupService: StudyLookupService, 
     private spinner: NgxSpinnerService, 
     private toastr: ToastrService) {
     this.form = this.fb.group({
@@ -48,7 +52,11 @@ export class StudyCountryComponent implements OnInit {
     this.isAdd = this.router.url.includes('add');
   }
 
-  get g() { return this.form.controls; }
+  get g() { return this.form.get('studyCountries')["controls"]; }
+
+  getControls(i) {
+    return this.g[i].controls;
+  }
 
   getStudyCountriesForm(): UntypedFormArray {
     return this.form.get('studyCountries') as UntypedFormArray;
@@ -58,24 +66,14 @@ export class StudyCountryComponent implements OnInit {
     return this.fb.group({
       id: '',
       study: '',
-      country: '',
+      country: [null, Validators.required],
       leadCountry: false,
       submissionDate: null,
       approvalDate: null,
+      // TODO: instead can be checked if id is set?
       alreadyExists: false
     });
   }
-
-  // getStudyCountries(studyId) {
-  //   this.studyService.getStudyCountries(studyId).subscribe((res: any) => {
-  //     if (res) {
-  //       this.studyCountries = res;
-  //       this.patchForm();
-  //     }
-  //   }, error => {
-  //     this.toastr.error(error.error.title);
-  //   })
-  // }
 
   patchForm() {
     this.form.setControl('studyCountries', this.patchArray());
@@ -83,7 +81,7 @@ export class StudyCountryComponent implements OnInit {
 
   patchArray(): UntypedFormArray {
     const formArray = new UntypedFormArray([]);
-    this.studyCountries.forEach(sc => {
+    this.studyCountries.forEach((sc, index) => {
       formArray.push(this.fb.group({
         id: sc.id,
         study: sc.study ? sc.study.id : null,
@@ -93,6 +91,10 @@ export class StudyCountryComponent implements OnInit {
         approvalDate: sc.approvalDate ? stringToDate(sc.approvalDate) : null,
         alreadyExists: true
       }))
+
+      if (sc.leadCountry) {
+        this.leadCountryInd = index;
+      }
     });
     return formArray;
   }
@@ -100,13 +102,50 @@ export class StudyCountryComponent implements OnInit {
   ngOnChanges(changes: SimpleChanges) {
     if (changes.studyCountriesData?.currentValue?.length > 0) {
       this.studyCountries = this.studyCountriesData;
-      // this.studyId = this.studyCountriesData[0].study.id;
       this.patchForm();
     }
   }
 
   addStudyCountry() {
     this.getStudyCountriesForm().push(this.newStudyCountry());
+  }
+
+  removeStudyCountry(i: number) {
+    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+    removeModal.componentInstance.itemType = "study country";
+
+    removeModal.result.then((remove) => {
+      if (remove) {
+        const scId = this.getStudyCountriesForm().value[i].id;
+        if (!scId) { // Studycountry has been locally added only
+          this.getStudyCountriesForm().removeAt(i);
+        } else {  // Existing study
+          this.studyService.deleteStudyCountry(this.studyId, scId).subscribe((res: any) => {
+            if (res.status === 204) {
+              this.getStudyCountriesForm().removeAt(i);
+              this.toastr.success('Study country deleted successfully');
+            } else {
+              this.toastr.error('Error when deleting study', res.statusText);
+            }
+          }, error => {
+            this.toastr.error(error.error.title);
+          })
+        }
+      }
+    }, error => {});
+  }
+
+  formValid() {
+    this.submitted = true;
+    
+    // Manually checking country field (shouldn't be empty)
+    for (const i in this.form.get("studyCountries")['controls']) {
+      if (this.form.get("studyCountries")['controls'][i].value.country == null) {
+        this.form.get("studyCountries")['controls'][i].controls.country.setErrors({'required': true});
+      }
+    }
+
+    return this.form.valid;
   }
 
   updatePayload(payload, studyId) {
@@ -121,80 +160,77 @@ export class StudyCountryComponent implements OnInit {
     if (payload.approvalDate) {
       payload.approvalDate = dateToString(payload.approvalDate);
     }
+
+    if (payload.country?.id) {
+      payload.country = payload.country.id;
+    }
   }
 
-  onSave(studyId: string) {
+  onSave(studyId: string): Observable<boolean[]> {
     this.submitted = true;
-    
-    let saveObs$ = [];
+    let saveObs$: Array<Observable<boolean>> = [];
 
     JSON.parse(JSON.stringify(this.form.value.studyCountries)).forEach(item => {
       this.updatePayload(item, studyId);
       if (item.alreadyExists) {
-        saveObs$.push(this.studyService.editStudyCountry(item.id, studyId, item));
+        saveObs$.push(this.studyService.editStudyCountry(studyId, item.id, item).pipe(
+          mergeMap((res: any) => {
+            if (res.statusCode === 200) {
+              return of(true);
+            }
+            return of(false);
+          })
+        ));
       } else {
-        saveObs$.push(this.studyService.addStudyCountry(studyId, item));
+        saveObs$.push(this.studyService.addStudyCountry(studyId, item).pipe(
+          mergeMap((res: any) => {
+            if (res.statusCode === 200) {
+              return of(true);
+            }
+            return of(false);
+          })
+        ));
       }
     });
 
-    if (saveObs$.length > 0) {
-      return combineLatest(saveObs$);
+    if (saveObs$.length == 0) {
+      saveObs$.push(of(true));
     }
-    return combineLatest([of(true)]);
+
+    return combineLatest(saveObs$);
   }
-  
-  // addStudyCountries() {
-  //   /* Add countries to study object in DB */
-  //   let saveObs$ = [];
-  //   JSON.parse(JSON.stringify(this.form.value.studyCountries)).forEach(item => {
-  //     this.updatePayload(item);
-  //     if (item.alreadyExists) {
-  //       saveObs$.push(this.studyService.addStudyCountry(this.studyId, item));
-  //     } else {
-  //       saveObs$.push(this.studyService.editStudyCountry(item.id, this.studyId, item));
-  //     }
-  //   });
 
-  //   combineLatest(saveObs$).subscribe(combRes => {
-  //     combRes.forEach((res: any, idx: number) => {
-  //       if (res.statusCode === 201) {
-  //         this.toastr.success(`Study Country "${res.country}" added successfully`);
-  //       } else {
-  //         this.toastr.error(res.messages[0]);
-  //       }
-  //     }, error => {
-  //       this.toastr.error(error.error.title);
-  //     });
+  compareIds(fv1, fv2): boolean {
+    return fv1?.id == fv2?.id;
+  }
 
-  //     (this.form.get('studyCountries') as UntypedFormArray).clear();
-  //     this.getStudyCountries();
-  //     this.spinner.hide();
-  //   });
-  // }
+  searchCountries(term: string, item) {
+    term = term.toLocaleLowerCase();
+    return item.name?.toLocaleLowerCase().indexOf(term) > -1;
+  }
 
-  // editStudyCountries() {
-  //   /* Edit countries of study object in DB */
-  //   JSON.parse(JSON.stringify(this.form.value.studyCountries)).forEach(item => {
-  //     this.updatePayload(item);
-  //     this.studyService.editStudyCountry(item.id, item.studyId, item).subscribe((res: any) => {
-  //       this.spinner.hide();
+  onFlagClick(i) {
+    if (this.leadCountryInd == i) {
+      this.g[i].value.leadCountry = false;
+      this.leadCountryInd = -1;
+    } else {
+      this.g[i].value.leadCountry = true;
+      if (this.leadCountryInd != -1) {
+        this.g[this.leadCountryInd].value.leadCountry = false;
+      }
+      this.leadCountryInd = i;
+    }
+  }
 
-  //       if (res.statusCode === 200) {
-  //         this.toastr.success(`Study Country "${res.country}" updated successfully`, '');
-  //       } else {
-  //         this.toastr.error(res.messages[0]);
-  //       }
-  //       this.isAdd = false;
-  //     }, error => {
-  //       this.spinner.hide();
-  //       this.toastr.error(error.error.title);
-  //     });
-  //   });
-  // }
-
-  // compareFeatVals(fv1: StudyCountryValueInterface, fv2: StudyCountryValueInterface): boolean {
-  //   return fv1?.id == fv2?.id;
-  // }
+  changeFlag(event) {
+    if (event.type == 'mouseover') {
+      event.target.classList.add("fa-solid");
+      event.target.classList.remove("fa-regular");
+    } else {
+      event.target.classList.add("fa-regular");
+      event.target.classList.remove("fa-solid");
+    }
+  }
 
   dateToString(date) {
     return dateToString(date);

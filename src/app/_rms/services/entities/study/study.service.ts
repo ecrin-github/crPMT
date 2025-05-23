@@ -22,7 +22,7 @@ export class StudyService {
     return this.http.put(`${base}/core/studies/${id}`, payload);
   }
   deleteStudyById(id) {
-    return this.http.delete(`${base}/core/studies/${id}`);
+    return this.http.delete(`${base}/core/studies/${id}`, {observe: "response", responseType: 'json'});
   }
 
   
@@ -34,14 +34,14 @@ export class StudyService {
   addStudyCountry(sid, payload) {
     return this.http.post(`${base}/core/studies/${sid}/study-countries`, payload);
   }
-  getStudyCountry(id, sid) {
+  getStudyCountry(sid, id) {
     return this.http.get(`${base}/core/studies/${sid}/study-countries/${id}`);
   }
-  editStudyCountry(id, sid, payload) {
+  editStudyCountry(sid, id, payload) {
     return this.http.put(`${base}/core/studies/${sid}/study-countries/${id}`, payload);
   }
-  deleteStudyCountry(id, sid) {
-    return this.http.delete(`${base}/core/studies/${sid}/study-countries/${id}`);
+  deleteStudyCountry(sid, id) {
+    return this.http.delete(`${base}/core/studies/${sid}/study-countries/${id}`, {observe: "response", responseType: 'json'});
   }
 
 

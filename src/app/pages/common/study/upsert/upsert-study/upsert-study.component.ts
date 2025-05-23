@@ -1,10 +1,10 @@
-import { Component, HostListener, Input, OnInit, SimpleChanges, ViewChild } from '@angular/core';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { Component, HostListener, Input, OnInit, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable, of, Subscription } from 'rxjs';
-import { catchError, finalize, mergeMap, reduce, switchMap } from 'rxjs/operators';
+import { catchError, finalize, map, mergeMap, reduce, switchMap } from 'rxjs/operators';
 import { OrganisationInterface } from 'src/app/_rms/interfaces/organisation/organisation.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
 import { CommonLookupService } from 'src/app/_rms/services/entities/common-lookup/common-lookup.service';
@@ -18,6 +18,9 @@ import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { StudyInterface } from 'src/app/_rms/interfaces/study/study.interface';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { StudyCountryComponent } from '../study-country/study-country.component';
+import { ConfirmationWindowComponent } from '../../../confirmation-window/confirmation-window.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ContextService } from 'src/app/_rms/services/context/context.service';
 
 @Component({
   selector: 'app-upsert-study',
@@ -27,18 +30,18 @@ import { StudyCountryComponent } from '../study-country/study-country.component'
 })
 export class UpsertStudyComponent implements OnInit {
 
-  @ViewChild(StudyCountryComponent) studyCountry: StudyCountryComponent;
-  @Input() studies: Array<StudyInterface>;
+  @ViewChildren('studyCountries') studyCountryComponents: QueryList<StudyCountryComponent>;
+  @Input() studiesData: Array<StudyInterface>;
 
+  studyStatuses: String[] = ["1_Start-up phase", "2_Running phase_Reg & ethical approvals", "2_Running phase_Follow up", "2_Running phase_Organisation of close-out", 
+                              "3_Completion & termination phase", "4_Completed", "5_withdrawn", "6_On hold"];
+  regulatoryFrameworks: String[] = ['CTR', 'MDR/IVDR', 'COMBINED', 'OTHER'];
   public isCollapsed: boolean = false;
   studyForm: UntypedFormGroup;
-  // TODO: temp
-  studyData: StudyInterface;
   isEdit: boolean = false;
   isView: boolean = false;
   isAdd: boolean = false;
   studyTypes: [] = [];
-  studyStatuses: [] = [];
   genderEligibility: [] = [];
   timeUnits: [] =[];
   trialRegistries: any;
@@ -50,12 +53,12 @@ export class UpsertStudyComponent implements OnInit {
   studyFull: any;
   publicTitle: string = '';
   regulatoryFramework: string = '';
-  regulatoryFrameworks = ['CTR', 'MDR/IVDR', 'COMBINED', 'OTHER'];
   sticky: boolean = false;
   studyType: string = '';
   addType: string = '';
   registryId: number;
   trialId: string;
+  countries: [] = [];
   identifierTypes: [] = [];
   titleTypes: [] = [];
   featureTypes: [] = [];
@@ -67,14 +70,16 @@ export class UpsertStudyComponent implements OnInit {
   isManager: any;
   orgId: string;
   associatedObjects: any;
-  pageSize: Number = 10000;
   showEdit: boolean = false;
+  studies = [];
 
   constructor(private statesService: StatesService,
               private fb: UntypedFormBuilder, 
               private router: Router, 
               private studyService: StudyService, 
+              private contextService: ContextService,
               private reuseService: ReuseService,
+              private modalService: NgbModal,
               private scrollService: ScrollService,
               private activatedRoute: ActivatedRoute,
               private spinner: NgxSpinnerService, 
@@ -82,17 +87,7 @@ export class UpsertStudyComponent implements OnInit {
               private jsonGenerator: JsonGeneratorService, 
               private backService: BackService) {
     this.studyForm = this.fb.group({
-      shortTitle: '',
-      title: '',
-      status: '',
-      pi: '',
-      sponsor: '',
-      regulatoryFramework: '',
-      trialId: '',
-      category: '',
-      summary: '',
-      studyCountries: [],
-      project: null
+      studies: this.fb.array([])
     });
   }
 
@@ -116,13 +111,12 @@ export class UpsertStudyComponent implements OnInit {
     // Note: be careful if you add new observables because of the way their result is retrieved later (combineLatest + pop)
     // The code is built like this because in the version of RxJS used here combineLatest does not handle dictionaries
 
-    // TODO: useless
+    // TODO: if view of single study
     if (this.id && (this.isEdit || this.isView)) {
       queryFuncs.push(this.getStudyById(this.id));
     }
 
-    // Queries required even for view because of pdf/json exports
-    // queryFuncs.push(this.getStudyTypes());
+    queryFuncs.push(this.getCountries());
 
     let obsArr: Array<Observable<any>> = [];
     queryFuncs.forEach((funct) => {
@@ -130,6 +124,7 @@ export class UpsertStudyComponent implements OnInit {
     });
 
     combineLatest(obsArr).subscribe(res => {
+      this.setCountries(res.pop());
       this.setStudyById(res.pop());
 
       setTimeout(() => {
@@ -144,158 +139,149 @@ export class UpsertStudyComponent implements OnInit {
     }
   }
 
-  get g() { return this.studyForm.controls; }
+  get g() { return this.studyForm.get('studies')["controls"]; }
+
+  getControls(i) {
+    return this.g[i].controls;
+  }
+
+  getStudiesForm(): UntypedFormArray {
+    return this.studyForm.get('studies') as UntypedFormArray;
+  }
+
+  newStudy(): UntypedFormGroup {
+    return this.fb.group({
+      id: '',
+      shortTitle: '',
+      project: null,
+      title: '',
+      status: '',
+      pi: '',
+      sponsor: '',
+      regulatoryFramework: '',
+      trialId: '',
+      category: '',
+      summary: '',
+      studyCountries: [],
+      alreadyExists: false
+    });
+  }
 
   getStudyById(id) {
     return this.studyService.getStudyById(id);
   }
 
+  getCountries() {
+    return this.contextService.getCountries();
+  }
+
+  setCountries(countries) {
+    if (countries) {
+      this.countries = countries;
+    }
+  }
+
   setStudyById(studyData) {
     if (studyData) {
-      this.studyData = studyData;
+      this.studies = studyData;
       this.id = studyData.id;
       this.patchStudyForm();
     }
   }
 
+  removeStudy(i: number) {
+    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+    removeModal.componentInstance.itemType = "study";
+
+    removeModal.result.then((remove) => {
+      if (remove) {
+        const studyId = this.getStudiesForm().value[i].id;
+        if (!studyId) { // Study has been locally added only
+          this.getStudiesForm().removeAt(i);
+        } else {  // Existing study
+          this.studyService.deleteStudyById(studyId).subscribe((res: any) => {
+            console.log(res);
+            if (res.status === 204) {
+              this.getStudiesForm().removeAt(i);
+              this.toastr.success('Study deleted successfully');
+            } else {
+              this.toastr.error('Error when deleting study', res.statusText);
+            }
+          }, error => {
+            this.toastr.error(error.error.title);
+          })
+        }
+      }
+    }, error => {});
+  }
+
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.studies?.currentValue?.length > 0) {
-      this.studyData = this.studies[0];
-      this.id = this.studyData.id;
+    if (changes.studiesData?.currentValue?.length > 0) {
+      this.studies = this.studiesData;
       this.patchStudyForm();
     }
   }
 
-  patchStudyForm() {
-    this.studyForm.patchValue({
-      shortTitle: this.studyData.shortTitle,
-      project: this.studyData.project?.id,
-      title: this.studyData.title,
-      status: this.studyData.status,
-      // pi: this.studyData.pi,
-      sponsor: this.studyData.sponsor,
-      regulatoryFramework: this.studyData.regulatoryFramework,
-      trialId: this.studyData.trialId,
-      category: this.studyData.category,
-      summary: this.studyData.summary,
-      countries: this.studyData.studyCountries
+  getFormArray() {
+    const formArray = new UntypedFormArray([]);
+    this.studies.forEach(s => {
+      formArray.push(this.fb.group({
+        id: s.id,
+        shortTitle: s.shortTitle,
+        project: s.project?.id,
+        title: s.title,
+        status: s.status,
+        // pi: s.pi,
+        sponsor: s.sponsor,
+        regulatoryFramework: s.regulatoryFramework,
+        trialId: s.trialId,
+        category: s.category,
+        summary: s.summary,
+        // Note: unknown why this array needs to be wrapped in another array
+        studyCountries: [s.studyCountries]
+      }))
     });
+    return formArray;
   }
 
-  // onSave() {
-  //   this.spinner.show();
-  //   if (localStorage.getItem('updateStudyList')) {
-  //     localStorage.removeItem('updateStudyList');
-  //   }
-  //   this.submitted = true;
-  //   if (this.studyForm.valid) {
-  //     const payload = JSON.parse(JSON.stringify(this.studyForm.value));
-  //     payload.startDate = dateToString(payload.startDate);
-  //     payload.endDate = dateToString(payload.endDate);
+  patchStudyForm() {
+    this.studyForm.setControl('studies', this.getFormArray());
+  }
 
-  //     if (this.isEdit) {
-  //       this.studyService.editStudy(this.id, payload).subscribe((res: any) => {
-  //         if (res.statusCode === 200) {
-  //           this.toastr.success('Study updated successfully');
-  //           localStorage.setItem('updateStudyList', 'true');
-  //           this.reuseService.notifyComponents();
-  //           this.spinner.hide();
-  //           this.router.navigate([`/studies/${this.id}/view`]);
-  //         } else {
-  //           this.toastr.error(res.messages[0]);
-  //           this.spinner.hide();
-  //         }
-  //       }, error => {
-  //         this.spinner.hide();
-  //         this.toastr.error(error.error.title);
-  //       })
-  //     } else {  // this.isAdd
-  //       this.studyService.addStudy(payload).pipe(
-  //         finalize(() => this.spinner.hide())
-  //       ).subscribe((res: any) => {
-  //         if (res.statusCode === 201) {
-  //           this.toastr.success('Study added successfully');
-  //           localStorage.setItem('updateStudyList', 'true');
-  //           this.reuseService.notifyComponents();
-  //           if (res.sdSid) {
-  //             this.router.navigate([`/studies/${res.id}/view`]);
-  //           } else {
-  //             this.back();
-  //           }
-  //         } else {
-  //           this.toastr.error(res.message, "Study adding error");
-  //         }
-  //       }, error => {
-  //         this.toastr.error(error.message, 'Error adding study');
-  //       })
-  //     }
-  //   } else {
-  //     this.spinner.hide();
-  //     this.gotoTop();
-  //     this.toastr.error("Please correct the errors in the form's fields.");
-  //   }
-  //   this.count = 0;
-  //   this.spinner.hide()
-  // }
+  addStudy() {
+    this.getStudiesForm().push(this.newStudy());
+  }
+
+  allFormsValid() {
+    this.submitted = true;
+    return this.studyForm.valid && !this.studyCountryComponents.some(b => !b.formValid());
+  }
+
+  // TODO: to be called in multiple places below
+  updatePayload(payload) {
+    payload.startDate = dateToString(payload.startDate);
+    payload.endDate = dateToString(payload.endDate);
+  }
   
   onSave(projectId: string): Observable<boolean> {
-    let success: Observable<boolean> = of(false);
-    if (localStorage.getItem('updateStudyList')) {
-      localStorage.removeItem('updateStudyList');
-    }
-    this.submitted = true;
-    if (this.studyForm.valid) {
-      const payload = JSON.parse(JSON.stringify(this.studyForm.value));
-      payload.startDate = dateToString(payload.startDate);
-      payload.endDate = dateToString(payload.endDate);
+    let saveObs$: Array<Observable<boolean>> = [];
 
-      // TODO: refactor
-      if (this.isEdit) {
-        const scObs$ = this.studyCountry.onSave(this.id).pipe(
-          mergeMap((success) => {
-            if (success) {
-              this.toastr.success('Study countries updated successfully');
-              return of(true);
-            }
-            return of(false);
-          })
-        );
+    const payload = JSON.parse(JSON.stringify(this.studyForm.value));
 
-        const editObs$ = this.studyService.editStudy(this.id, payload).pipe(
-          mergeMap((res: any) => {
-            if (res.statusCode === 200) {
-              // this.toastr.success('Study updated successfully');
-              localStorage.setItem('updateStudyList', 'true');
-              // this.reuseService.notifyComponents();
-              return of(true);
-            } else {
-              this.toastr.error(res.messages[0]);
-              return of(false);
-            }
-          }), catchError(err => {
-            this.toastr.error(err.error.title);
-            return of(false);
-          })
-        );
-
-        success = combineLatest([scObs$, editObs$]).pipe(
-          switchMap(([scRes, editRes]) => {
-            return of(scRes && editRes);
-          })
-        );
-
-      } else {  // this.isAdd
-        payload.project = projectId;
-        success = this.studyService.addStudy(payload).pipe(
+    for (const [i, item] of payload.studies.entries()) {
+    // payload.studies.forEach(item => {
+      this.updatePayload(item);
+      if (item.id == '') {  // Add
+        
+        item.project = projectId;
+        let success = this.studyService.addStudy(item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 201) {
-              // this.toastr.success('Study added successfully');
-              localStorage.setItem('updateStudyList', 'true');
+              this.toastr.success('Study added successfully');
               // this.reuseService.notifyComponents();
-              return this.studyCountry.onSave(res.id).pipe(
+              return this.studyCountryComponents.get(i).onSave(res.id).pipe(
                 mergeMap((success) => {
                   if (success) {
-                    this.toastr.success('Study countries updated successfully');
                     return of(true);
                   }
                   return of(false);
@@ -310,13 +296,52 @@ export class UpsertStudyComponent implements OnInit {
             return of(false);
           })
         );
+        saveObs$.push(success);
+          
+      } else {  // Edit
+        const scObs$ = this.studyCountryComponents.get(i).onSave(item.id).pipe(
+          mergeMap((successArr: boolean[]) => {
+            const success: boolean = successArr.every(b => b);
+            if (!success) {
+              this.toastr.error('Failed to update study countries');
+            }
+            return of(success);
+          })
+        );
+
+        saveObs$.push(scObs$);
+
+        // TODO: editObs if scObs true (?)
+        
+        const editObs$ = this.studyService.editStudy(item.id, item).pipe(
+          mergeMap((res: any) => {
+            if (res.statusCode === 200) {
+              this.toastr.success('Study updated successfully');
+              // this.reuseService.notifyComponents();
+              return of(true);
+            } else {
+              this.toastr.error(res.messages[0]);
+              return of(false);
+            }
+          }), catchError(err => {
+            this.toastr.error(err.error.title);
+            return of(false);
+          })
+        );
+
+        saveObs$.push(editObs$);
       }
-    } else {
-      // this.gotoTop();
-      this.toastr.error("Please correct the errors in the form.");
+    }
+    
+    if (saveObs$.length > 0) {
+      return combineLatest(saveObs$).pipe(
+        map(arr => arr.reduce((acc: boolean, one: boolean) => {
+          return acc && one;
+        }, true))
+      );
     }
 
-    return success;
+    return of(true);
   }
   
   back(): void {

@@ -27,7 +27,7 @@ import { UpsertStudyComponent } from '../../../study/upsert/upsert-study/upsert-
 })
 export class UpsertProjectComponent implements OnInit {
 
-  @ViewChild(UpsertStudyComponent) study: UpsertStudyComponent;
+  @ViewChild(UpsertStudyComponent) studyComponent: UpsertStudyComponent;
 
   public isCollapsed: boolean = false;
   projectForm: UntypedFormGroup;
@@ -47,7 +47,6 @@ export class UpsertProjectComponent implements OnInit {
   organisations: Array<OrganisationInterface>;
   projectData: ProjectInterface;
   projectFull: any;
-  count = 0;
   publicTitle: string = '';
   monthValues = [{id:'1', name:'January'}, {id:'2', name:'February'}, {id:'3', name: 'March'}, {id:'4', name: 'April'}, {id:'5', name: 'May'}, {id:'6', name: 'June'}, {id:'7', name: 'July'}, {id:'8', name: 'August'}, {id:'9', name: 'September'}, {id:'10', name: 'October'}, {id:'11', name:'November'}, {id:'12', name: 'December'}];
   sticky: boolean = false;
@@ -166,13 +165,18 @@ export class UpsertProjectComponent implements OnInit {
     });
   }
 
+  allFormsValid() {
+    this.submitted = true;
+    return this.projectForm.valid && this.studyComponent.allFormsValid();
+  }
+
   onSave() {
     this.spinner.show();
     if (localStorage.getItem('updateProjectList')) {
       localStorage.removeItem('updateProjectList');
     }
-    this.submitted = true;
-    if (this.projectForm.valid) {
+
+    if (this.allFormsValid()) {
       const payload = JSON.parse(JSON.stringify(this.projectForm.value));
       payload.startDate = dateToString(payload.startDate);
       payload.endDate = dateToString(payload.endDate);
@@ -181,11 +185,9 @@ export class UpsertProjectComponent implements OnInit {
         this.projectService.editProject(this.id, payload).subscribe((res: any) => {
           if (res.statusCode === 200) {
             this.toastr.success('Project updated successfully');
-            localStorage.setItem('updateProjectList', 'true');
             this.reuseService.notifyComponents();
-            this.study.onSave(this.id).subscribe((success) => {
+            this.studyComponent.onSave(this.id).subscribe((success) => {
               if (success) {
-                this.toastr.success('Study updated successfully');
                 this.router.navigate([`/projects/${this.id}/view`]);
               }
               this.spinner.hide();
@@ -206,9 +208,8 @@ export class UpsertProjectComponent implements OnInit {
             // TODO
             this.reuseService.notifyComponents();
             this.id = res.id;
-            this.study.onSave(this.id).subscribe((success) => {
+            this.studyComponent.onSave(this.id).subscribe((success) => {
               if (success) {
-                this.toastr.success('Study added successfully');
                 this.router.navigate([`/projects/${res.id}/view`]);
               }
               this.spinner.hide();
@@ -224,10 +225,21 @@ export class UpsertProjectComponent implements OnInit {
       }
     } else {
       this.spinner.hide();
-      this.gotoTop();
-      this.toastr.error("Please correct the errors in the form's fields.");
+      setTimeout(() => {  // Timeout to allow ng-invalid to appear on elements
+        this.toastr.error("Please correct the errors in the form's fields.");
+        this.scrollToFirstInvalidControl();
+      })
     }
-    this.count = 0;
+  }
+
+  scrollToFirstInvalidControl() {
+    /* https://stackoverflow.com/questions/71501822/angular-formgroup-scroll-to-first-invalid-input-in-a-scrolling-div */
+    let form = document.getElementById('formContainer');
+    console.log(form.getElementsByClassName('ng-invalid'));
+    console.log(form.getElementsByClassName('ng-invalid')[0]);
+    let firstInvalidControl = form.getElementsByClassName('ng-invalid')[0];
+    firstInvalidControl.scrollIntoView();
+    (firstInvalidControl as HTMLElement).focus();
   }
 
   back(): void {

@@ -1,35 +1,56 @@
 <div class="row mt-5 pb-4">
     <div class="col-2 text-left">
-        <h4 class="view-sub-sub-title text-decoration-underline">Study countries</h4>
-    </div>
-    <div class="col-10 text-right justify-content-center"  *ngIf="!isView">
-        <button class="btn btn-primary" (click)="addStudyCountry()">
-            <i class="fa fa-plus"></i>Add study country
-        </button>
+        <div class="view-sub-sub-sub-title underline">Study countries</div>
     </div>
 </div>
-<form [formGroup]="form">
+<form [formGroup]="form" ngNativeValidate>
     <div formArrayName="studyCountries">
         <div class="row" *ngFor="let sc of getStudyCountriesForm().controls; let i = index;"
             [formGroupName]="i">
             <div class="col-12" [id]="'featpanel'+i">
                 <hr *ngIf="i > 0">
                 <div class="row">
-                    <div class="col-md-2">
-                        <label for="country" class="font-style text-capitalize" *ngIf="!isView">Country</label>
-                        <ng-select [items]="countries" formControlName="country"
-                            [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
-                            notFoundText="No countries found" placeholder="Select country" *ngIf="!isView" 
-                            appendTo="body">
-                        </ng-select>
-                        <h4 *ngIf="isView" class="text-value view-sub-sub-sub-title">{{sc.value.country}}{{sc.value.leadCountry ? ' (Lead)' : ''}}</h4>
+                    <div class="col-md-2" [ngClass]="isView ? 'd-flex align-items-center' : ''">
+                        <div *ngIf="!isView">
+                            <div for="country" class="font-style text-capitalize d-inline-block" *ngIf="!isView">Country*</div>
+                            <button class="btn-invisible ml-1" (click)="onFlagClick(i)">
+                                <i [ngClass]="sc.value.leadCountry ? 'lead-country-icon' : 'not-lead-country-icon'" 
+                                class="fa fa-flag fa-regular"
+                                [title]="sc.value.leadCountry ? 'Remove lead country status' : 'Make lead country'"
+                                (mouseout)="changeFlag($event)" (mouseover)="changeFlag($event)"></i>
+                            </button>
+                            <i class="fa fa-trash ml-4 sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeStudyCountry(i)">
+                            </i>
+                            <ng-select [items]="countries" formControlName="country" [searchFn]="searchCountries"
+                                [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
+                                notFoundText="No countries found" placeholder="Select country" *ngIf="!isView" 
+                                appendTo="body" name="country" [ngClass]="{ 'is-invalid': submitted && getControls(i).country.errors?.required }">
+                                <ng-template ng-label-tmp let-item="item">
+                                    {{item.name}}
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-8 col-8 p-0 m-0">
+                                            <div class="col-md-12">{{item.name}}</div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                        </div>
+                        <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).country.errors?.required">
+                            <p>Please select the country</p>
+                        </div>
+                        <!-- <h4 *ngIf="isView" class="text-value country-name">{{sc.value.country?.name}} -->
+                        <span *ngIf="isView" class="text-value country-name">{{sc.value.country?.name}}
+                            <i class="fa fa-regular fa-flag lead-country-icon ml-1" *ngIf="sc.value.leadCountry" title="Lead country"></i>
+                        </span>
                     </div>
                     <div class="col-md-2">
-                        <label for="submissionDate" class="font-style text-capitalize">Submission date</label>
+                        <div for="submissionDate" class="font-style text-capitalize">Submission date</div>
                         <div class="input-group" *ngIf="!isView">
                             <input class="form-control" placeholder="yyyy-mm-dd"
                                 name="submissionDate" ngbDatepicker #submissionDate="ngbDatepicker"
-                                (click)="submissionDate.toggle()" formControlName="submissionDate" container='body'>
+                                formControlName="submissionDate" container='body'>
                             <div class="input-group-append">
                                 <button class="btn btn-primary"
                                     (click)="submissionDate.toggle()" type="button">
@@ -37,14 +58,14 @@
                                 </button>
                             </div>
                         </div>
-                        <h6 *ngIf="isView" class="text-value">{{dateToString(sc.value.submissionDate)}}</h6>
+                        <div *ngIf="isView" class="text-value">{{dateToString(sc.value.submissionDate)}}</div>
                     </div>
                     <div class="col-md-2">
-                        <label for="approvalDate" class="font-style text-capitalize">Approval date</label>
+                        <div for="approvalDate" class="font-style text-capitalize">Approval date</div>
                         <div class="input-group" *ngIf="!isView">
                             <input class="form-control" placeholder="yyyy-mm-dd"
                                 name="approvalDate" ngbDatepicker #approvalDate="ngbDatepicker"
-                                (click)="approvalDate.toggle()" formControlName="approvalDate" container='body'>
+                                 formControlName="approvalDate" container='body'>
                             <div class="input-group-append">
                                 <button class="btn btn-primary"
                                     (click)="approvalDate.toggle()" type="button">
@@ -52,17 +73,20 @@
                                 </button>
                             </div>
                         </div>
-                        <h6 *ngIf="isView" class="text-value">{{dateToString(sc.value.approvalDate)}}</h6>
+                        <div *ngIf="isView" class="text-value">{{dateToString(sc.value.approvalDate)}}</div>
                     </div>
-                    <div class="col-md-6 text-center justify-content-center" *ngIf="isView">
+                    <div class="col-md-4 text-center justify-content-center">
                         (CTU list with CTU data somewhere)
-                    </div>
-                    <div class="col-md-2 form-check m-auto" *ngIf="!isView">
-                        <label class="form-check-label font-style text-capitalize" for="leadCountry">Lead country?</label>
-                        <input class="form-check-input ml-4" type="checkbox" id="leadCountry" formControlName="leadCountry">
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </form>
+<div class="row mt-5 pb-4">
+    <div class="col-2 text-left justify-content-left"  *ngIf="!isView">
+        <button class="btn btn-primary" (click)="addStudyCountry()">
+            <i class="fa fa-plus"></i>New study country
+        </button>
+    </div>
+</div>

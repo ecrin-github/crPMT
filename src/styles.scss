@@ -218,37 +218,6 @@ mat-footer-cell:first-of-type {
   height: 100% !important;
 }
 
-// TODO: refactor
-.font-style {
-  font-size: 1.175rem !important;
-  font-weight: 600 !important;
-  color: #315492 !important;
-}
-
-.view-sub-title {
-  font-size: 2rem !important;
-  font-weight: 600 !important;
-  color: #315492 !important;
-}
-
-.view-sub-sub-title {
-  font-size: 1.5rem !important;
-  font-weight: 600 !important;
-  color: #315492 !important;
-  text-decoration: underline;
-}
-
-.view-sub-sub-sub-title {
-  font-size: 1.45rem !important;
-  font-weight: 500 !important;
-  color: #315492 !important;
-}
-
-.text-value {
-  font-weight: 100;
-  white-space: pre-wrap;
-}
-
 .hr-big {
   border-top-width: 0.4rem;
 }
@@ -668,24 +637,55 @@ mat-footer-cell:first-of-type {
   }
 }
 
-#matomo-opt-out-icon {
-  width: 48px;
-  height: 48px;
-  background-color: red;
-  position: fixed;
-  bottom: 2vh;
-  left: 2vh;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 100%;
-  padding: 8px;
-  border: 2px solid #000091;
-  background-color: rgba(255,255,255,0.7);
-  z-index: 1001 !important;
-  color: #000091;
-  font-size: 2.5rem;
+.underline {
+  text-decoration: underline;
+}
+
+.font-style {
+  font-size: 1.175rem !important;
+  font-weight: 600 !important;
+  color: #315492 !important;
+}
+
+.text-value {
+  font-size: 1.175rem;
+  font-weight: 100;
+  white-space: pre-wrap;
+  line-height: 1.25;
+}
+
+.study-title {
+  border-style: double;
+  padding: 0.3rem;
+  border-width: 0.33rem;
+}
+
+.view-title {
+  font-size: 1.75rem !important;
+  font-weight: 500 !important;
+  line-height: 1.2;
+}
+
+.view-sub-title {
+  font-size: 2rem !important;
+  font-weight: 600 !important;
+  color: #315492 !important;
+}
+
+.view-sub-sub-title {
+  font-size: 1.7rem !important;
+  font-weight: 600 !important;
+  color: #315492 !important;
+}
+
+.view-sub-sub-sub-title {
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  color: #315492 !important;
+}
+
+#formContainer {
+  padding-top: 1rem !important;
 }
 
 .objectinstance-headertext {
@@ -716,8 +716,78 @@ mat-footer-cell:first-of-type {
   opacity: 40%;
 }
 
+.btn-invisible {
+  background: transparent;
+  border: none !important;
+}
+
+.lead-country-icon {
+  font-size: calc(100% * 1.6);
+  color: #315492;
+  opacity: 100%;
+}
+
+.not-lead-country-icon {
+  font-size: calc(100% * 1.6);
+  color: #315492;
+  opacity: 20%;
+}
+
+.sc-delete-icon {
+  font-size: calc(100% * 1.6);
+}
+
+.study-delete-icon {
+  font-size: calc(100% * 1.6);
+}
+
+.country-name {
+  font-size: 1.4rem;
+  font-weight: 400;
+  color: #315492;
+}
+
 .mat-expansion-panel-header-instance {
   padding: 0 1.5rem !important;
+}
+
+.sc-field-container {
+  display: grid;
+  align-items: end;
+}
+
+// ng-select validation
+ng-select.required.ng-invalid.ng-touched {
+  .ng-select-container{
+      border-color: #dc3545;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
+  }
+}
+ng-select.required.ng-invalid.ng-untouched {
+  .ng-select-container{
+      border-color: #dc3545;
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
+  }
+}
+
+#matomo-opt-out-icon {
+  width: 48px;
+  height: 48px;
+  background-color: red;
+  position: fixed;
+  bottom: 2vh;
+  left: 2vh;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 100%;
+  padding: 8px;
+  border: 2px solid #000091;
+  background-color: rgba(255,255,255,0.7);
+  z-index: 1001 !important;
+  color: #000091;
+  font-size: 2.5rem;
 }
 
 #matomo-wrapper {
