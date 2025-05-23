@@ -5,12 +5,12 @@
     <div class="modal-body">
         <div class="row ml-3">
             <div class="col-md-12">
-                <h6>Are you sure you want to delete this record?</h6>
+                <h6>Are you sure you want to delete this {{itemType}}? This action cannot be undone.</h6>
             </div>
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-danger" (click)="deleteRecord()">Delete</button>
-        <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="closeModal(true)">Delete</button>
+        <button type="button" class="btn btn-secondary" (click)="closeModal(false)">Cancel</button>
     </div>
 </div>
