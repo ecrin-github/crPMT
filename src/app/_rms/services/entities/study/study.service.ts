@@ -11,7 +11,7 @@ export class StudyService {
 
   constructor( private http: HttpClient) { }
 
-  /* study data */
+  /* Study data */
   addStudy(payload) {
     return this.http.post(`${base}/core/studies`, payload);
   }
@@ -25,8 +25,7 @@ export class StudyService {
     return this.http.delete(`${base}/core/studies/${id}`, {observe: "response", responseType: 'json'});
   }
 
-  
-  // study countries
+  /* Study countries */
 
   getStudyCountries(sid) {
     return this.http.get(`${base}/core/studies/${sid}/study-countries`);
@@ -41,6 +40,24 @@ export class StudyService {
     return this.http.put(`${base}/core/studies/${sid}/study-countries/${id}`, payload);
   }
   deleteStudyCountry(sid, id) {
+    return this.http.delete(`${base}/core/studies/${sid}/study-countries/${id}`, {observe: "response", responseType: 'json'});
+  }
+  
+  /* Study countries */
+
+  getStudyCTUs(sid) {
+    return this.http.get(`${base}/core/studies/${sid}/study-countries`);
+  }
+  addStudyCTU(sid, payload) {
+    return this.http.post(`${base}/core/studies/${sid}/study-countries`, payload);
+  }
+  getStudyCTU(sid, id) {
+    return this.http.get(`${base}/core/studies/${sid}/study-countries/${id}`);
+  }
+  editStudyCTU(sid, id, payload) {
+    return this.http.put(`${base}/core/studies/${sid}/study-countries/${id}`, payload);
+  }
+  deleteStudyCTU(sid, id) {
     return this.http.delete(`${base}/core/studies/${sid}/study-countries/${id}`, {observe: "response", responseType: 'json'});
   }
 

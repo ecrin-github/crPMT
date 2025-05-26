@@ -30,14 +30,8 @@ import { SummaryDupComponent } from './dup/summary-dup/summary-dup.component';
 import { UpsertDupComponent } from './dup/upsert-dup/upsert-dup.component';
 import { SummaryObjectComponent } from './object/summary-object/summary-object.component';
 import { UpsertObjectComponent } from './object/upsert/upsert-object/upsert-object.component';
-import { SummaryStudyComponent } from './study/summary-study/summary-study.component';
 import { ProjectListComponent } from './project/project-list/project-list.component';
-import { UpsertStudyComponent } from './study/upsert/upsert-study/upsert-study.component';
-import { StudyIdentifierComponent } from './study/upsert/study-identifier/study-identifier.component';
-import { StudyTitleComponent } from './study/upsert/study-title/study-title.component';
-import { StudyFeatureComponent } from './study/upsert/study-feature/study-feature.component';
-import { StudyTopicComponent } from './study/upsert/study-topic/study-topic.component';
-import { StudyRelationshipComponent } from './study/upsert/study-relationship/study-relationship.component';
+import { UpsertStudyComponent } from './study/upsert-study/upsert-study.component';
 import { ObjectInstanceComponent } from './object/upsert/object-instance/object-instance.component';
 import { ObjectTitleComponent } from './object/upsert/object-title/object-title.component';
 import { ObjectDateComponent } from './object/upsert/object-date/object-date.component';
@@ -48,7 +42,6 @@ import { ObjectDescriptionComponent } from './object/upsert/object-description/o
 import { ObjectRightComponent } from './object/upsert/object-right/object-right.component';
 import { ObjectRelationshipComponent } from './object/upsert/object-relationship/object-relationship.component';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { StudyContributorComponent } from './study/upsert/study-contributor/study-contributor.component';
 import { CommonModalComponent } from './common-modal/common-modal.component';
 import { ConfirmationWindowComponent } from './confirmation-window/confirmation-window.component';
 import { ConfirmationWindow1Component } from './confirmation-window1/confirmation-window1.component';
@@ -58,8 +51,10 @@ import { AddModalComponent } from './add-modal/add-modal.component';
 import { UpsertUserComponent } from './user/upsert/upsert-user/upsert-user.component';
 import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
 import { ManagerGuard } from 'src/app/_rms/guards/role/manager.guard';
-import { UpsertProjectComponent } from './project/upsert/upsert-project/upsert-project.component';
-import { StudyCountryComponent } from './study/upsert/study-country/study-country.component';
+import { UpsertProjectComponent } from './project/upsert-project/upsert-project.component';
+import { UpsertStudyCtuComponent } from './study-ctu/upsert-study-ctu/upsert-study-ctu.component';
+import { UpsertStudyCountryComponent } from './study-country/upsert-study-country/upsert-study-country.component';
+import { StudyListComponent } from './study/study-list/study-list.component';
 
 
 @NgModule({
@@ -86,14 +81,8 @@ import { StudyCountryComponent } from './study/upsert/study-country/study-countr
         UpsertDupComponent,
         SummaryObjectComponent,
         UpsertObjectComponent,
-        SummaryStudyComponent,
         ProjectListComponent,
         UpsertStudyComponent,
-        StudyIdentifierComponent,
-        StudyTitleComponent,
-        StudyFeatureComponent,
-        StudyTopicComponent,
-        StudyRelationshipComponent,
         ObjectInstanceComponent,
         ObjectTitleComponent,
         ObjectDateComponent,
@@ -103,7 +92,6 @@ import { StudyCountryComponent } from './study/upsert/study-country/study-countr
         ObjectDescriptionComponent,
         ObjectRightComponent,
         ObjectRelationshipComponent,
-        StudyContributorComponent,
         CommonModalComponent,
         ConfirmationWindowComponent,
         ConfirmationWindow1Component,
@@ -111,7 +99,9 @@ import { StudyCountryComponent } from './study/upsert/study-country/study-countr
         AddModalComponent,
         UpsertUserComponent,
         UpsertProjectComponent,
-        StudyCountryComponent
+        UpsertStudyCtuComponent,
+        UpsertStudyCountryComponent,
+        StudyListComponent
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [
@@ -254,6 +244,6 @@ import { StudyCountryComponent } from './study/upsert/study-country/study-countr
         NgxPermissionsModule.forChild()
     ],
     providers: [NgbActiveModal],
-    exports: [ SummaryDtpComponent, SummaryDupComponent, SummaryStudyComponent, ProjectListComponent, SummaryObjectComponent, SummaryUserComponent]
+    exports: [ SummaryDtpComponent, SummaryDupComponent, StudyListComponent, ProjectListComponent, SummaryObjectComponent, SummaryUserComponent]
 })
 export class CommonPagesModule {}

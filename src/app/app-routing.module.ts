@@ -7,12 +7,6 @@ import { CustomRouteReuseStrategy } from "./_rms/route-strategy";
 
 export const routes: Routes = [
   {
-    path: 'browsing',
-    component: LayoutComponent,
-    loadChildren: () =>
-    import('./pages/browsing/browsing/browsing.module').then((m) => m.BrowsingModule),
-  },
-  {
     path: '',
     canActivate: [AuthGuard], // enables permission in internal main page, summary study/data object/dtp/dup
     loadChildren: () =>

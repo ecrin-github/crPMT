@@ -21,10 +21,10 @@ import { UpsertDtpComponent } from '../common/dtp/upsert-dtp/upsert-dtp.componen
 import { SummaryDtpComponent } from '../common/dtp/summary-dtp/summary-dtp.component';
 import { UpsertDupComponent } from '../common/dup/upsert-dup/upsert-dup.component';
 import { SummaryDupComponent } from '../common/dup/summary-dup/summary-dup.component';
-import { SummaryStudyComponent } from '../common/study/summary-study/summary-study.component';
+import { StudyListComponent } from '../common/study/study-list/study-list.component';
 import { ProjectListComponent } from '../common/project/project-list/project-list.component';
-import { UpsertProjectComponent } from '../common/project/upsert/upsert-project/upsert-project.component';
-import { UpsertStudyComponent } from '../common/study/upsert/upsert-study/upsert-study.component';
+import { UpsertProjectComponent } from '../common/project/upsert-project/upsert-project.component';
+import { UpsertStudyComponent } from '../common/study/upsert-study/upsert-study.component';
 import { SummaryObjectComponent } from '../common/object/summary-object/summary-object.component';
 import { UpsertObjectComponent } from '../common/object/upsert/upsert-object/upsert-object.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
@@ -122,7 +122,7 @@ import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
             {
                 path: 'studies',
                 pathMatch: 'full',
-                component: SummaryStudyComponent,
+                component: StudyListComponent,
                 data: { 
                     shouldReuse: true,
                     key: 'summarystudycomponent',
