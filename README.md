@@ -18,6 +18,6 @@ Versioning convention:  [major releases].[new features/major fixes/].[minor fixe
 - Added a changelog!
 - Other minor QoL improvements
  
-## [0.0.1(dev)] - 20250318
+## [0.0.1(dev)] - 2025-03-18
  
 - First prototype of the PMT
