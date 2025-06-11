@@ -4,6 +4,13 @@ Front end for the Clinical Research Project Management Tool
 Versioning convention:  [major releases].[new features/major fixes/].[minor fixes]
 
 # Changelog
+
+## [0.2.0dev] - 2025-06-11
+
+- Added study CTUs
+- Fixed project and study deletion from project and study list pages
+- Removed extra notifications when saving to keep only one (when saving successfully)
+- Improved app speed by only querying the DB for "static" data (countries, CTUs) once
  
 ## [0.1.0dev] - 2025-05-23
 
