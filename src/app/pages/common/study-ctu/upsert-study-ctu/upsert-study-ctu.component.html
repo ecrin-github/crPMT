@@ -1,1 +1,136 @@
-<p>upsert-study-ctu works!</p>
+<mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+        <span [title]="studyCountry?.country?.name" class="view-sub-sub-sub-title">{{displayCountryFlag()}} CTUs</span>
+    </mat-expansion-panel-header>
+    <form [formGroup]="form" ngNativeValidate>
+        <ng-template [ngIf]="getStudyCTUsForm().length <= 0 && isView">
+            <div class="row">
+                <div class="col-12 mb-3 mt-3 text-center justify-content-center">
+                    <p>No CTUs yet</p>
+                </div>
+            </div>
+        </ng-template>
+    
+        <ng-template [ngIf]="getStudyCTUsForm().length > 0">
+            <div formArrayName="studyCTUs">
+                <div class="row" *ngFor="let sctu of getStudyCTUsForm().controls; let i = index;"
+                    [formGroupName]="i">
+                    <div class="col-12" [id]="'featpanel'+i">
+                        <hr *ngIf="i > 0">
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <div class="row" *ngIf="!isView">
+                                    <div class="col-md-11">
+                                        <ng-select [items]="filteredCTUs" formControlName="ctu" [searchFn]="searchCTUs"
+                                            [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
+                                            notFoundText="No CTUs found" placeholder="Select CTU"
+                                            appendTo="body" name="ctu" [ngClass]="{ 'is-invalid': submitted && getControls(i).ctu.errors?.required }">
+                                            <ng-template ng-label-tmp let-item="item">{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                                <div class="row m-0">
+                                                    <div class="col-md-12 col-12 p-0 m-0">
+                                                        <div class="col-md-12">{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</div>
+                                                        <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.addressInfo}}</div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                    <div class="col-md-1 d-flex justify-content-start align-items-center">
+                                        <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeStudyCTU(i)"></i>
+                                    </div>
+                                </div>
+                                <div class="view-sub-sub-sub-title mb-4" *ngIf="isView">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}
+                                    <button [aria-expanded]="isView ? 'false' : 'true'" [aria-controls]="'ctuInfo'+studyCountry?.country?.iso2+i" class="ctuToggleButton"
+                                        [ngClass]="isView ? 'ctuToggleButtonClosed' : 'ctuToggleButtonOpened'"
+                                        [id]="'toggleButton'+studyCountry?.country?.iso2+i" (click)="toggleCTUInfo($event, 'ctuInfo'+studyCountry?.country?.iso2+i)">❯</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).ctu.errors?.required">
+                            <p>Please select the CTU</p>
+                        </div>
+                        <div class="row form-group ctuInfo" [id]="'ctuInfo'+studyCountry?.country?.iso2+i" [ngClass]="isView ? 'hideCTUInfo' : 'displayCTUInfo'">
+                            <div class="col-md-6">
+                                <div class="row form-group">
+                                    <div class="col-md-6">
+                                        <div for="sasVerification" class="font-style text-capitalize">SAS verification</div>
+                                        <span class="text-value" [ngClass]="sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'sas-approved' : 'sas-not-approved') : ''">{{sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'Approved' : 'Not approved') : ''}}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div for="contactPerson" class="font-style text-capitalize">Contact person</div>
+                                        <span class="text-value">{{sctu.value.ctu?.contact ? sctu.value.ctu?.contact?.fullName + ' (' + sctu.value.ctu?.contact?.email + ')' : ''}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div for="addressInfo" class="font-style text-capitalize">Address</div>
+                                <span class="text-value">{{cleanAddress(sctu.value.ctu?.addressInfo)}}</span>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-2">
+                                <div for="siteNumber" class="font-style text-capitalize">Site Number</div>
+                                <input type="text" id="siteNumber" class="form-control" formControlName="siteNumber" *ngIf="!isView"/>
+                                <span class="text-value" *ngIf="isView">{{sctu.value.siteNumber}}</span>
+                            </div>
+                            <div class="col-md-2">
+                                <div for="patientsExpected" class="font-style text-capitalize">Patients expected</div>
+                                <input type="text" id="patientsExpected" class="form-control" formControlName="patientsExpected" *ngIf="!isView"/>
+                                <span class="text-value" *ngIf="isView">{{sctu.value.patientsExpected}}</span>
+                                <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).patientsExpected.errors?.pattern">
+                                    <p>If set, the patients expected field should be a number</p>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div for="recruitmentGreenlight" class="font-style text-capitalize">Recruitment Greenlight</div>
+                                        <div class="input-group" *ngIf="!isView">
+                                            <input class="form-control" placeholder="yyyy-mm-dd"
+                                            name="recruitmentGreenlight" ngbDatepicker #recruitmentGreenlight="ngbDatepicker"
+                                            formControlName="recruitmentGreenlight" container='body'>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary"
+                                                (click)="recruitmentGreenlight.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                            </div>
+                                        </div>
+                                        <span class="text-value" *ngIf="isView">{{dateToString(sctu.value.recruitmentGreenlight)}}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div for="movExpectedNumber" class="font-style text-capitalize">MOV Expected Number</div>
+                                        <input type="text" id="movExpectedNumber" class="form-control" formControlName="movExpectedNumber" *ngIf="!isView"/>
+                                        <span class="text-value" *ngIf="isView">{{sctu.value.movExpectedNumber}}</span>
+                                        <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).movExpectedNumber.errors?.pattern">
+                                            <p>If set, the MOV expected number field should be a number</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div for="pi" class="font-style text-capitalize">PI</div>
+                                <input type="text" id="pi" class="form-control" formControlName="pi" *ngIf="!isView" placeholder="Coming soon!" disabled/>
+                                <span class="text-value" *ngIf="isView" disabled>{{sctu.value.pi}}</span>
+                            </div>
+                            <!-- TODO: flag for national coordinator-->
+                            <!-- <div class="col-md-2">
+                                <div for="siteNumber" class="font-style text-capitalize">Site Number</div>
+                                <span class="text-value">{{sctu.value.siteNumber}}</span>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+    </form>
+    <div class="row pb-4" *ngIf="!isView">
+        <div class="col-4 text-left justify-content-left">
+            <button class="btn btn-primary" (click)="addStudyCTU()" *ngIf="studyCountry?.country">
+                <i class="fa fa-plus"></i>New study CTU
+            </button>
+            <span *ngIf="!studyCountry?.country">Please select a country</span>
+        </div>
+    </div>
+</mat-expansion-panel>

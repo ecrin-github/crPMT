@@ -33,3 +33,11 @@ export function getHeightWithoutPadding(element) {
     const computedStyle = getComputedStyle(element);
     return element.clientHeight - (parseFloat(computedStyle.paddingTop) + parseFloat(computedStyle.paddingBottom));
 }
+
+export function getFlagEmoji(countryCode: string) {
+    const codePoints = countryCode
+        .toUpperCase()
+        .split('')
+        .map((char) => 127397 + char.charCodeAt(0))
+    return String.fromCodePoint(...codePoints)
+}

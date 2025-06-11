@@ -747,6 +747,41 @@ mat-footer-cell:first-of-type {
   color: #315492;
 }
 
+.sas-approved {
+  color: #22720e;
+}
+
+.sas-not-approved {
+  color: #9c1616;
+}
+
+.ctuToggleButton {
+  border-color: #315492;
+  background-color: white;
+  border-style: inset;
+  border-width: 0.2rem;
+}
+
+.ctuToggleButton:hover {
+  background-color: #6785b9;
+}
+
+.displayCTUInfo {
+  display: flex;
+}
+
+.hideCTUInfo {
+  display: none;
+}
+
+.ctuToggleButtonClosed {
+  transform: rotate(90deg);
+}
+
+.ctuToggleButtonOpened {
+  transform: rotate(-90deg);
+}
+
 .mat-expansion-panel-header-instance {
   padding: 0 1.5rem !important;
 }

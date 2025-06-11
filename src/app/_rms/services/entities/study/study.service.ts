@@ -43,22 +43,40 @@ export class StudyService {
     return this.http.delete(`${base}/core/studies/${sid}/study-countries/${id}`, {observe: "response", responseType: 'json'});
   }
   
-  /* Study countries */
+  /* Study CTUs from study */
 
   getStudyCTUs(sid) {
-    return this.http.get(`${base}/core/studies/${sid}/study-countries`);
+    return this.http.get(`${base}/core/studies/${sid}/study-ctus`);
   }
-  addStudyCTU(sid, payload) {
-    return this.http.post(`${base}/core/studies/${sid}/study-countries`, payload);
+  addStudyCTUFromStudy(sid, payload) {
+    return this.http.post(`${base}/core/studies/${sid}/study-ctus`, payload);
   }
-  getStudyCTU(sid, id) {
-    return this.http.get(`${base}/core/studies/${sid}/study-countries/${id}`);
+  getStudyCTUFromStudy(sid, id) {
+    return this.http.get(`${base}/core/studies/${sid}/study-ctus/${id}`);
   }
-  editStudyCTU(sid, id, payload) {
-    return this.http.put(`${base}/core/studies/${sid}/study-countries/${id}`, payload);
+  editStudyCTUFromStudy(sid, id, payload) {
+    return this.http.put(`${base}/core/studies/${sid}/study-ctus/${id}`, payload);
   }
-  deleteStudyCTU(sid, id) {
-    return this.http.delete(`${base}/core/studies/${sid}/study-countries/${id}`, {observe: "response", responseType: 'json'});
+  deleteStudyCTUFromStudy(sid, id) {
+    return this.http.delete(`${base}/core/studies/${sid}/study-ctus/${id}`, {observe: "response", responseType: 'json'});
+  }
+  
+  /* Study CTUs from study country */
+
+  getStudyCountryCTUs(scid) {
+    return this.http.get(`${base}/core/study-countries/${scid}/study-ctus`);
+  }
+  addStudyCTUFromStudyCountry(scid, payload) {
+    return this.http.post(`${base}/core/study-countries/${scid}/study-ctus`, payload);
+  }
+  getStudyCTUFromStudyCountry(scid, id) {
+    return this.http.get(`${base}/core/study-countries/${scid}/study-ctus/${id}`);
+  }
+  editStudyCTUFromStudyCountry(scid, id, payload) {
+    return this.http.put(`${base}/core/study-countries/${scid}/study-ctus/${id}`, payload);
+  }
+  deleteStudyCTUFromStudyCountry(scid, id) {
+    return this.http.delete(`${base}/core/study-countries/${scid}/study-ctus/${id}`, {observe: "response", responseType: 'json'});
   }
 
 

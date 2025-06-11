@@ -22,7 +22,7 @@ export class ProjectService {
     return this.http.put(`${base}/core/projects/${id}`, payload);
   }
   deleteProjectById(id) {
-    return this.http.delete(`${base}/core/projects/${id}`);
+    return this.http.delete(`${base}/core/projects/${id}`, {observe: "response", responseType: 'json'});
   }
 
 }

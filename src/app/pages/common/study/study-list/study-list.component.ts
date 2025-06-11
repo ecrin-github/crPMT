@@ -137,6 +137,23 @@ export class StudyListComponent implements OnInit {
         this.getStudyList();
       }
     }, error => { });
+
+    deleteModal.result.then((data: any) => {
+      if (data) {
+        this.studyService.deleteStudyById(id).subscribe((res: any) => {
+          if (res.status === 204) {
+            this.toastr.success('Study deleted successfully');
+            this.getStudyList();
+          } else {
+            this.toastr.error('Error when deleting study', res.statusText);
+          }
+        }, error => {
+          this.toastr.error(error.error.title);
+        });
+      }
+    }, error => {
+      this.toastr.error(error);
+    });
   }
 
   closeModal() {

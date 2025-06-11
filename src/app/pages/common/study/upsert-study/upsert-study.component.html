@@ -6,7 +6,7 @@
                 <hr *ngIf="i > 0">
                 <div class="row">
                     <div class="col-6 text-left d-flex align-items-center">
-                        <div class="view-sub-sub-title mb-4 study-title">Study {{i+1}}{{study.value.shortTitle ? ": " + study.value.shortTitle : "" }}</div>
+                        <div class="view-sub-sub-title mb-4 study-title">Study{{this.id ? '' : ' ' + (i+1)}}{{study.value.shortTitle ? ": " + study.value.shortTitle : "" }}</div>
                         <i class="fa fa-trash ml-4 mb-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeStudy(i)">
                         </i>
                     </div>
@@ -55,7 +55,7 @@
                 <div class="row form-group">
                     <div class="col-md-4">
                         <div for="pi" class="font-style text-capitalize">PI</div>
-                        <input type="text" id="pi" class="form-control" placeholder="(this will link to a 'Person' object)"
+                        <input type="text" id="pi" class="form-control" placeholder="Coming soon!"
                             formControlName="pi" *ngIf="!isView" disabled/>
                         <div *ngIf="isView" class="text-value" disabled></div>
                         <!-- <div *ngIf="isView" class="text-value">{{study.value..pi}}</div> -->
@@ -87,7 +87,7 @@
                         <div *ngIf="isView" class="text-value">{{study.value.summary}}</div>
                     </div>
                 </div>
-                <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [countries]="countries" [studyId]="study.value.id"></app-upsert-study-country>
+                <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [studyId]="study.value.id"></app-upsert-study-country>
             </div>
         </div>
     </div>

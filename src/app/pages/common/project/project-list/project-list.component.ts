@@ -15,6 +15,7 @@ import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
 import { resolvePath } from 'src/assets/js/util';
 import { ProjectListEntryInterface } from 'src/app/_rms/interfaces/project/project-listentry.interface';
+import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 
 @Component({
   selector: 'app-project-list',
@@ -52,6 +53,7 @@ export class ProjectListComponent implements OnInit {
               private reuseService: ReuseService,
               private scrollService: ScrollService, 
               private listService: ListService, 
+              private projectService: ProjectService,
               private spinner: NgxSpinnerService, 
               private toastr: ToastrService, 
               private modalService: NgbModal,
@@ -122,9 +124,20 @@ export class ProjectListComponent implements OnInit {
     deleteModal.componentInstance.id = id;
     deleteModal.result.then((data: any) => {
       if (data) {
-        this.getProjectList();
+        this.projectService.deleteProjectById(id).subscribe((res: any) => {
+          if (res.status === 204) {
+            this.toastr.success('Project deleted successfully');
+            this.getProjectList();
+          } else {
+            this.toastr.error('Error when deleting project', res.statusText);
+          }
+        }, error => {
+          this.toastr.error(error.error.title);
+        });
       }
-    }, error => { });
+    }, error => {
+      this.toastr.error(error);
+    });
     // const linkedObject$ = this.listService.getObjectByMultiStudies(id);
     // const combine$ = combineLatest([studyInvolvementDtp$, studyInvolvementDup$, linkedObject$]).subscribe(([studyInvolvementDtpRes, studyInvolvementDupRes, linkedObjectRes]: [any, any, any]) => {
     //   if (studyInvolvementDtpRes && studyInvolvementDupRes && linkedObjectRes && linkedObjectRes.data) {

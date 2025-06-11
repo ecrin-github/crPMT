@@ -58,7 +58,6 @@ export class UpsertStudyComponent implements OnInit {
   addType: string = '';
   registryId: number;
   trialId: string;
-  countries: [] = [];
   identifierTypes: [] = [];
   titleTypes: [] = [];
   featureTypes: [] = [];
@@ -111,12 +110,9 @@ export class UpsertStudyComponent implements OnInit {
     // Note: be careful if you add new observables because of the way their result is retrieved later (combineLatest + pop)
     // The code is built like this because in the version of RxJS used here combineLatest does not handle dictionaries
 
-    // TODO: if view of single study
     if (this.id && (this.isEdit || this.isView)) {
       queryFuncs.push(this.getStudyById(this.id));
     }
-
-    queryFuncs.push(this.getCountries());
 
     let obsArr: Array<Observable<any>> = [];
     queryFuncs.forEach((funct) => {
@@ -124,7 +120,6 @@ export class UpsertStudyComponent implements OnInit {
     });
 
     combineLatest(obsArr).subscribe(res => {
-      this.setCountries(res.pop());
       this.setStudyById(res.pop());
 
       setTimeout(() => {
@@ -169,16 +164,6 @@ export class UpsertStudyComponent implements OnInit {
 
   getStudyById(id) {
     return this.studyService.getStudyById(id);
-  }
-
-  getCountries() {
-    return this.contextService.getCountries();
-  }
-
-  setCountries(countries) {
-    if (countries) {
-      this.countries = countries;
-    }
   }
 
   setStudyById(studyData) {
@@ -258,26 +243,24 @@ export class UpsertStudyComponent implements OnInit {
   }
 
   // TODO: to be called in multiple places below
-  updatePayload(payload) {
+  updatePayload(payload, projectId) {
+    payload.project = projectId;
     payload.startDate = dateToString(payload.startDate);
     payload.endDate = dateToString(payload.endDate);
   }
   
-  onSave(projectId: string): Observable<boolean> {
+  onSave(projectId: string): Observable<boolean[]> {
     let saveObs$: Array<Observable<boolean>> = [];
 
     const payload = JSON.parse(JSON.stringify(this.studyForm.value));
 
     for (const [i, item] of payload.studies.entries()) {
     // payload.studies.forEach(item => {
-      this.updatePayload(item);
-      if (item.id == '') {  // Add
-        
-        item.project = projectId;
+      this.updatePayload(item, projectId);
+      if (!item.id) {  // Add
         let success = this.studyService.addStudy(item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 201) {
-              this.toastr.success('Study added successfully');
               // this.reuseService.notifyComponents();
               return this.studyCountryComponents.get(i).onSave(res.id).pipe(
                 mergeMap((success) => {
@@ -311,12 +294,11 @@ export class UpsertStudyComponent implements OnInit {
 
         saveObs$.push(scObs$);
 
-        // TODO: editObs if scObs true (?)
+        // TODO: don't do editObs if scObs$ false?
         
         const editObs$ = this.studyService.editStudy(item.id, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 200) {
-              this.toastr.success('Study updated successfully');
               // this.reuseService.notifyComponents();
               return of(true);
             } else {
@@ -333,15 +315,21 @@ export class UpsertStudyComponent implements OnInit {
       }
     }
     
-    if (saveObs$.length > 0) {
-      return combineLatest(saveObs$).pipe(
-        map(arr => arr.reduce((acc: boolean, one: boolean) => {
-          return acc && one;
-        }, true))
-      );
+    // if (saveObs$.length > 0) {
+    //   return combineLatest(saveObs$).pipe(
+    //     map(arr => arr.reduce((acc: boolean, one: boolean) => {
+    //       return acc && one;
+    //     }, true))
+    //   );
+    // }
+
+    // return of(true);
+
+    if (saveObs$.length == 0) {
+      saveObs$.push(of(true));
     }
 
-    return of(true);
+    return combineLatest(saveObs$);
   }
   
   back(): void {

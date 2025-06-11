@@ -184,8 +184,8 @@ export class UpsertProjectComponent implements OnInit {
       if (this.isEdit) {
         this.projectService.editProject(this.id, payload).subscribe((res: any) => {
           if (res.statusCode === 200) {
-            this.toastr.success('Project updated successfully');
-            this.reuseService.notifyComponents();
+            this.toastr.success('Data updated successfully');
+            // this.reuseService.notifyComponents();
             this.studyComponent.onSave(this.id).subscribe((success) => {
               if (success) {
                 this.router.navigate([`/projects/${this.id}/view`]);
@@ -203,10 +203,9 @@ export class UpsertProjectComponent implements OnInit {
       } else {  // this.isAdd
         this.projectService.addProject(payload).subscribe((res: any) => {
           if (res.statusCode === 201) {
-            this.toastr.success('Project added successfully');
-            localStorage.setItem('updateProjectList', 'true');
+            this.toastr.success('Data added successfully');
             // TODO
-            this.reuseService.notifyComponents();
+            // this.reuseService.notifyComponents();
             this.id = res.id;
             this.studyComponent.onSave(this.id).subscribe((success) => {
               if (success) {
