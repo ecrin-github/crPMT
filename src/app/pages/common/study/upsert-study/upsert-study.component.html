@@ -5,10 +5,22 @@
             <div class="col-12" [id]="'featpanel'+i">
                 <hr *ngIf="i > 0">
                 <div class="row">
-                    <div class="col-6 text-left d-flex align-items-center">
+                    <div class="col-8 text-left d-flex align-items-center">
                         <div class="view-sub-sub-title mb-4 study-title">Study{{this.id ? '' : ' ' + (i+1)}}{{study.value.shortTitle ? ": " + study.value.shortTitle : "" }}</div>
-                        <i class="fa fa-trash ml-4 mb-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeStudy(i)">
+                        <i class="fa fa-trash ml-4 mb-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView && !id" (click)="removeStudy(i)">
                         </i>
+                    </div>
+                    <div class="col-md-4 text-right" *ngIf="id">
+                        <ng-container *ngIf="isView">
+                            <a [routerLink]="['/studies', id, 'edit']" class="btn btn-primary mr-1">
+                                <i class="fa fa-edit"></i> Edit
+                            </a>
+                            <button class="btn btn-warning" (click)="back()">Back</button>
+                        </ng-container>
+                        <ng-container *ngIf="!isView">
+                            <button class="btn btn-success mr-5" (click)="onSaveStudy()">Save</button>
+                            <button class="btn btn-warning" (click)="back()">Cancel</button>
+                        </ng-container>
                     </div>
                 </div>
                 <div class="row form-group">
@@ -93,7 +105,7 @@
     </div>
 </form>
 <hr *ngIf="getStudiesForm().controls.length > 0">
-<div class="row mt-5 pb-4" *ngIf="!isView">
+<div class="row mt-5 pb-4" *ngIf="!isView && !id">
     <div class="col-2 d-flex align-items-center justify-content-left">
         <button class="btn btn-primary" (click)="addStudy()">
             <i class="fa fa-plus"></i>New study

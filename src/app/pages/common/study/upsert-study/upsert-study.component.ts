@@ -99,7 +99,7 @@ export class UpsertStudyComponent implements OnInit {
       this.id = this.activatedRoute.snapshot.params.id;
     }
     
-    this.scrollService.handleScroll([`/studies/${this.id}/view`, `/studies/${this.id}/edit`, `/studies/add`]);
+    // this.scrollService.handleScroll([`/studies/${this.id}/view`, `/studies/${this.id}/edit`, `/studies/add`]);
 
     this.isEdit = this.router.url.includes('edit');
     this.isView = this.router.url.includes('view');
@@ -330,6 +330,22 @@ export class UpsertStudyComponent implements OnInit {
     }
 
     return combineLatest(saveObs$);
+  }
+
+  onSaveStudy() {
+    const projectId = this.studyForm.value?.studies[0]?.project;
+    if (projectId) {
+      this.onSave(projectId).subscribe((success) => {
+        if (success) {
+          this.toastr.success("Data saved successfully");
+          this.router.navigate([`/studies/${this.id}/view`]);
+        }
+      });
+    } else {
+      this.toastr.error("Couldn't get project ID from study");
+    }
+
+    this.spinner.hide();
   }
   
   back(): void {
