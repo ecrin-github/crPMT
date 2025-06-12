@@ -68,10 +68,23 @@
 //   @import "./assets/sass/themes/layout/aside/light.scss";
 // }
 
+body {
+  font-family: "Twemoji Country Flags", $font-family-base;
+}
+
+.mat-expansion-panel-header {
+  font-family: "Twemoji Country Flags", Roboto, "Helvetica Neue", sans-serif;
+}
+
 // hide bootstrap dropdown arrow globally
 .dropdown-toggle::after {
   display: none !important;
 }
+
+.form-group {
+  margin-bottom: 1.25rem !important;
+}
+
 .form-control {
   // border: 1px solid #758092 !important;
   box-shadow: 0 0.25rem 0.75rem 0.15rem rgb(0 0 0 / 8%) !important;
