@@ -123,8 +123,9 @@ export class UpsertStudyCtuComponent implements OnInit {
     return address.replace("\n", " ");
   }
 
-  toggleCTUInfo(event, ctuInfoId) {
-    const ctuInfoElement = document.getElementById(ctuInfoId);
+  toggleCTUInfo(event) {
+    // TODO: aria-expanded on wrong element?
+    const ctuInfoElement = event.target.closest(".ctuPanel").getElementsByClassName("ctuInfo")[0];
     const expanded = ctuInfoElement.getAttribute('aria-expanded') === 'true';
     ctuInfoElement.setAttribute('aria-expanded', `${!expanded}`);
 

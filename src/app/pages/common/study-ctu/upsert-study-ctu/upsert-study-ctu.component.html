@@ -15,7 +15,7 @@
             <div formArrayName="studyCTUs">
                 <div class="row" *ngFor="let sctu of getStudyCTUsForm().controls; let i = index;"
                     [formGroupName]="i">
-                    <div class="col-12" [id]="'featpanel'+i">
+                    <div class="col-12 ctuPanel" [id]="'featpanel'+i">
                         <hr *ngIf="i > 0">
                         <div class="row form-group">
                             <div class="col-md-12">
@@ -42,8 +42,8 @@
                                 </div>
                                 <div class="view-sub-sub-sub-title mb-4" *ngIf="isView">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}
                                     <button [aria-expanded]="isView ? 'false' : 'true'" [aria-controls]="'ctuInfo'+studyCountry?.country?.iso2+i" class="ctuToggleButton"
-                                        [ngClass]="isView ? 'ctuToggleButtonClosed' : 'ctuToggleButtonOpened'"
-                                        [id]="'toggleButton'+studyCountry?.country?.iso2+i" (click)="toggleCTUInfo($event, 'ctuInfo'+studyCountry?.country?.iso2+i)">❯</button>
+                                        [ngClass]="isView ? 'ctuToggleButtonClosed' : 'ctuToggleButtonOpened'" title="Display more CTU info"
+                                        [id]="'toggleButton'+studyCountry?.country?.iso2+i" (click)="toggleCTUInfo($event)">❯</button>
                                 </div>
                             </div>
                         </div>
