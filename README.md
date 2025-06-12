@@ -5,6 +5,10 @@ Versioning convention:  [major releases].[new features/major fixes/].[minor fixe
 
 # Changelog
 
+## [0.2.2dev] - 2025-06-12
+
+- Fixed not being able to edit/save individual study properly
+
 ## [0.2.1dev] - 2025-06-12
 
 - Fixed country flag emojis not being displayed in Chromium-based browsers
