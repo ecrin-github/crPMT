@@ -5,6 +5,11 @@ Versioning convention:  [major releases].[new features/major fixes/].[minor fixe
 
 # Changelog
 
+## [0.2.1dev] - 2025-06-12
+
+- Fixed country flag emojis not being displayed in Chromium-based browsers
+- Fixed CTU fixed info display button opening the wrong panel when the same country appeared in 2 different studies
+
 ## [0.2.0dev] - 2025-06-11
 
 - Added study CTUs
