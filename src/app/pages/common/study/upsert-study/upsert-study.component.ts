@@ -242,11 +242,11 @@ export class UpsertStudyComponent implements OnInit {
     return this.studyForm.valid && !this.studyCountryComponents.some(b => !b.formValid());
   }
 
-  // TODO: to be called in multiple places below
-  updatePayload(payload, projectId) {
+  updatePayload(payload, projectId, i) {
     payload.project = projectId;
     payload.startDate = dateToString(payload.startDate);
     payload.endDate = dateToString(payload.endDate);
+    payload.order = i;
   }
   
   onSave(projectId: string): Observable<boolean[]> {
@@ -256,7 +256,8 @@ export class UpsertStudyComponent implements OnInit {
 
     for (const [i, item] of payload.studies.entries()) {
     // payload.studies.forEach(item => {
-      this.updatePayload(item, projectId);
+      this.updatePayload(item, projectId, i);
+      console.log(JSON.stringify(payload));
       if (!item.id) {  // Add
         let success = this.studyService.addStudy(item).pipe(
           mergeMap((res: any) => {
