@@ -92,7 +92,6 @@ export class ProjectListComponent implements OnInit {
 
   getProjectList() {
     this.spinner.show();
-    const pageSize = 10000;
     this.listService.getProjectList().subscribe((res: any) => {
       if (res) {
         this.getSortedProjects(res);
@@ -123,6 +122,7 @@ export class ProjectListComponent implements OnInit {
     deleteModal.componentInstance.type = 'project';
     deleteModal.componentInstance.id = id;
     deleteModal.result.then((data: any) => {
+      this.spinner.show();
       if (data) {
         this.projectService.deleteProjectById(id).subscribe((res: any) => {
           if (res.status === 204) {
@@ -130,13 +130,16 @@ export class ProjectListComponent implements OnInit {
             this.getProjectList();
           } else {
             this.toastr.error('Error when deleting project', res.statusText);
+            this.spinner.hide();
           }
         }, error => {
           this.toastr.error(error.error.title);
+          this.spinner.hide();
         });
       }
     }, error => {
       this.toastr.error(error);
+      this.spinner.hide();
     });
     // const linkedObject$ = this.listService.getObjectByMultiStudies(id);
     // const combine$ = combineLatest([studyInvolvementDtp$, studyInvolvementDup$, linkedObject$]).subscribe(([studyInvolvementDtpRes, studyInvolvementDupRes, linkedObjectRes]: [any, any, any]) => {

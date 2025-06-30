@@ -132,13 +132,9 @@ export class StudyListComponent implements OnInit {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
     deleteModal.componentInstance.type = 'study';
     deleteModal.componentInstance.id = id;
-    deleteModal.result.then((data: any) => {
-      if (data) {
-        this.getStudyList();
-      }
-    }, error => { });
 
     deleteModal.result.then((data: any) => {
+      this.spinner.show();
       if (data) {
         this.studyService.deleteStudyById(id).subscribe((res: any) => {
           if (res.status === 204) {
@@ -146,13 +142,16 @@ export class StudyListComponent implements OnInit {
             this.getStudyList();
           } else {
             this.toastr.error('Error when deleting study', res.statusText);
+            this.spinner.hide();
           }
         }, error => {
           this.toastr.error(error.error.title);
+          this.spinner.hide();
         });
       }
     }, error => {
       this.toastr.error(error);
+      this.spinner.hide();
     });
   }
 
