@@ -44,7 +44,13 @@ export class ContextService {
     return this.http.get(`${environment.baseUrlApi}/context/countries`);
   }
 
+  sortCountries(countries) {
+    const { compare } = Intl.Collator('en-GB');
+    countries.sort((a, b) => { return compare(a.name, b.name); });
+  }
+
   setCountries(countries) {
+    this.sortCountries(countries);
     this.countries.next(countries);
   }
   
