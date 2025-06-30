@@ -33,8 +33,8 @@ export class UpsertStudyComponent implements OnInit {
   @ViewChildren('studyCountries') studyCountryComponents: QueryList<UpsertStudyCountryComponent>;
   @Input() studiesData: Array<StudyInterface>;
 
-  studyStatuses: String[] = ["1_Start-up phase", "2_Running phase_Reg & ethical approvals", "2_Running phase_Follow up", "2_Running phase_Organisation of close-out", 
-                              "3_Completion & termination phase", "4_Completed", "5_withdrawn", "6_On hold"];
+  studyStatuses: String[] = ["Start-up phase", "Running phase: Regulatory & ethical approvals", "Running phase: Follow up", "Running phase: Organisation of close-out", 
+                              "Completion & termination phase", "Completed", "Withdrawn", "On hold"];
   regulatoryFrameworks: String[] = ['CTR', 'MDR/IVDR', 'COMBINED', 'OTHER'];
   public isCollapsed: boolean = false;
   studyForm: UntypedFormGroup;
