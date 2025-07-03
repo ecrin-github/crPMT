@@ -1,3 +1,5 @@
+import { FundingSourceInterface } from "../context/funding-source.interface";
+import { ServiceInterface } from "../context/service.interface";
 import { StudyDataInterface } from "../study/study.interface";
 
 export interface ProjectInterface {
@@ -9,4 +11,6 @@ export interface ProjectInterface {
     startDate: string | null;
     endDate: string | null;
     studies: StudyDataInterface[] | null;
+    fundingSources: FundingSourceInterface;
+    services: ServiceInterface;
 }

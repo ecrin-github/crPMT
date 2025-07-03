@@ -1,23 +1,24 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable, of, Subscription } from 'rxjs';
-import { catchError, finalize, mergeMap } from 'rxjs/operators';
+import { catchError, finalize, map, mergeMap } from 'rxjs/operators';
 import { OrganisationInterface } from 'src/app/_rms/interfaces/organisation/organisation.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
-import { CommonLookupService } from 'src/app/_rms/services/entities/common-lookup/common-lookup.service';
 import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
 import { PdfGeneratorService } from 'src/app/_rms/services/entities/pdf-generator/pdf-generator.service';
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
-import { StatesService } from 'src/app/_rms/services/states/states.service';
 import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.component';
+import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { FundingSourceInterface } from 'src/app/_rms/interfaces/context/funding-source.interface';
+import { ServiceInterface } from 'src/app/_rms/interfaces/context/service.interface';
+import { ListService } from 'src/app/_rms/services/entities/list/list.service';
 
 @Component({
   selector: 'app-upsert-project',
@@ -60,6 +61,8 @@ export class UpsertProjectComponent implements OnInit {
   topicTypes: [] = [];
   controlledTerminology: [] = [];
   relationshipTypes: [] = [];
+  fundingSources: FundingSourceInterface[] = [];
+  services: ServiceInterface[] = [];
   isBrowsing: boolean = false;
   isManager: any;
   orgId: string;
@@ -67,10 +70,11 @@ export class UpsertProjectComponent implements OnInit {
   pageSize: Number = 10000;
   showEdit: boolean = false;
 
-  constructor(private statesService: StatesService,
+  constructor(private contextService: ContextService,
               private fb: UntypedFormBuilder, 
               private router: Router, 
               private projectService: ProjectService, 
+              private listService: ListService,
               private reuseService: ReuseService,
               private scrollService: ScrollService,
               private activatedRoute: ActivatedRoute,
@@ -79,14 +83,16 @@ export class UpsertProjectComponent implements OnInit {
               private jsonGenerator: JsonGeneratorService, 
               private backService: BackService) {
     this.projectForm = this.fb.group({
-      shortName: '',
-      name: ['', Validators.required],
+      shortName: ['', Validators.required],
+      name: '',
       gaNumber: '',
       url: '',
       startDate: null,
       endDate: null,
       studyData: null,
-      reportingPeriods: []
+      reportingPeriods: [],
+      fundingSources: [],
+      services: []
     });
   }
 
@@ -129,6 +135,14 @@ export class UpsertProjectComponent implements OnInit {
       });
     });
 
+    this.contextService.fundingSources.subscribe((fundingSources) => {
+      this.fundingSources = fundingSources;
+    });
+
+    this.contextService.services.subscribe((services) => {
+      this.services = services;
+    });
+
     if (this.isAdd) {
       setTimeout(() => {
         this.spinner.hide();
@@ -162,7 +176,11 @@ export class UpsertProjectComponent implements OnInit {
       startDate: this.projectData.startDate ? stringToDate(this.projectData.startDate) : null,
       endDate: this.projectData.endDate ? stringToDate(this.projectData.endDate) : null,
       studyData: this.projectData.studies,
+      fundingSources: this.projectData.fundingSources,
+      services: this.projectData.services
     });
+
+    this.onChangeFundingSources();
   }
 
   allFormsValid() {
@@ -181,47 +199,126 @@ export class UpsertProjectComponent implements OnInit {
       payload.startDate = dateToString(payload.startDate);
       payload.endDate = dateToString(payload.endDate);
 
-      if (this.isEdit) {
-        this.projectService.editProject(this.id, payload).subscribe((res: any) => {
-          if (res.statusCode === 200) {
-            this.toastr.success('Data updated successfully');
-            // this.reuseService.notifyComponents();
-            this.studyComponent.onSave(this.id).subscribe((success) => {
-              if (success) {
-                this.router.navigate([`/projects/${this.id}/view`]);
-              }
-              this.spinner.hide();
-            });
+      let fsObs$: Array<Observable<boolean>> = [];
+      let saveObs$: Array<Observable<boolean>> = [];
+
+      // Adding any new funding source that may have been created, and change all funding source to their IDs (instead of object)
+      if (payload.fundingSources) {
+        for (let i = 0; i < payload.fundingSources.length; i++) {
+          if (payload.fundingSources[i].id == -1) {
+            const success = this.contextService.addFundingSource({'name': payload.fundingSources[i].name}).pipe(
+              mergeMap((res: any) => {
+                if (res.statusCode === 201) {
+                  payload.fundingSources[i] = res.id;
+                  return of(true);
+                } else {
+                  this.toastr.error(res.message, "Error adding funding source", { timeOut: 60000, extendedTimeOut: 60000 });
+                  return of(false);
+                }
+              }), catchError(err => {
+                this.toastr.error(err.message, 'Error adding funding source', { timeOut: 60000, extendedTimeOut: 60000 });
+                return of(false);
+              })
+            );
+  
+            fsObs$.push(success);
           } else {
-            this.toastr.error(res.messages[0]);
-            this.spinner.hide();
+            payload.fundingSources[i] = payload.fundingSources[i].id;
           }
-        }, error => {
-          this.toastr.error(error.error.title);
-          this.spinner.hide();
-        })
-      } else {  // this.isAdd
-        this.projectService.addProject(payload).subscribe((res: any) => {
-          if (res.statusCode === 201) {
-            this.toastr.success('Data added successfully');
-            // TODO
-            // this.reuseService.notifyComponents();
-            this.id = res.id;
-            this.studyComponent.onSave(this.id).subscribe((success) => {
-              if (success) {
-                this.router.navigate([`/projects/${res.id}/view`]);
-              }
-              this.spinner.hide();
-            });
-          } else {
-            this.toastr.error(res.message, "Project adding error");
-            this.spinner.hide();
-          }
-        }, error => {
-          this.toastr.error(error.message, 'Error adding project');
-          this.spinner.hide();
-        })
+        }
+      } else {
+        payload.fundingSources = [];
       }
+
+      if (fsObs$.length == 0) {
+        fsObs$.push(of(true));
+      }
+
+      if (payload.services) {
+
+      } else {
+        payload.services = [];
+      }
+
+      // Saving project and "child" components
+      if (this.isEdit) {
+        const success = this.projectService.editProject(this.id, payload).pipe(
+          mergeMap((res: any) => {
+            if (res.statusCode === 200) {
+              // this.reuseService.notifyComponents();
+              return this.studyComponent.onSave(res.id).pipe(
+                mergeMap((success) => {
+                  if (success) {
+                    this.toastr.success('Data updated successfully');
+                    return of(true);
+                  }
+                  return of(false);
+                })
+              );
+
+            } else {
+              this.toastr.error(res.message, "Error editing project", { timeOut: 60000, extendedTimeOut: 60000 });
+              return of(false);
+            }
+          }), catchError(err => {
+            this.toastr.error(err.message, 'Error editing project', { timeOut: 60000, extendedTimeOut: 60000 });
+            return of(false);
+          })
+        );
+
+        saveObs$.push(success);
+        
+      } else {  // this.isAdd
+        const success = this.projectService.addProject(payload).pipe(
+          mergeMap((res: any) => {
+            if (res.statusCode === 201) {
+              // TODO
+              // this.reuseService.notifyComponents();
+              this.id = res.id;
+              return this.studyComponent.onSave(res.id).pipe(
+                mergeMap((success) => {
+                  if (success) {
+                    this.toastr.success('Data added successfully');
+                    return of(true);
+                  }
+                  return of(false);
+                })
+              );
+            } else {
+              this.toastr.error(res.message, 'Error adding project', { timeOut: 60000, extendedTimeOut: 60000 });
+              return of(false);
+            }
+          }), catchError(err => {
+            this.toastr.error(err.message, 'Error adding project', { timeOut: 60000, extendedTimeOut: 60000 });
+            return of(false);
+          })
+        );
+
+        saveObs$.push(success);
+      }
+
+      // Subscring to all observables
+      combineLatest(fsObs$).pipe(
+        mergeMap((successArr: boolean[]) => {
+          const success: boolean = successArr.every(b => b);
+          
+          if (!success) {
+            this.toastr.error('Failed to add funding sources');
+            return of([false]);
+          }
+
+          // Querying the DB to update funding sources list for next edit/add
+          this.contextService.updateFundingSources();
+          return combineLatest(saveObs$);
+        }),
+        map((successArr) => {
+          const success: boolean = successArr.every(b => b);
+          if (success) {
+            this.router.navigate([`/projects/${this.id}/view`]);
+          }
+        })
+      ).subscribe();
+
     } else {
       this.spinner.hide();
       setTimeout(() => {  // Timeout to allow ng-invalid to appear on elements
@@ -233,10 +330,10 @@ export class UpsertProjectComponent implements OnInit {
 
   scrollToFirstInvalidControl() {
     /* https://stackoverflow.com/questions/71501822/angular-formgroup-scroll-to-first-invalid-input-in-a-scrolling-div */
-    let form = document.getElementById('formContainer');
+    const form = document.getElementById('formContainer');
     console.log(form.getElementsByClassName('ng-invalid'));
     console.log(form.getElementsByClassName('ng-invalid')[0]);
-    let firstInvalidControl = form.getElementsByClassName('ng-invalid')[0];
+    const firstInvalidControl = form.getElementsByClassName('ng-invalid')[0];
     firstInvalidControl.scrollIntoView();
     (firstInvalidControl as HTMLElement).focus();
   }
@@ -245,8 +342,82 @@ export class UpsertProjectComponent implements OnInit {
     this.backService.back();
   }
 
-  onChange() {
-    this.publicTitle = this.projectForm.value.displayTitle;
+  onChangeFundingSources() {
+    // TODO: add option that says to start typing to add a new funding source when nothing has been typed, and remove it once typing starts?
+    // TODO: hide ga number field on view as well?
+    if (this.projectForm.value.fundingSources?.length == 1 
+      && this.projectForm.value.fundingSources[0]?.name?.toLowerCase() == "private funding" 
+      && !this.projectForm.get('gaNumber').disabled) {
+      this.projectForm.get('gaNumber').disable();
+    } else if (this.projectForm.get('gaNumber').disabled) {
+      this.projectForm.get('gaNumber').enable();
+    }
+  }
+
+  // Necessary to write it like this otherwise fundingSources is undefined
+  addFundingSource = (fundingSource) => {
+    const newSource = {'id': -1, 'name': fundingSource};
+    this.fundingSources.push(newSource);
+    return newSource;
+  }
+
+  compareIds(fv1, fv2): boolean {
+    return fv1?.id == fv2?.id;
+  }
+
+  searchFundingSources(term: string, item) {
+    term = term.toLocaleLowerCase();
+    return item.name?.toLocaleLowerCase().indexOf(term) > -1;
+  }
+
+  displayFundingSources(fundingSources) {
+    if (fundingSources) {
+      return fundingSources.map(fs => fs.name).join(", ");
+    }
+    return "";
+  }
+
+  deleteFundingSource($event, fsToRemove) {
+    $event.stopPropagation(); // Clicks the option otherwise
+
+    if (fsToRemove.id == -1) {  // Created locally by user
+      this.fundingSources = this.fundingSources.filter(fs => !(fs.id == fsToRemove.id && fs.name == fsToRemove.name));
+    } else {  // Already existing
+      this.spinner.show();
+      // Checking if other projects have this funding source
+      this.listService.getProjectsByFundingSource(fsToRemove.id).subscribe((res: []) => {
+        // Filtering out current project, as deletion on current project means the funding source has been de-selected
+        let resWithoutCurrent: ProjectInterface[] = res;
+        if (!this.isAdd) {
+          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.id);
+        }
+
+        if (resWithoutCurrent.length > 0) {
+          this.toastr.error(`Failed to delete this funding source as it is used in project${(resWithoutCurrent.length > 1) ? 's' : ''}:\
+           ${resWithoutCurrent.map(proj => proj.shortName).join(", ")}`, "Error deleting funding source", { timeOut: 20000, extendedTimeOut: 20000 });
+           this.spinner.hide();
+        } else {
+          // Delete funding source from the DB, then locally if succeeded
+          this.contextService.deleteFundingSource(fsToRemove.id).subscribe((res: any) => {
+            if (res.status !== 204) {
+              this.toastr.error('Error when deleting funding source', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
+            } else {
+              // Locally filtering it out
+              this.fundingSources = this.fundingSources.filter(fs => !(fs.id == fsToRemove.id && fs.name == fsToRemove.name));
+              // Querying the DB to update funding sources list for next edit/add
+              this.contextService.updateFundingSources();
+            }
+            this.spinner.hide();
+          }, error => {
+            this.toastr.error(error);
+            this.spinner.hide();
+          });
+        }
+      }, error => {
+        this.toastr.error(error);
+        this.spinner.hide();
+      });
+    }
   }
 
   print() {
@@ -261,48 +432,10 @@ export class UpsertProjectComponent implements OnInit {
     })
   }
 
-  cleanJSON(obj) {
-    const keysToDel = ['lastEditedBy', 'deidentType', 'deidentDirect', 'deidentHipaa', 'deidentDates', 'deidentKanon', 'deidentNonarr', 'deidentDetails'];
-    for (let key in obj) {
-      if (keysToDel.includes(key)) {
-        delete obj[key];
-      } else if (key === 'person' && obj[key] !== null) { // Removing most user info
-        obj[key] = {'userProfile': obj['person']['userProfile'], 
-                    'firstName': obj['person']['firstName'],
-                    'lastName': obj['person']['lastName'],
-                    'email': obj['person']['email']};
-      } else if (key === 'id') {  // Deleting all internal IDs
-        delete obj[key];
-      } else {
-        if (key === 'projectFeatures') { // Filtering projectFeatures to match projectType
-          obj[key] = obj[key].filter(feature => {
-            const cond = feature.featureType?.context?.toLowerCase() === obj.projectType?.name?.toLowerCase();
-            if (cond) {
-              delete feature['lastEditedBy'];
-            }
-            return cond;
-          });
-        }
-        if (typeof obj[key] === 'object') {
-          if (Array.isArray(obj[key])) {
-            // loop through array
-            for (let i = 0; i < obj[key].length; i++) {
-              this.cleanJSON(obj[key][i]);
-            }
-          } else {
-            // call function recursively for object
-            this.cleanJSON(obj[key]);
-          }
-        }
-      }
-    }
-  }
-
   jsonExport() {
     this.projectService.getProjectById(this.id).subscribe((res: any) => {
       if (res) {
         const payload = JSON.parse(JSON.stringify(res));
-        this.cleanJSON(payload);
         this.jsonGenerator.jsonGenerator(payload, 'project');
       }
     }, error => {

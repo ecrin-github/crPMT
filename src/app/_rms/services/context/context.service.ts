@@ -4,10 +4,10 @@ import { ToastrService } from 'ngx-toastr';
 import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { StudyCountryInterface } from '../../interfaces/study/study-country.interface';
-import { StudyCTUInterface } from '../../interfaces/study/study-ctus.interface';
 import { CountryInterface } from '../../interfaces/context/country.interface';
 import { CTUInterface } from '../../interfaces/context/ctu.interface';
+import { FundingSourceInterface } from '../../interfaces/context/funding-source.interface';
+import { ServiceInterface } from '../../interfaces/context/service.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +18,10 @@ export class ContextService {
         new BehaviorSubject<CountryInterface[]>(null);
   public ctus: BehaviorSubject<CTUInterface[]> =
         new BehaviorSubject<CTUInterface[]>(null);
+  public fundingSources: BehaviorSubject<FundingSourceInterface[]> =
+        new BehaviorSubject<FundingSourceInterface[]>(null);
+  public services: BehaviorSubject<ServiceInterface[]> =
+        new BehaviorSubject<ServiceInterface[]>(null);
 
   constructor(
     private http: HttpClient,
@@ -28,6 +32,8 @@ export class ContextService {
 
     queryFuncs.push(this.getCountries());
     queryFuncs.push(this.getCTUs());
+    queryFuncs.push(this.getServices());
+    queryFuncs.push(this.getFundingSources());
 
     let obsArr: Array<Observable<any>> = [];
     queryFuncs.forEach((funct) => {
@@ -35,6 +41,8 @@ export class ContextService {
     });
 
     combineLatest(obsArr).subscribe(res => {
+      this.setFundingSources(res.pop());
+      this.setServices(res.pop());
       this.setCTUs(res.pop());
       this.setCountries(res.pop());
     });
@@ -60,5 +68,37 @@ export class ContextService {
   
   setCTUs(ctus) {
     this.ctus.next(ctus);
+  }
+
+  getServices() {
+    return this.http.get(`${environment.baseUrlApi}/context/services`);
+  }
+
+  setServices(services) {
+    this.services.next(services);
+  }
+
+  getFundingSources() {
+    return this.http.get(`${environment.baseUrlApi}/context/funding-sources`);
+  }
+
+  setFundingSources(fundingSources) {
+    this.fundingSources.next(fundingSources);
+  }
+
+  updateFundingSources() {
+    console.log("update funding sources");
+    this.getFundingSources().subscribe((fs) => {
+      console.log(`update funding sources: ${JSON.stringify(fs)}`)
+      this.setFundingSources(fs);
+    });
+  }
+
+  addFundingSource(payload) {
+    return this.http.post(`${environment.baseUrlApi}/context/funding-sources`, payload);
+  }
+
+  deleteFundingSource(id) {
+    return this.http.delete(`${environment.baseUrlApi}/context/funding-sources/${id}`, {observe: "response", responseType: 'json'});
   }
 }
