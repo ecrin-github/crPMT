@@ -21,6 +21,14 @@ export class ListService {
     return this.http.get(`${base}/core/projects-by-funding-source/${fsId}`);
   }
 
+  getProjectsByService(sId) {
+    return this.http.get(`${base}/core/projects-by-service/${sId}`);
+  }
+
+  getProjectsByPerson(pId) {
+    return this.http.get(`${base}/core/projects-by-person/${pId}`);
+  }
+
   // study lists
 
   getStudyList() {

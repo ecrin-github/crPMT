@@ -8,6 +8,7 @@ import { CountryInterface } from '../../interfaces/context/country.interface';
 import { CTUInterface } from '../../interfaces/context/ctu.interface';
 import { FundingSourceInterface } from '../../interfaces/context/funding-source.interface';
 import { ServiceInterface } from '../../interfaces/context/service.interface';
+import { PersonInterface } from '../../interfaces/person.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +21,8 @@ export class ContextService {
         new BehaviorSubject<CTUInterface[]>(null);
   public fundingSources: BehaviorSubject<FundingSourceInterface[]> =
         new BehaviorSubject<FundingSourceInterface[]>(null);
+  public persons: BehaviorSubject<PersonInterface[]> =
+        new BehaviorSubject<PersonInterface[]>(null);
   public services: BehaviorSubject<ServiceInterface[]> =
         new BehaviorSubject<ServiceInterface[]>(null);
 
@@ -34,6 +37,7 @@ export class ContextService {
     queryFuncs.push(this.getCTUs());
     queryFuncs.push(this.getServices());
     queryFuncs.push(this.getFundingSources());
+    queryFuncs.push(this.getPersons());
 
     let obsArr: Array<Observable<any>> = [];
     queryFuncs.forEach((funct) => {
@@ -41,6 +45,7 @@ export class ContextService {
     });
 
     combineLatest(obsArr).subscribe(res => {
+      this.setPersons(res.pop());
       this.setFundingSources(res.pop());
       this.setServices(res.pop());
       this.setCTUs(res.pop());
@@ -78,6 +83,20 @@ export class ContextService {
     this.services.next(services);
   }
 
+  updateServices() {
+    this.getServices().subscribe((s) => {
+      this.setServices(s);
+    });
+  }
+
+  addService(payload) {
+    return this.http.post(`${environment.baseUrlApi}/context/services`, payload);
+  }
+
+  deleteService(id) {
+    return this.http.delete(`${environment.baseUrlApi}/context/services/${id}`, {observe: "response", responseType: 'json'});
+  }
+
   getFundingSources() {
     return this.http.get(`${environment.baseUrlApi}/context/funding-sources`);
   }
@@ -87,9 +106,7 @@ export class ContextService {
   }
 
   updateFundingSources() {
-    console.log("update funding sources");
     this.getFundingSources().subscribe((fs) => {
-      console.log(`update funding sources: ${JSON.stringify(fs)}`)
       this.setFundingSources(fs);
     });
   }
@@ -100,5 +117,27 @@ export class ContextService {
 
   deleteFundingSource(id) {
     return this.http.delete(`${environment.baseUrlApi}/context/funding-sources/${id}`, {observe: "response", responseType: 'json'});
+  }
+  
+  getPersons() {
+    return this.http.get(`${environment.baseUrlApi}/context/persons`);
+  }
+
+  setPersons(persons) {
+    this.persons.next(persons);
+  }
+
+  updatePersons() {
+    this.getPersons().subscribe((persons) => {
+      this.setPersons(persons);
+    });
+  }
+
+  addPerson(payload) {
+    return this.http.post(`${environment.baseUrlApi}/context/persons`, payload);
+  }
+
+  deletePerson(id) {
+    return this.http.delete(`${environment.baseUrlApi}/context/persons/${id}`, {observe: "response", responseType: 'json'});
   }
 }

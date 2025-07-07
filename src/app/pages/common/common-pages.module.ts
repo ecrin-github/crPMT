@@ -55,6 +55,7 @@ import { UpsertProjectComponent } from './project/upsert-project/upsert-project.
 import { UpsertStudyCtuComponent } from './study-ctu/upsert-study-ctu/upsert-study-ctu.component';
 import { UpsertStudyCountryComponent } from './study-country/upsert-study-country/upsert-study-country.component';
 import { StudyListComponent } from './study/study-list/study-list.component';
+import { AddPersonModalComponent } from './add-person-modal/add-person-modal.component';
 
 
 @NgModule({
@@ -101,7 +102,8 @@ import { StudyListComponent } from './study/study-list/study-list.component';
         UpsertProjectComponent,
         UpsertStudyCtuComponent,
         UpsertStudyCountryComponent,
-        StudyListComponent
+        StudyListComponent,
+        AddPersonModalComponent
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [

@@ -795,6 +795,19 @@ mat-footer-cell:first-of-type {
   transform: rotate(-90deg);
 }
 
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.service-tag {
+  border-width: 0.2rem;
+  border-style: solid;
+  border-radius: 0.4rem;
+  padding: 0.2rem;
+}
+
 .mat-expansion-panel-header-instance {
   padding: 0 1.5rem !important;
 }

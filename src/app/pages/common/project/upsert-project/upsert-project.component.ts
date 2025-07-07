@@ -13,12 +13,15 @@ import { ProjectService } from 'src/app/_rms/services/entities/project/project.s
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
 import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
-import { dateToString, stringToDate } from 'src/assets/js/util';
+import { colorHash, dateToString, stringToDate } from 'src/assets/js/util';
 import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.component';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { FundingSourceInterface } from 'src/app/_rms/interfaces/context/funding-source.interface';
 import { ServiceInterface } from 'src/app/_rms/interfaces/context/service.interface';
 import { ListService } from 'src/app/_rms/services/entities/list/list.service';
+import { PersonInterface } from 'src/app/_rms/interfaces/person.interface';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { AddPersonModalComponent } from '../../add-person-modal/add-person-modal.component';
 
 @Component({
   selector: 'app-upsert-project',
@@ -63,12 +66,14 @@ export class UpsertProjectComponent implements OnInit {
   relationshipTypes: [] = [];
   fundingSources: FundingSourceInterface[] = [];
   services: ServiceInterface[] = [];
+  persons: PersonInterface[] = [];
   isBrowsing: boolean = false;
   isManager: any;
   orgId: string;
   associatedObjects: any;
   pageSize: Number = 10000;
   showEdit: boolean = false;
+  hasPublicFunding: boolean = false;
 
   constructor(private contextService: ContextService,
               private fb: UntypedFormBuilder, 
@@ -76,6 +81,7 @@ export class UpsertProjectComponent implements OnInit {
               private projectService: ProjectService, 
               private listService: ListService,
               private reuseService: ReuseService,
+              private modalService: NgbModal,
               private scrollService: ScrollService,
               private activatedRoute: ActivatedRoute,
               private spinner: NgxSpinnerService, 
@@ -90,6 +96,9 @@ export class UpsertProjectComponent implements OnInit {
       startDate: null,
       endDate: null,
       studyData: null,
+      coordinator: null,
+      cEuco: null,
+      totalPatientsExpected: '',
       reportingPeriods: [],
       fundingSources: [],
       services: []
@@ -139,6 +148,10 @@ export class UpsertProjectComponent implements OnInit {
       this.fundingSources = fundingSources;
     });
 
+    this.contextService.persons.subscribe((persons) => {
+      this.persons = persons;
+    });
+
     this.contextService.services.subscribe((services) => {
       this.services = services;
     });
@@ -175,6 +188,7 @@ export class UpsertProjectComponent implements OnInit {
       url: this.projectData.url,
       startDate: this.projectData.startDate ? stringToDate(this.projectData.startDate) : null,
       endDate: this.projectData.endDate ? stringToDate(this.projectData.endDate) : null,
+      totalPatientsExpected: this.projectData.totalPatientsExpected,
       studyData: this.projectData.studies,
       fundingSources: this.projectData.fundingSources,
       services: this.projectData.services
@@ -188,6 +202,16 @@ export class UpsertProjectComponent implements OnInit {
     return this.projectForm.valid && this.studyComponent.allFormsValid();
   }
 
+  updatePayload(payload) {
+    payload.startDate = dateToString(payload.startDate);
+    payload.endDate = dateToString(payload.endDate);
+
+    // Changing cEuco value if Person object exists already, otherwise we will wait to add it to get its id
+    if (payload.cEuco?.id > -1) {
+      payload.cEuco = payload.cEuco.id;
+    }
+  }
+
   onSave() {
     this.spinner.show();
     if (localStorage.getItem('updateProjectList')) {
@@ -196,10 +220,9 @@ export class UpsertProjectComponent implements OnInit {
 
     if (this.allFormsValid()) {
       const payload = JSON.parse(JSON.stringify(this.projectForm.value));
-      payload.startDate = dateToString(payload.startDate);
-      payload.endDate = dateToString(payload.endDate);
+      this.updatePayload(payload);
 
-      let fsObs$: Array<Observable<boolean>> = [];
+      let contextObs$: Array<Observable<boolean>> = [];
       let saveObs$: Array<Observable<boolean>> = [];
 
       // Adding any new funding source that may have been created, and change all funding source to their IDs (instead of object)
@@ -221,7 +244,7 @@ export class UpsertProjectComponent implements OnInit {
               })
             );
   
-            fsObs$.push(success);
+            contextObs$.push(success);
           } else {
             payload.fundingSources[i] = payload.fundingSources[i].id;
           }
@@ -230,14 +253,61 @@ export class UpsertProjectComponent implements OnInit {
         payload.fundingSources = [];
       }
 
-      if (fsObs$.length == 0) {
-        fsObs$.push(of(true));
-      }
-
       if (payload.services) {
-
+        for (let i = 0; i < payload.services.length; i++) {
+          if (payload.services[i].id == -1) {
+            const success = this.contextService.addService({'name': payload.services[i].name}).pipe(
+              mergeMap((res: any) => {
+                if (res.statusCode === 201) {
+                  payload.services[i] = res.id;
+                  return of(true);
+                } else {
+                  this.toastr.error(res.message, "Error adding service", { timeOut: 60000, extendedTimeOut: 60000 });
+                  return of(false);
+                }
+              }), catchError(err => {
+                this.toastr.error(err.message, 'Error adding service', { timeOut: 60000, extendedTimeOut: 60000 });
+                return of(false);
+              })
+            );
+  
+            contextObs$.push(success);
+          } else {
+            payload.services[i] = payload.services[i].id;
+          }
+        }
       } else {
         payload.services = [];
+      }
+
+      // Adding all new persons (including those added but unused in cEuco field)
+      for (let i = 0; i < this.persons.length; i++) {
+        if (this.persons[i].id == -1) {
+          delete this.persons[i].id;
+          const success = this.contextService.addPerson(this.persons[i]).pipe(
+            mergeMap((res: any) => {
+              if (res.fullName == payload.cEuco?.fullName && res.email == payload.cEuco?.email) {
+                payload.cEuco = res.id
+              }
+
+              if (res.statusCode === 201) {
+                return of(true);
+              } else {
+                this.toastr.error(res.message, "Error adding person", { timeOut: 60000, extendedTimeOut: 60000 });
+                return of(false);
+              }
+            }), catchError(err => {
+              this.toastr.error(err.message, 'Error adding person', { timeOut: 60000, extendedTimeOut: 60000 });
+              return of(false);
+            })
+          );
+
+          contextObs$.push(success);
+        }
+      }
+
+      if (contextObs$.length == 0) {
+        contextObs$.push(of(true));
       }
 
       // Saving project and "child" components
@@ -298,7 +368,7 @@ export class UpsertProjectComponent implements OnInit {
       }
 
       // Subscring to all observables
-      combineLatest(fsObs$).pipe(
+      combineLatest(contextObs$).pipe(
         mergeMap((successArr: boolean[]) => {
           const success: boolean = successArr.every(b => b);
           
@@ -309,6 +379,8 @@ export class UpsertProjectComponent implements OnInit {
 
           // Querying the DB to update funding sources list for next edit/add
           this.contextService.updateFundingSources();
+          this.contextService.updatePersons();
+          this.contextService.updateServices();
           return combineLatest(saveObs$);
         }),
         map((successArr) => {
@@ -343,14 +415,11 @@ export class UpsertProjectComponent implements OnInit {
   }
 
   onChangeFundingSources() {
-    // TODO: add option that says to start typing to add a new funding source when nothing has been typed, and remove it once typing starts?
-    // TODO: hide ga number field on view as well?
-    if (this.projectForm.value.fundingSources?.length == 1 
-      && this.projectForm.value.fundingSources[0]?.name?.toLowerCase() == "private funding" 
-      && !this.projectForm.get('gaNumber').disabled) {
-      this.projectForm.get('gaNumber').disable();
-    } else if (this.projectForm.get('gaNumber').disabled) {
-      this.projectForm.get('gaNumber').enable();
+    if (this.projectForm.value.fundingSources?.length > 0 && 
+      !(this.projectForm.value.fundingSources?.length == 1 && this.projectForm.value.fundingSources[0]?.name?.toLowerCase() == "private funding" )) {
+        this.hasPublicFunding = true;
+    } else {
+      this.hasPublicFunding = false;
     }
   }
 
@@ -418,6 +487,145 @@ export class UpsertProjectComponent implements OnInit {
         this.spinner.hide();
       });
     }
+  }
+
+  // Necessary to write it like this otherwise services is undefined
+  addService = (service) => {
+    const newService = {'id': -1, 'name': service};
+    this.services.push(newService);
+    return newService;
+  }
+
+  searchServices(term: string, item) {
+    term = term.toLocaleLowerCase();
+    return item.name?.toLocaleLowerCase().indexOf(term) > -1;
+  }
+
+  displayServices(services) {
+    if (services) {
+      return services.map(fs => fs.name).join(", ");
+    }
+    return "";
+  }
+
+  deleteService($event, sToRemove) {
+    $event.stopPropagation(); // Clicks the option otherwise
+
+    if (sToRemove.id == -1) {  // Created locally by user
+      this.services = this.services.filter(s => !(s.id == sToRemove.id && s.name == sToRemove.name));
+    } else {  // Already existing
+      this.spinner.show();
+      // Checking if other projects have this service
+      this.listService.getProjectsByService(sToRemove.id).subscribe((res: []) => {
+        // Filtering out current project, as deletion on current project means the service has been de-selected
+        let resWithoutCurrent: ProjectInterface[] = res;
+        if (!this.isAdd) {
+          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.id);
+        }
+
+        if (resWithoutCurrent.length > 0) {
+          this.toastr.error(`Failed to delete this service as it is used in project${(resWithoutCurrent.length > 1) ? 's' : ''}:\
+           ${resWithoutCurrent.map(proj => proj.shortName).join(", ")}`, "Error deleting service", { timeOut: 20000, extendedTimeOut: 20000 });
+           this.spinner.hide();
+        } else {
+          // Delete service from the DB, then locally if succeeded
+          this.contextService.deleteService(sToRemove.id).subscribe((res: any) => {
+            if (res.status !== 204) {
+              this.toastr.error('Error when deleting service', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
+            } else {
+              // Locally filtering it out
+              this.services = this.services.filter(s => !(s.id == sToRemove.id && s.name == sToRemove.name));
+              // Querying the DB to update services list for next edit/add
+              this.contextService.updateServices();
+            }
+            this.spinner.hide();
+          }, error => {
+            this.toastr.error(error);
+            this.spinner.hide();
+          });
+        }
+      }, error => {
+        this.toastr.error(error);
+        this.spinner.hide();
+      });
+    }
+  }
+
+  // Necessary to write it like this otherwise services is undefined
+  addPerson = (person) => {
+    const addPersonModal = this.modalService.open(AddPersonModalComponent, { size: 'lg', backdrop: 'static' });
+    addPersonModal.componentInstance.fullName = person;
+
+    return addPersonModal.result.then((result) => {
+      // Note: have to do this because we need to update the persons list for cEuco as well, 
+      // and using the modal but not mutating the list does not add the item for some reason, so this seems like the only solution
+      this.persons = [...this.persons, result];
+      return result;
+    }).catch((err) => {
+      return null;
+    });
+  }
+
+  searchPersons(term: string, item) {
+    term = term.toLocaleLowerCase();
+    return item.fullName?.toLocaleLowerCase().indexOf(term) > -1 || item.email?.toLocaleLowerCase().indexOf(term) > -1;
+  }
+
+  // TODO: generic method
+  deletePerson($event, pToRemove) {
+    $event.stopPropagation(); // Clicks the option otherwise
+
+    if (pToRemove.id == -1) {  // Created locally by user
+      this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.fullName));
+    } else {  // Already existing
+      this.spinner.show();
+      // Checking if other projects have this service
+      this.listService.getProjectsByPerson(pToRemove.id).subscribe((res: []) => {
+        // Filtering out current project, as deletion on current project means the service has been de-selected
+        let resWithoutCurrent: ProjectInterface[] = res;
+        if (!this.isAdd) {
+          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.id);
+        }
+
+        if (resWithoutCurrent.length > 0) {
+          this.toastr.error(`Failed to delete this person as it is used in project${(resWithoutCurrent.length > 1) ? 's' : ''}:\
+           ${resWithoutCurrent.map(proj => proj.shortName).join(", ")}`, "Error deleting person", { timeOut: 20000, extendedTimeOut: 20000 });
+           this.spinner.hide();
+        } else {
+          // Delete person from the DB, then locally if succeeded
+          this.contextService.deletePerson(pToRemove.id).subscribe((res: any) => {
+            if (res.status !== 204) {
+              this.toastr.error('Error when deleting person', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
+            } else {
+              // Locally filtering it out
+              this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.name));
+              // Querying the DB to update persons list for next edit/add
+              this.contextService.updatePersons();
+            }
+            this.spinner.hide();
+          }, error => {
+            this.toastr.error(error);
+            this.spinner.hide();
+          });
+        }
+      }, error => {
+        this.toastr.error(error);
+        this.spinner.hide();
+      });
+    }
+  }
+
+  getTotalNumberOfSites() {
+    return "Coming soon!";
+  }
+
+  getTagTextColor(text) {
+    return colorHash(text)?.hex;
+  }
+
+  getTagBgColor(text) {
+    const h = colorHash(text);
+    return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
   }
 
   print() {
