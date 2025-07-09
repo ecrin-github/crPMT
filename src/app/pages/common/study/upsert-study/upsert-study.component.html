@@ -24,16 +24,16 @@
                     </div>
                 </div>
                 <div class="row form-group">
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <div for="shortTitle" class="font-style text-capitalize">Short title</div>
                         <input type="text" id="shortTitle" class="form-control" placeholder="e.g. RECOVERY"
                             formControlName="shortTitle" *ngIf="!isView" />
                         <div *ngIf="isView" class="text-value">{{study.value.shortTitle}}</div>
                     </div>
-                    <div class="col-md-8">
+                    <div class="col-md-10">
                         <div for="title" class="font-style text-capitalize">Title</div>
                         <textarea cols="30" rows="2" class="form-control" placeholder="Full study title"
-                            formControlName="title" *ngIf="!isView" id="title" (change)="onChange()" 
+                            formControlName="title" *ngIf="!isView" id="title"
                             [ngClass]="{ 'is-invalid': submitted && getControls(i).title.errors }"></textarea>
                             <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).title.errors">
                                 <p *ngIf="submitted && getControls(i).title.errors.required">Please enter the study title</p>
@@ -42,13 +42,19 @@
                     </div>
                 </div>
                 <div class="row form-group">
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <div for="trialId" class="font-style text-capitalize">Trial ID</div>
                         <input type="text" id="trialId" class="form-control" placeholder=""
                             formControlName="trialId" *ngIf="!isView" />
                         <div *ngIf="isView" class="text-value">{{study.value.trialId}}</div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-2">
+                        <div for="trialRegistration" class="font-style text-capitalize">Trial registration</div>
+                        <input type="text" id="trialRegistration" class="form-control" placeholder=""
+                            formControlName="trialRegistration" *ngIf="!isView" />
+                        <div *ngIf="isView" class="text-value">{{study.value.trialRegistration}}</div>
+                    </div>
+                    <div class="col-md-2">
                         <div for="category" class="font-style text-capitalize">Category</div>
                         <input type="text" id="category" class="form-control" placeholder="study type?"
                             formControlName="category" *ngIf="!isView" />
@@ -63,29 +69,139 @@
                         </ng-select>
                         <div class="text-value" *ngIf="isView">{{study.value.status}}</div>
                     </div>
-                </div>
-                <div class="row form-group">
-                    <div class="col-md-4">
-                        <div for="pi" class="font-style text-capitalize">PI</div>
-                        <input type="text" id="pi" class="form-control" placeholder="Coming soon!"
-                            formControlName="pi" *ngIf="!isView" disabled/>
-                        <div *ngIf="isView" class="text-value" disabled></div>
-                        <!-- <div *ngIf="isView" class="text-value">{{study.value..pi}}</div> -->
-                    </div>
-                    <div class="col-md-4">
-                        <div for="sponsor" class="font-style text-capitalize">Sponsor</div>
-                        <input type="text" id="sponsor" class="form-control" placeholder="Sponsor name"
-                            formControlName="sponsor" *ngIf="!isView" />
-                        <div *ngIf="isView" class="text-value">{{study.value.sponsor}}</div>
-                    </div>
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <div for="regulatoryFramework" class="font-style text-capitalize">Regulatory Framework</div>
-                        <ng-select [items]="regulatoryFrameworks" formControlName="regulatoryFramework"
+                        <ng-select [items]="regulatoryFrameworks" formControlName="regulatoryFramework"  (change)="onChangeRegulatoryFramework()"
                             [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
                             notFoundText="No regulatory frameworks found" placeholder="Select regulatory framework" *ngIf="!isView" 
                             appendTo="body">
                         </ng-select>
                         <div class="text-value" *ngIf="isView">{{study.value.regulatoryFramework}}</div>
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-7">
+                                <div for="pi" class="font-style text-capitalize">PI</div>
+                                <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds"
+                                    [virtualScroll]="false" class="form-control ng-form-control" 
+                                    notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" 
+                                    addTagText="Add" [addTag]="addPerson" appendTo="body">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        <span class="ng-value-label">{{item.fullName}}</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                        <div class="row m-0">
+                                            <div class="col-md-11 col-11 p-0 m-0">
+                                                <div class="col-md-12">{{item.fullName}}</div>
+                                                <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.email}}</div>
+                                            </div>
+                                            <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                                <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                                    <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deletePerson($event, item)">
+                                                    </i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </ng-select>
+                                <div class="text-value" *ngIf="isView">{{study.value.pi?.fullName}}</div>
+                            </div>
+                            <div class="col-md-5">
+                                <div for="sponsor" class="font-style text-capitalize">Sponsor</div>
+                                <input type="text" id="sponsor" class="form-control" placeholder="Sponsor name"
+                                    formControlName="sponsor" *ngIf="!isView" />
+                                <div *ngIf="isView" class="text-value">{{study.value.sponsor}}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div for="population" class="font-style text-capitalize">Population</div>
+                        <ng-select [items]="populations" formControlName="population"
+                            [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
+                            notFoundText="No populations found" placeholder="Select population" *ngIf="!isView" 
+                            appendTo="body">
+                        </ng-select>
+                        <div class="text-value" *ngIf="isView">{{study.value.population}}</div>
+                    </div>
+                    <div class="col-md-2">
+                        <div for="recruitmentStart" class="font-style text-capitalize">Recruitment start</div>
+                        <div class="input-group" *ngIf="!isView">
+                            <input class="form-control" placeholder="yyyy-mm-dd"
+                                name="recruitmentStart" ngbDatepicker #recruitmentStart="ngbDatepicker"
+                                [ngClass]="{ 'is-invalid': submitted && getControls(i).recruitmentStart.errors }"
+                                formControlName="recruitmentStart" container='body'>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary"
+                                    (click)="recruitmentStart.toggle()" type="button">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="isView" class="text-value">{{dateToString(study.value.recruitmentStart)}}</div>
+                    </div>
+                    <div class="col-md-2">
+                        <div for="recruitmentEnd" class="font-style text-capitalize">Recruitment end</div>
+                        <div class="input-group" *ngIf="!isView">
+                            <input class="form-control" placeholder="yyyy-mm-dd"
+                                name="recruitmentEnd" ngbDatepicker #recruitmentEnd="ngbDatepicker"
+                                [ngClass]="{ 'is-invalid': submitted && getControls(i).recruitmentEnd.errors }"
+                                formControlName="recruitmentEnd" container='body'>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary"
+                                    (click)="recruitmentEnd.toggle()" type="button">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="isView" class="text-value">{{dateToString(study.value.recruitmentEnd)}}</div>
+                    </div>
+                </div>
+                <div class="row form-group align-items-end">
+                    <div class="col-md-2">
+                        <div for="firstPatientIn" class="font-style text-capitalize">First patient in</div>
+                        <div class="input-group" *ngIf="!isView">
+                            <input class="form-control" placeholder="yyyy-mm-dd"
+                                name="firstPatientIn" ngbDatepicker #firstPatientIn="ngbDatepicker"
+                                [ngClass]="{ 'is-invalid': submitted && getControls(i).firstPatientIn.errors }"
+                                formControlName="firstPatientIn" container='body'>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary"
+                                    (click)="firstPatientIn.toggle()" type="button">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="isView" class="text-value">{{dateToString(study.value.firstPatientIn)}}</div>
+                    </div>
+                    <div class="col-md-2">
+                        <div for="lastPatientOut" class="font-style text-capitalize">Last Patient Out</div>
+                        <div class="input-group" *ngIf="!isView">
+                            <input class="form-control" placeholder="yyyy-mm-dd"
+                                name="lastPatientOut" ngbDatepicker #lastPatientOut="ngbDatepicker"
+                                [ngClass]="{ 'is-invalid': submitted && getControls(i).lastPatientOut.errors }"
+                                formControlName="lastPatientOut" container='body'>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary"
+                                    (click)="lastPatientOut.toggle()" type="button">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="isView" class="text-value">{{dateToString(study.value.lastPatientOut)}}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div for="treatmentAndFollowUpDurationPerPatient" class="font-style text-capitalize">Treatment And F/U Duration/Patient</div>
+                        <input type="text" id="treatmentAndFollowUpDurationPerPatient" class="form-control"
+                            formControlName="treatmentAndFollowUpDurationPerPatient" *ngIf="!isView" />
+                        <div *ngIf="isView" class="text-value">{{study.value.treatmentAndFollowUpDurationPerPatient}}</div>
+                    </div>
+                    <div class="col-md-3"  *ngIf="!isObservational">
+                        <div for="treatmentPeriodPerPatient" class="font-style text-capitalize">Treatment Period/Patient</div>
+                        <input type="text" id="treatmentPeriodPerPatient" class="form-control"
+                            formControlName="treatmentPeriodPerPatient" *ngIf="!isView" />
+                        <div *ngIf="isView" class="text-value">{{study.value.treatmentPeriodPerPatient}}</div>
                     </div>
                 </div>
                 <div class="row form-group">

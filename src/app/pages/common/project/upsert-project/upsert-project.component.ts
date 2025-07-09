@@ -189,9 +189,12 @@ export class UpsertProjectComponent implements OnInit {
       startDate: this.projectData.startDate ? stringToDate(this.projectData.startDate) : null,
       endDate: this.projectData.endDate ? stringToDate(this.projectData.endDate) : null,
       totalPatientsExpected: this.projectData.totalPatientsExpected,
+      coordinator: this.projectData.coordinator,
+      cEuco: this.projectData.cEuco,
       studyData: this.projectData.studies,
       fundingSources: this.projectData.fundingSources,
-      services: this.projectData.services
+      services: this.projectData.services,
+      reportingPeriods: this.projectData.reportingPeriods,
     });
 
     this.onChangeFundingSources();
@@ -206,9 +209,28 @@ export class UpsertProjectComponent implements OnInit {
     payload.startDate = dateToString(payload.startDate);
     payload.endDate = dateToString(payload.endDate);
 
-    // Changing cEuco value if Person object exists already, otherwise we will wait to add it to get its id
-    if (payload.cEuco?.id > -1) {
+    if (payload.cEuco?.id) {
       payload.cEuco = payload.cEuco.id;
+    }
+
+    if (payload.fundingSources?.length > 0) {
+      for (let i = 0; i < payload.fundingSources.length; i++) {
+        if (payload.fundingSources[i]?.id) {
+          payload.fundingSources[i] = payload.fundingSources[i].id;
+        }
+      }
+    } else {
+      payload.fundingSources = [];
+    }
+
+    if (payload.services?.length > 0) {
+      for (let i = 0; i < payload.services.length; i++) {
+        if (payload.services[i]?.id) {
+          payload.services[i] = payload.services[i].id;
+        }
+      }
+    } else {
+      payload.services = [];
     }
   }
 
@@ -222,93 +244,7 @@ export class UpsertProjectComponent implements OnInit {
       const payload = JSON.parse(JSON.stringify(this.projectForm.value));
       this.updatePayload(payload);
 
-      let contextObs$: Array<Observable<boolean>> = [];
       let saveObs$: Array<Observable<boolean>> = [];
-
-      // Adding any new funding source that may have been created, and change all funding source to their IDs (instead of object)
-      if (payload.fundingSources) {
-        for (let i = 0; i < payload.fundingSources.length; i++) {
-          if (payload.fundingSources[i].id == -1) {
-            const success = this.contextService.addFundingSource({'name': payload.fundingSources[i].name}).pipe(
-              mergeMap((res: any) => {
-                if (res.statusCode === 201) {
-                  payload.fundingSources[i] = res.id;
-                  return of(true);
-                } else {
-                  this.toastr.error(res.message, "Error adding funding source", { timeOut: 60000, extendedTimeOut: 60000 });
-                  return of(false);
-                }
-              }), catchError(err => {
-                this.toastr.error(err.message, 'Error adding funding source', { timeOut: 60000, extendedTimeOut: 60000 });
-                return of(false);
-              })
-            );
-  
-            contextObs$.push(success);
-          } else {
-            payload.fundingSources[i] = payload.fundingSources[i].id;
-          }
-        }
-      } else {
-        payload.fundingSources = [];
-      }
-
-      if (payload.services) {
-        for (let i = 0; i < payload.services.length; i++) {
-          if (payload.services[i].id == -1) {
-            const success = this.contextService.addService({'name': payload.services[i].name}).pipe(
-              mergeMap((res: any) => {
-                if (res.statusCode === 201) {
-                  payload.services[i] = res.id;
-                  return of(true);
-                } else {
-                  this.toastr.error(res.message, "Error adding service", { timeOut: 60000, extendedTimeOut: 60000 });
-                  return of(false);
-                }
-              }), catchError(err => {
-                this.toastr.error(err.message, 'Error adding service', { timeOut: 60000, extendedTimeOut: 60000 });
-                return of(false);
-              })
-            );
-  
-            contextObs$.push(success);
-          } else {
-            payload.services[i] = payload.services[i].id;
-          }
-        }
-      } else {
-        payload.services = [];
-      }
-
-      // Adding all new persons (including those added but unused in cEuco field)
-      for (let i = 0; i < this.persons.length; i++) {
-        if (this.persons[i].id == -1) {
-          delete this.persons[i].id;
-          const success = this.contextService.addPerson(this.persons[i]).pipe(
-            mergeMap((res: any) => {
-              if (res.fullName == payload.cEuco?.fullName && res.email == payload.cEuco?.email) {
-                payload.cEuco = res.id
-              }
-
-              if (res.statusCode === 201) {
-                return of(true);
-              } else {
-                this.toastr.error(res.message, "Error adding person", { timeOut: 60000, extendedTimeOut: 60000 });
-                return of(false);
-              }
-            }), catchError(err => {
-              this.toastr.error(err.message, 'Error adding person', { timeOut: 60000, extendedTimeOut: 60000 });
-              return of(false);
-            })
-          );
-
-          contextObs$.push(success);
-        }
-      }
-
-      if (contextObs$.length == 0) {
-        contextObs$.push(of(true));
-      }
 
       // Saving project and "child" components
       if (this.isEdit) {
@@ -367,23 +303,9 @@ export class UpsertProjectComponent implements OnInit {
         saveObs$.push(success);
       }
 
-      // Subscring to all observables
-      combineLatest(contextObs$).pipe(
-        mergeMap((successArr: boolean[]) => {
-          const success: boolean = successArr.every(b => b);
-          
-          if (!success) {
-            this.toastr.error('Failed to add funding sources');
-            return of([false]);
-          }
-
-          // Querying the DB to update funding sources list for next edit/add
-          this.contextService.updateFundingSources();
-          this.contextService.updatePersons();
-          this.contextService.updateServices();
-          return combineLatest(saveObs$);
-        }),
-        map((successArr) => {
+      // Subscribing to all observables
+      combineLatest(saveObs$).pipe(
+        map((successArr: boolean[]) => {
           const success: boolean = successArr.every(b => b);
           if (success) {
             this.router.navigate([`/projects/${this.id}/view`]);
@@ -423,11 +345,26 @@ export class UpsertProjectComponent implements OnInit {
     }
   }
 
-  // Necessary to write it like this otherwise fundingSources is undefined
-  addFundingSource = (fundingSource) => {
-    const newSource = {'id': -1, 'name': fundingSource};
-    this.fundingSources.push(newSource);
-    return newSource;
+  // Necessary to write it as an arrow function
+  addFundingSource = (fsName) => {
+    let fs = {"id": "", "name": ""};
+    
+    this.spinner.show();
+    return this.contextService.addFundingSource({'name': fsName}).pipe(
+      mergeMap((s: any) => {
+        fs.id = s.id;
+        fs.name = s.name;
+        return this.contextService.updateFundingSources();
+      }),
+      mergeMap(() => {
+        this.spinner.hide();
+        return of(fs);
+      }),
+      catchError((err) => {
+        this.toastr.error(err, "Error adding funding source", { timeOut: 20000, extendedTimeOut: 20000 });
+        return of(null);
+      })
+    ).toPromise();
   }
 
   compareIds(fv1, fv2): boolean {
@@ -471,10 +408,10 @@ export class UpsertProjectComponent implements OnInit {
             if (res.status !== 204) {
               this.toastr.error('Error when deleting funding source', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
             } else {
-              // Locally filtering it out
-              this.fundingSources = this.fundingSources.filter(fs => !(fs.id == fsToRemove.id && fs.name == fsToRemove.name));
-              // Querying the DB to update funding sources list for next edit/add
-              this.contextService.updateFundingSources();
+              // Updating funding sources list
+              this.contextService.updateFundingSources().subscribe(() => {
+                this.spinner.hide();
+              });
             }
             this.spinner.hide();
           }, error => {
@@ -489,11 +426,26 @@ export class UpsertProjectComponent implements OnInit {
     }
   }
 
-  // Necessary to write it like this otherwise services is undefined
-  addService = (service) => {
-    const newService = {'id': -1, 'name': service};
-    this.services.push(newService);
-    return newService;
+  // Necessary to write it as an arrow function
+  addService = (serviceName) => {
+    let service = {"id": "", "name": ""};
+    
+    this.spinner.show();
+    return this.contextService.addService({'name': serviceName}).pipe(
+      mergeMap((s: any) => {
+        service.id = s.id;
+        service.name = s.name;
+        return this.contextService.updateServices();
+      }),
+      mergeMap(() => {
+        this.spinner.hide();
+        return of(service);
+      }),
+      catchError((err) => {
+        this.toastr.error(err, "Error adding service", { timeOut: 20000, extendedTimeOut: 20000 });
+        return of(null);
+      })
+    ).toPromise();
   }
 
   searchServices(term: string, item) {
@@ -533,10 +485,10 @@ export class UpsertProjectComponent implements OnInit {
             if (res.status !== 204) {
               this.toastr.error('Error when deleting service', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
             } else {
-              // Locally filtering it out
-              this.services = this.services.filter(s => !(s.id == sToRemove.id && s.name == sToRemove.name));
-              // Querying the DB to update services list for next edit/add
-              this.contextService.updateServices();
+              // Updating services list
+              this.contextService.updateServices().subscribe(() => {
+                this.spinner.hide();
+              });
             }
             this.spinner.hide();
           }, error => {
@@ -551,17 +503,30 @@ export class UpsertProjectComponent implements OnInit {
     }
   }
 
-  // Necessary to write it like this otherwise services is undefined
+  // Necessary to write it as an arrow function
   addPerson = (person) => {
     const addPersonModal = this.modalService.open(AddPersonModalComponent, { size: 'lg', backdrop: 'static' });
     addPersonModal.componentInstance.fullName = person;
 
     return addPersonModal.result.then((result) => {
-      // Note: have to do this because we need to update the persons list for cEuco as well, 
-      // and using the modal but not mutating the list does not add the item for some reason, so this seems like the only solution
-      this.persons = [...this.persons, result];
-      return result;
-    }).catch((err) => {
+      this.spinner.show();
+      if (result === null) {
+        return new Promise(null);
+      }
+
+      return this.contextService.addPerson(result).pipe(
+        mergeMap((p:any) => {
+          result.id = p.id;
+          return this.contextService.updatePersons();
+        }),
+        mergeMap(() => {
+          this.spinner.hide();
+          return of(result);
+        })
+      ).toPromise();
+    })
+    .catch((err) => {
+      this.spinner.hide();
       return null;
     });
   }
@@ -597,10 +562,10 @@ export class UpsertProjectComponent implements OnInit {
             if (res.status !== 204) {
               this.toastr.error('Error when deleting person', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
             } else {
-              // Locally filtering it out
-              this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.name));
-              // Querying the DB to update persons list for next edit/add
-              this.contextService.updatePersons();
+              // Updating persons list
+              this.contextService.updatePersons().subscribe(() => {
+                this.spinner.hide();
+              });
             }
             this.spinner.hide();
           }, error => {
@@ -626,6 +591,13 @@ export class UpsertProjectComponent implements OnInit {
   getTagBgColor(text) {
     const h = colorHash(text);
     return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
+  }
+
+  getHttpLink(link: string) {
+    if (link && !link.toLowerCase().startsWith("http")) {
+      return "https://" + link;
+    }
+    return link;
   }
 
   print() {

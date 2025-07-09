@@ -101,7 +101,7 @@
                     <div for="url" class="font-style text-capitalize">URL</div>
                     <input type="text" id="url" class="form-control" placeholder="Link the the project's website"
                         formControlName="url" *ngIf="!isView" />
-                    <a href="{{projectData?.url}}" target="_blank">
+                    <a href="{{getHttpLink(projectData?.url)}}" target="_blank">
                         <div *ngIf="isView" class="text-value">{{projectData?.url}}</div>
                     </a>
                 </div>

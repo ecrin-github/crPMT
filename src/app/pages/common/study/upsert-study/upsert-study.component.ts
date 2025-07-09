@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable, of, Subscription } from 'rxjs';
-import { catchError, finalize, map, mergeMap, reduce, switchMap } from 'rxjs/operators';
+import { catchError, finalize, map, mergeMap, reduce, switchMap, take } from 'rxjs/operators';
 import { OrganisationInterface } from 'src/app/_rms/interfaces/organisation/organisation.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
 import { CommonLookupService } from 'src/app/_rms/services/entities/common-lookup/common-lookup.service';
@@ -21,6 +21,9 @@ import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-co
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { PersonInterface } from 'src/app/_rms/interfaces/person.interface';
+import { AddPersonModalComponent } from '../../add-person-modal/add-person-modal.component';
+import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
 
 @Component({
   selector: 'app-upsert-study',
@@ -32,10 +35,12 @@ export class UpsertStudyComponent implements OnInit {
 
   @ViewChildren('studyCountries') studyCountryComponents: QueryList<UpsertStudyCountryComponent>;
   @Input() studiesData: Array<StudyInterface>;
+  @Input() persons: Array<PersonInterface>;
 
   studyStatuses: String[] = ["Start-up phase", "Running phase: Regulatory & ethical approvals", "Running phase: Follow up", "Running phase: Organisation of close-out", 
                               "Completion & termination phase", "Completed", "Withdrawn", "On hold"];
   regulatoryFrameworks: String[] = ['CTR', 'MDR/IVDR', 'COMBINED', 'OTHER'];
+  populations: String[] = ["Adult", "Paediatric", "Adult & Paediatric"];
   public isCollapsed: boolean = false;
   studyForm: UntypedFormGroup;
   isEdit: boolean = false;
@@ -51,7 +56,6 @@ export class UpsertStudyComponent implements OnInit {
   organisationName: string;
   organisations: Array<OrganisationInterface>;
   studyFull: any;
-  publicTitle: string = '';
   regulatoryFramework: string = '';
   sticky: boolean = false;
   studyType: string = '';
@@ -70,7 +74,9 @@ export class UpsertStudyComponent implements OnInit {
   orgId: string;
   associatedObjects: any;
   showEdit: boolean = false;
+  isObservational: boolean = false;
   studies = [];
+  // persons: PersonInterface[] = [];
 
   constructor(private statesService: StatesService,
               private fb: UntypedFormBuilder, 
@@ -78,6 +84,7 @@ export class UpsertStudyComponent implements OnInit {
               private studyService: StudyService, 
               private contextService: ContextService,
               private reuseService: ReuseService,
+              private listService: ListService,
               private modalService: NgbModal,
               private scrollService: ScrollService,
               private activatedRoute: ActivatedRoute,
@@ -127,6 +134,10 @@ export class UpsertStudyComponent implements OnInit {
       });
     });
 
+    this.contextService.persons.subscribe((persons) => {
+      this.persons = persons;
+    });
+
     if (this.isAdd) {
       setTimeout(() => {
         this.spinner.hide();
@@ -147,18 +158,25 @@ export class UpsertStudyComponent implements OnInit {
   newStudy(): UntypedFormGroup {
     return this.fb.group({
       id: '',
-      shortTitle: '',
-      project: null,
-      title: '',
-      status: '',
-      pi: '',
-      sponsor: '',
-      regulatoryFramework: '',
-      trialId: '',
       category: '',
+      firstPatientIn: null,
+      lastPatientOut: null,
+      population: '',
+      recruitmentEnd: null,
+      recruitmentStart: null,
+      regulatoryFramework: '',
+      shortTitle: '',
+      sponsor: '',
       summary: '',
+      status: '',
+      title: '',
+      treatmentAndFollowUpDurationPerPatient: '',
+      treatmentPeriodPerPatient: '',
+      trialId: '',
+      trialRegistration: '',
+      pi: null,
+      project: null,
       studyCountries: [],
-      alreadyExists: false
     });
   }
 
@@ -212,16 +230,24 @@ export class UpsertStudyComponent implements OnInit {
     this.studies.forEach(s => {
       formArray.push(this.fb.group({
         id: s.id,
-        shortTitle: s.shortTitle,
-        project: s.project?.id,
-        title: s.title,
-        status: s.status,
-        // pi: s.pi,
-        sponsor: s.sponsor,
-        regulatoryFramework: s.regulatoryFramework,
-        trialId: s.trialId,
         category: s.category,
+        firstPatientIn: s.firstPatientIn ? stringToDate(s.firstPatientIn) : null,
+        lastPatientOut: s.lastPatientOut ? stringToDate(s.lastPatientOut) : null,
+        population: s.population,
+        recruitmentEnd: s.recruitmentEnd ? stringToDate(s.recruitmentEnd) : null,
+        recruitmentStart: s.recruitmentStart ? stringToDate(s.recruitmentStart) : null,
+        regulatoryFramework: s.regulatoryFramework,
+        shortTitle: s.shortTitle,
+        sponsor: s.sponsor,
+        status: s.status,
         summary: s.summary,
+        title: s.title,
+        treatmentAndFollowUpDurationPerPatient: s.treatmentAndFollowUpDurationPerPatient,
+        treatmentPeriodPerPatient: s.treatmentPeriodPerPatient,
+        trialId: s.trialId,
+        trialRegistration: s.trialRegistration,
+        pi: s.pi,
+        project: s.project?.id,
         // Note: unknown why this array needs to be wrapped in another array
         studyCountries: [s.studyCountries]
       }))
@@ -244,8 +270,13 @@ export class UpsertStudyComponent implements OnInit {
 
   updatePayload(payload, projectId, i) {
     payload.project = projectId;
-    payload.startDate = dateToString(payload.startDate);
-    payload.endDate = dateToString(payload.endDate);
+    payload.firstPatientIn = dateToString(payload.firstPatientIn);
+    payload.lastPatientOut = dateToString(payload.lastPatientOut);
+    payload.recruitmentStart = dateToString(payload.recruitmentStart);
+    payload.recruitmentEnd = dateToString(payload.recruitmentEnd);
+    if (payload.pi?.id) {
+      payload.pi = payload.pi.id;
+    }
     payload.order = i;
   }
   
@@ -255,9 +286,7 @@ export class UpsertStudyComponent implements OnInit {
     const payload = JSON.parse(JSON.stringify(this.studyForm.value));
 
     for (const [i, item] of payload.studies.entries()) {
-    // payload.studies.forEach(item => {
       this.updatePayload(item, projectId, i);
-      console.log(JSON.stringify(payload));
       if (!item.id) {  // Add
         let success = this.studyService.addStudy(item).pipe(
           mergeMap((res: any) => {
@@ -353,8 +382,111 @@ export class UpsertStudyComponent implements OnInit {
     this.backService.back();
   }
 
-  onChange() {
-    this.publicTitle = this.studyForm.value.displayTitle;
+  compareIds(fv1, fv2): boolean {
+    return fv1?.id == fv2?.id;
+  }
+
+  // Necessary to write it as an arrow function
+  addPerson = (person) => {
+    const addPersonModal = this.modalService.open(AddPersonModalComponent, { size: 'lg', backdrop: 'static' });
+    addPersonModal.componentInstance.fullName = person;
+
+    return addPersonModal.result.then((result) => {
+      this.spinner.show();
+      if (result === null) {
+        return new Promise(null);
+      }
+
+      return this.contextService.addPerson(result).pipe(
+        mergeMap((p:any) => {
+          result.id = p.id;
+          return this.contextService.updatePersons();
+        }),
+        mergeMap(() => {
+          this.spinner.hide();
+          return of(result);
+        }),
+        catchError((err) => {
+          this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
+          this.spinner.hide();
+          return of(null);
+        })
+      ).toPromise();
+    })
+    .catch((err) => {
+      this.spinner.hide();
+      return null;
+    });
+
+    // return addPersonModal.result.then((result) => {
+    //   // Note: have to do this because we need to update the persons list for cEuco as well, 
+    //   // and using the modal but not mutating the list does not add the item for some reason, so this seems like the only solution
+    //   this.persons = [...this.persons, result];
+    //   return result;
+    // }).catch((err) => {
+    //   return null;
+    // });
+  }
+
+  searchPersons(term: string, item) {
+    term = term.toLocaleLowerCase();
+    return item.fullName?.toLocaleLowerCase().indexOf(term) > -1 || item.email?.toLocaleLowerCase().indexOf(term) > -1;
+  }
+
+  onChangeRegulatoryFramework() {
+    if (this.studyForm.value?.studies[0].regulatoryFramework?.toLowerCase() == "other" ) {
+      this.isObservational = true;
+    } else {
+      this.isObservational = false;
+    }
+  }
+
+  // TODO: refactor spinner hide
+  deletePerson($event, pToRemove) {
+    $event.stopPropagation(); // Clicks the option otherwise
+
+    if (pToRemove.id == -1) {  // Created locally by user
+      this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.fullName));
+    } else {  // Already existing
+      this.spinner.show();
+      // Checking if other projects have this service
+      this.listService.getProjectsByPerson(pToRemove.id).subscribe((res: []) => {
+        // Filtering out current project, as deletion on current project means the service has been de-selected
+        let resWithoutCurrent: ProjectInterface[] = res;
+        if (!this.isAdd) {
+          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.id);
+        }
+
+        if (resWithoutCurrent.length > 0) {
+          this.toastr.error(`Failed to delete this person as it is used in project${(resWithoutCurrent.length > 1) ? 's' : ''}:\
+           ${resWithoutCurrent.map(proj => proj.shortName).join(", ")}`, "Error deleting person", { timeOut: 20000, extendedTimeOut: 20000 });
+           this.spinner.hide();
+        } else {
+          // Delete person from the DB, then locally if succeeded
+          this.contextService.deletePerson(pToRemove.id).subscribe((res: any) => {
+            if (res.status !== 204) {
+              this.toastr.error('Error when deleting person', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
+              this.spinner.hide();
+            } else {
+              // Updating persons list
+              this.contextService.updatePersons().subscribe(() => {
+                this.spinner.hide();
+              });
+            }
+          }, error => {
+            this.toastr.error(error);
+            this.spinner.hide();
+          });
+        }
+      }, error => {
+        this.toastr.error(error);
+        this.spinner.hide();
+      });
+    }
+  }
+
+  dateToString(date) {
+    return dateToString(date);
   }
 
   print() {
@@ -369,48 +501,10 @@ export class UpsertStudyComponent implements OnInit {
     })
   }
 
-  cleanJSON(obj) {
-    const keysToDel = ['lastEditedBy', 'deidentType', 'deidentDirect', 'deidentHipaa', 'deidentDates', 'deidentKanon', 'deidentNonarr', 'deidentDetails'];
-    for (let key in obj) {
-      if (keysToDel.includes(key)) {
-        delete obj[key];
-      } else if (key === 'person' && obj[key] !== null) { // Removing most user info
-        obj[key] = {'userProfile': obj['person']['userProfile'], 
-                    'firstName': obj['person']['firstName'],
-                    'lastName': obj['person']['lastName'],
-                    'email': obj['person']['email']};
-      } else if (key === 'id') {  // Deleting all internal IDs
-        delete obj[key];
-      } else {
-        if (key === 'studyFeatures') { // Filtering studyFeatures to match studyType
-          obj[key] = obj[key].filter(feature => {
-            const cond = feature.featureType?.context?.toLowerCase() === obj.studyType?.name?.toLowerCase();
-            if (cond) {
-              delete feature['lastEditedBy'];
-            }
-            return cond;
-          });
-        }
-        if (typeof obj[key] === 'object') {
-          if (Array.isArray(obj[key])) {
-            // loop through array
-            for (let i = 0; i < obj[key].length; i++) {
-              this.cleanJSON(obj[key][i]);
-            }
-          } else {
-            // call function recursively for object
-            this.cleanJSON(obj[key]);
-          }
-        }
-      }
-    }
-  }
-
   jsonExport() {
     this.studyService.getStudyById(this.id).subscribe((res: any) => {
       if (res) {
         const payload = JSON.parse(JSON.stringify(res));
-        this.cleanJSON(payload);
         this.jsonGenerator.jsonGenerator(payload, 'study');
       }
     }, error => {

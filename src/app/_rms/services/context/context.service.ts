@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ToastrService } from 'ngx-toastr';
 import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { CountryInterface } from '../../interfaces/context/country.interface';
 import { CTUInterface } from '../../interfaces/context/ctu.interface';
@@ -82,11 +82,13 @@ export class ContextService {
   setServices(services) {
     this.services.next(services);
   }
-
+  
   updateServices() {
-    this.getServices().subscribe((s) => {
-      this.setServices(s);
-    });
+    return this.getServices().pipe(
+      map((services) => {
+        this.setServices(services);
+      })
+    );
   }
 
   addService(payload) {
@@ -106,9 +108,11 @@ export class ContextService {
   }
 
   updateFundingSources() {
-    this.getFundingSources().subscribe((fs) => {
-      this.setFundingSources(fs);
-    });
+    return this.getFundingSources().pipe(
+      map((fs) => {
+        this.setFundingSources(fs);
+      })
+    );
   }
 
   addFundingSource(payload) {
@@ -128,9 +132,11 @@ export class ContextService {
   }
 
   updatePersons() {
-    this.getPersons().subscribe((persons) => {
-      this.setPersons(persons);
-    });
+    return this.getPersons().pipe(
+      map((persons) => {
+        this.setPersons(persons);
+      })
+    );
   }
 
   addPerson(payload) {

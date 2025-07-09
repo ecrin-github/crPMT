@@ -13,8 +13,9 @@ export interface ProjectInterface {
     endDate: string | null;
     totalPatientsExpected: string | null;
     studies: StudyDataInterface[] | null;
-    fundingSources: FundingSourceInterface;
-    services: ServiceInterface;
+    fundingSources: FundingSourceInterface[];
+    services: ServiceInterface[];
+    reportingPeriods: string;   // TODO
     coordinator: string;
     cEuco: PersonInterface;
 }
