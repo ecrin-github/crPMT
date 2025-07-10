@@ -1,16 +1,15 @@
-import { Component, EventEmitter, Input, OnInit, Output, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
+import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable, of, Subscription } from 'rxjs';
-import { dateToString, stringToDate } from 'src/assets/js/util';
+import { dateToString } from 'src/assets/js/util';
 import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
-import { StudyLookupService } from 'src/app/_rms/services/entities/study-lookup/study-lookup.service';
 import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { catchError, map, mergeMap } from 'rxjs/operators';
+import { catchError, mergeMap } from 'rxjs/operators';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
 import { UpsertStudyCtuComponent } from '../../study-ctu/upsert-study-ctu/upsert-study-ctu.component';
@@ -77,21 +76,7 @@ export class UpsertStudyCountryComponent implements OnInit {
       study: null,
       country: [null, Validators.required],
       leadCountry: false,
-      submissionDate: null,
-      approvalDate: null,
       studyCTUs: null
-    });
-  }
-
-  getExistingCountryForm(sc): UntypedFormGroup {
-    return this.fb.group({
-      id: sc.id,
-      study: sc.study,
-      country: [sc.country, Validators.required],
-      leadCountry: sc.leadCountry,
-      submissionDate: sc.submissionDate,
-      approvalDate: sc.approvalDate,
-      studyCTUs: [sc.studyCtus]
     });
   }
 
@@ -107,8 +92,6 @@ export class UpsertStudyCountryComponent implements OnInit {
         study: sc.study ? sc.study.id : null,
         country: [sc.country, [Validators.required]],
         leadCountry: sc.leadCountry,
-        submissionDate: sc.submissionDate ? stringToDate(sc.submissionDate) : null,
-        approvalDate: sc.approvalDate ? stringToDate(sc.approvalDate) : null,
         // Note: unknown why this array needs to be wrapped in another array
         studyCTUs: [sc.studyCtus]
       }))
@@ -132,6 +115,7 @@ export class UpsertStudyCountryComponent implements OnInit {
     }
 
     if (existingSC) {
+      delete existingSC["order"];
       this.getStudyCountriesForm().at(i).setValue(existingSC);
     } else {
       const country = this.g[i].value.country;
@@ -145,6 +129,10 @@ export class UpsertStudyCountryComponent implements OnInit {
       this.studyCountries = this.studyCountriesData;
       this.patchForm();
     }
+  }
+
+  getTotalNumberOfSites() {
+    return "Coming soon!"
   }
 
   addStudyCountry() {
@@ -165,19 +153,8 @@ export class UpsertStudyCountryComponent implements OnInit {
             if (res.status === 204) {
               this.getStudyCountriesForm().removeAt(i);
 
-              let j = 0;
-              let found = false;
-              while (j < this.studyCountries.length && !found) {
-                if (this.studyCountries[j].id == scId) {
-                  found = true;
-                } else {
-                  j++;
-                }
-              }
-              if (found) {
-                this.studyCountries = this.studyCountries.slice(j, 1);
-              }
-              
+              // Removing study country from studyCountries list, otherwise there will be a failing API call to delete it on save
+              this.studyCountries = this.studyCountries.filter((item:any) => item.id != scId);
               this.toastr.success('Study country deleted successfully');
             } else {
               this.toastr.error('Error when deleting study country', res.statusText);
@@ -203,24 +180,18 @@ export class UpsertStudyCountryComponent implements OnInit {
     return this.form.valid && !this.studyCTUComponents.some(b => !b.formValid());
   }
 
-  updatePayload(payload, studyId) {
+  updatePayload(payload, studyId, i) {
     payload.study = studyId;
 
     if (payload.studyCountry?.id) {
       payload.studyCountry = payload.studyCountry.id;
     }
 
-    if (payload.submissionDate) {
-      payload.submissionDate = dateToString(payload.submissionDate);
-    }
-
-    if (payload.approvalDate) {
-      payload.approvalDate = dateToString(payload.approvalDate);
-    }
-
     if (payload.country?.id) {
       payload.country = payload.country.id;
     }
+
+    payload.order = i;
   }
 
   onSave(studyId: string): Observable<boolean[]> {
@@ -234,7 +205,7 @@ export class UpsertStudyCountryComponent implements OnInit {
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
     for (const [i, item] of payload.studyCountries.entries()) {
-      this.updatePayload(item, studyId);
+      this.updatePayload(item, studyId, i);
       if (!item.id) {  // Add
 
         saveObs$.push(this.studyService.addStudyCountry(studyId, item).pipe(
@@ -313,16 +284,6 @@ export class UpsertStudyCountryComponent implements OnInit {
     }
 
     return combineLatest(saveObs$);
-
-    // if (saveObs$.length > 0) {
-    //   return combineLatest(saveObs$).pipe(
-    //     map(arr => arr.reduce((acc: boolean, one: boolean) => {
-    //       return acc && one;
-    //     }, true))
-    //   );
-    // }
-
-    // return of(true);
   }
 
   compareIds(fv1, fv2): boolean {

@@ -45,40 +45,12 @@
                         </div>
                         <div class="row mt-2">
                             <div class="col-md-12">
-                                <div for="submissionDate" class="font-style text-capitalize">Submission date</div>
-                                <div class="input-group" *ngIf="!isView">
-                                    <input class="form-control" placeholder="yyyy-mm-dd"
-                                    name="submissionDate" ngbDatepicker #submissionDate="ngbDatepicker"
-                                    formControlName="submissionDate" container='body'>
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary"
-                                        (click)="submissionDate.toggle()" type="button">
-                                        <i class="fa fa-calendar"></i>
-                                    </button>
-                                    </div>
-                                </div>
-                                <div *ngIf="isView" class="text-value">{{dateToString(sc.value.submissionDate)}}</div>
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-12">
-                                <div for="approvalDate" class="font-style text-capitalize">Approval date</div>
-                                <div class="input-group" *ngIf="!isView">
-                                    <input class="form-control" placeholder="yyyy-mm-dd"
-                                        name="approvalDate" ngbDatepicker #approvalDate="ngbDatepicker"
-                                         formControlName="approvalDate" container='body'>
-                                    <div class="input-group-append">
-                                        <button class="btn btn-primary"
-                                            (click)="approvalDate.toggle()" type="button">
-                                            <i class="fa fa-calendar"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div *ngIf="isView" class="text-value">{{dateToString(sc.value.approvalDate)}}</div>
+                                <div for="totalNumberOfSites" class="font-style text-capitalize">Total no. of sites</div>
+                                <div class="text-value">{{getTotalNumberOfSites()}}</div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-10 text-center justify-content-center">
+                    <div class="col-md-10 justify-content-center">
                         <app-upsert-study-ctu #studyCTUs [studyCTUsData]="sc.value.studyCTUs" [studyCountry]="sc.value"></app-upsert-study-ctu>
                     </div>
                 </div>
