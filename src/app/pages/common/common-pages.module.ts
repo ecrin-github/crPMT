@@ -53,6 +53,7 @@ import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
 import { ManagerGuard } from 'src/app/_rms/guards/role/manager.guard';
 import { UpsertProjectComponent } from './project/upsert-project/upsert-project.component';
 import { UpsertStudyCtuComponent } from './study-ctu/upsert-study-ctu/upsert-study-ctu.component';
+import { UpsertCentreComponent } from './centre/upsert-centre/upsert-centre.component';
 import { UpsertStudyCountryComponent } from './study-country/upsert-study-country/upsert-study-country.component';
 import { StudyListComponent } from './study/study-list/study-list.component';
 import { AddPersonModalComponent } from './add-person-modal/add-person-modal.component';
@@ -101,6 +102,7 @@ import { AddPersonModalComponent } from './add-person-modal/add-person-modal.com
         UpsertUserComponent,
         UpsertProjectComponent,
         UpsertStudyCtuComponent,
+        UpsertCentreComponent,
         UpsertStudyCountryComponent,
         StudyListComponent,
         AddPersonModalComponent

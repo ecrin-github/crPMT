@@ -97,7 +97,7 @@
                     <div for="totalNumberOfSites" class="font-style text-capitalize">Total no. of sites</div>
                     <div class="text-value">{{getTotalNumberOfSites()}}</div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div for="url" class="font-style text-capitalize">URL</div>
                     <input type="text" id="url" class="form-control" placeholder="Link the the project's website"
                         formControlName="url" *ngIf="!isView" />
@@ -207,7 +207,7 @@
             </div>
         </form>
         <hr>
-        <app-upsert-study [studiesData]="projectData?.studies" [isView]="isView" [isEdit]="isEdit"></app-upsert-study>
+        <app-upsert-study [studiesData]="projectData?.studies" [projectId]="id" [isView]="isView" [isEdit]="isEdit"></app-upsert-study>
     </div>
 </div>
 <br />

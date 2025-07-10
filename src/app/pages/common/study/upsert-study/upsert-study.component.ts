@@ -35,7 +35,7 @@ export class UpsertStudyComponent implements OnInit {
 
   @ViewChildren('studyCountries') studyCountryComponents: QueryList<UpsertStudyCountryComponent>;
   @Input() studiesData: Array<StudyInterface>;
-  @Input() persons: Array<PersonInterface>;
+  @Input() projectId: String;
 
   studyStatuses: String[] = ["Start-up phase", "Running phase: Regulatory & ethical approvals", "Running phase: Follow up", "Running phase: Organisation of close-out", 
                               "Completion & termination phase", "Completed", "Withdrawn", "On hold"];
@@ -76,7 +76,7 @@ export class UpsertStudyComponent implements OnInit {
   showEdit: boolean = false;
   isObservational: boolean = false;
   studies = [];
-  // persons: PersonInterface[] = [];
+  persons: PersonInterface[] = [];
 
   constructor(private statesService: StatesService,
               private fb: UntypedFormBuilder, 
@@ -415,17 +415,9 @@ export class UpsertStudyComponent implements OnInit {
     })
     .catch((err) => {
       this.spinner.hide();
+      this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
       return null;
     });
-
-    // return addPersonModal.result.then((result) => {
-    //   // Note: have to do this because we need to update the persons list for cEuco as well, 
-    //   // and using the modal but not mutating the list does not add the item for some reason, so this seems like the only solution
-    //   this.persons = [...this.persons, result];
-    //   return result;
-    // }).catch((err) => {
-    //   return null;
-    // });
   }
 
   searchPersons(term: string, item) {
@@ -451,10 +443,10 @@ export class UpsertStudyComponent implements OnInit {
       this.spinner.show();
       // Checking if other projects have this service
       this.listService.getProjectsByPerson(pToRemove.id).subscribe((res: []) => {
-        // Filtering out current project, as deletion on current project means the service has been de-selected
+        // Allowing deletion on current project, even if person is selected in another field/component (too complicated otherwise)
         let resWithoutCurrent: ProjectInterface[] = res;
         if (!this.isAdd) {
-          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.id);
+          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.projectId);
         }
 
         if (resWithoutCurrent.length > 0) {

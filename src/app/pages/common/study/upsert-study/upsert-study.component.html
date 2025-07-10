@@ -85,8 +85,8 @@
                             <div class="col-md-7">
                                 <div for="pi" class="font-style text-capitalize">PI</div>
                                 <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds"
-                                    [virtualScroll]="false" class="form-control ng-form-control" 
-                                    notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" 
+                                    [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" 
+                                    placeholder="Start typing to add a new person" *ngIf="!isView" 
                                     addTagText="Add" [addTag]="addPerson" appendTo="body">
                                     <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                         <span class="ng-value-label">{{item.fullName}}</span>
@@ -215,7 +215,7 @@
                         <div *ngIf="isView" class="text-value">{{study.value.summary}}</div>
                     </div>
                 </div>
-                <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [studyId]="study.value.id"></app-upsert-study-country>
+                <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [studyId]="study.value.id" [projectId]="projectId"></app-upsert-study-country>
             </div>
         </div>
     </div>

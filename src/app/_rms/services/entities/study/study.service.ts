@@ -42,7 +42,7 @@ export class StudyService {
   deleteStudyCountry(sid, id) {
     return this.http.delete(`${base}/core/studies/${sid}/study-countries/${id}`, {observe: "response", responseType: 'json'});
   }
-  
+
   /* Study CTUs from study */
 
   getStudyCTUs(sid) {
@@ -63,7 +63,7 @@ export class StudyService {
   
   /* Study CTUs from study country */
 
-  getStudyCountryCTUs(scid) {
+  getStudyCountryStudyCTUs(scid) {
     return this.http.get(`${base}/core/study-countries/${scid}/study-ctus`);
   }
   addStudyCTUFromStudyCountry(scid, payload) {
@@ -77,6 +77,42 @@ export class StudyService {
   }
   deleteStudyCTUFromStudyCountry(scid, id) {
     return this.http.delete(`${base}/core/study-countries/${scid}/study-ctus/${id}`, {observe: "response", responseType: 'json'});
+  }
+  
+  /* Centres from study */
+
+  getCentres(sid) {
+    return this.http.get(`${base}/core/studies/${sid}/centres`);
+  }
+  addCentreFromStudy(sid, payload) {
+    return this.http.post(`${base}/core/studies/${sid}/centres`, payload);
+  }
+  getCentreFromStudy(sid, id) {
+    return this.http.get(`${base}/core/studies/${sid}/centres/${id}`);
+  }
+  editCentreFromStudy(sid, id, payload) {
+    return this.http.put(`${base}/core/studies/${sid}/centres/${id}`, payload);
+  }
+  deleteCentreFromStudy(sid, id) {
+    return this.http.delete(`${base}/core/studies/${sid}/centres/${id}`, {observe: "response", responseType: 'json'});
+  }
+  
+  /* Centre from study CTUs */
+
+  getStudyCTUCentres(sctuId) {
+    return this.http.get(`${base}/core/study-ctus/${sctuId}/centres`);
+  }
+  addCentreFromStudyCTU(sctuId, payload) {
+    return this.http.post(`${base}/core/study-ctus/${sctuId}/centres`, payload);
+  }
+  getCentreFromStudyCTU(sctuId, id) {
+    return this.http.get(`${base}/core/study-ctus/${sctuId}/centres/${id}`);
+  }
+  editCentreFromStudyCTU(sctuId, id, payload) {
+    return this.http.put(`${base}/core/study-ctus/${sctuId}/centres/${id}`, payload);
+  }
+  deleteCentreFromStudyCTU(sctuId, id) {
+    return this.http.delete(`${base}/core/study-ctus/${sctuId}/centres/${id}`, {observe: "response", responseType: 'json'});
   }
 
 

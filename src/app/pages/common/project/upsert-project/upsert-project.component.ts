@@ -546,7 +546,7 @@ export class UpsertProjectComponent implements OnInit {
       this.spinner.show();
       // Checking if other projects have this service
       this.listService.getProjectsByPerson(pToRemove.id).subscribe((res: []) => {
-        // Filtering out current project, as deletion on current project means the service has been de-selected
+        // Allowing deletion on current project, even if person is selected in another field/component (too complicated otherwise)
         let resWithoutCurrent: ProjectInterface[] = res;
         if (!this.isAdd) {
           resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.id);
