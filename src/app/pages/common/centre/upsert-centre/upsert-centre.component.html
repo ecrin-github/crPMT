@@ -7,20 +7,24 @@
                 <div class="row form-group align-items-center">
                     <div class="col-md-11">
                         <div class="row form-group align-items-end">
-                            <div class="col-md-1">
-                                <div for="siteNumber" class="font-style text-capitalize">Site No.</div>
-                                <input type="text" id="siteNumber" class="form-control" formControlName="siteNumber" *ngIf="!isView"/>
-                                <span class="text-value" *ngIf="isView">{{centre.value.siteNumber}}</span>
-                            </div>
-                            <div class="col-md-3">
-                                <div for="town" class="font-style text-capitalize">Town</div>
-                                <input type="text" id="town" class="form-control" formControlName="town" *ngIf="!isView"/>
-                                <span class="text-value" *ngIf="isView">{{centre.value.town}}</span>
-                            </div>
-                            <div class="col-md-3">
-                                <div for="hospital" class="font-style text-capitalize">Hospital</div>
-                                <input type="text" id="hospital" class="form-control" formControlName="hospital" *ngIf="!isView"/>
-                                <span class="text-value" *ngIf="isView">{{centre.value.hospital}}</span>
+                            <div class="col-md-7">
+                                <div class="row align-items-end">
+                                    <div class="col-md-2">
+                                        <div for="siteNumber" class="font-style text-capitalize">Site No.</div>
+                                        <input type="text" id="siteNumber" class="form-control" formControlName="siteNumber" *ngIf="!isView"/>
+                                        <span class="text-value" *ngIf="isView">{{centre.value.siteNumber}}</span>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div for="town" class="font-style text-capitalize">Town</div>
+                                        <input type="text" id="town" class="form-control" formControlName="town" *ngIf="!isView"/>
+                                        <span class="text-value" *ngIf="isView">{{centre.value.town}}</span>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div for="hospital" class="font-style text-capitalize">Hospital</div>
+                                        <input type="text" id="hospital" class="form-control" formControlName="hospital" *ngIf="!isView"/>
+                                        <span class="text-value" *ngIf="isView">{{centre.value.hospital}}</span>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col-md-5">
                                 <div class="row align-items-end">
