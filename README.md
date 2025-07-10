@@ -5,6 +5,17 @@ Versioning convention:  [major releases].[new features/major fixes/].[minor fixe
 
 # Changelog
 
+## [0.3.0dev] - 2025-07-10
+
+- Added funding sources, total patients expected, coordinator, PI, cEuCo, and ECRIN services fields to projects
+- Added trial registration, PI, sponsor, population, recruitment start, recruitment end, first patient in, last patient out, treatment and follow duration per patient, and treatment period per patient fields to studies
+- Added centres in study CTUs (multiple centers per CTU) with site number, town, hospital, PI, patients expected, recruitment greenlight, MOV expected number, and first patient visit fields
+- For funding sources, ECRIN services, and PI fields, it is possible to add and delete items from the list of options
+- Remove submission and approval date fields from study countries
+- Fixed issue where adding a project with multiple studies in a certain order would have them added in a different order than displayed
+- Changed country order to sort by country name rather than country code
+- Cleaned study status values list (e.g. `2_Running phase_Follow up` -> `Running phase: Follow up`)
+
 ## [0.2.2dev] - 2025-06-12
 
 - Fixed not being able to edit/save individual study properly
