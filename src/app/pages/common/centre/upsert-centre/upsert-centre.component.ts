@@ -11,7 +11,7 @@ import { catchError, mergeMap } from 'rxjs/operators';
 import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
 import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
 import { Router } from '@angular/router';
-import { AddPersonModalComponent } from '../../add-person-modal/add-person-modal.component';
+import { PersonModalComponent } from '../../person-modal/person-modal.component';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ListService } from 'src/app/_rms/services/entities/list/list.service';
 import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
@@ -158,7 +158,7 @@ export class UpsertCentreComponent implements OnInit {
 
   // TODO: to common/util
   addPerson = (person) => {
-    const addPersonModal = this.modalService.open(AddPersonModalComponent, { size: 'lg', backdrop: 'static' });
+    const addPersonModal = this.modalService.open(PersonModalComponent, { size: 'lg', backdrop: 'static' });
     addPersonModal.componentInstance.fullName = person;
 
     return addPersonModal.result.then((result) => {

@@ -21,7 +21,7 @@ import { ServiceInterface } from 'src/app/_rms/interfaces/context/service.interf
 import { ListService } from 'src/app/_rms/services/entities/list/list.service';
 import { PersonInterface } from 'src/app/_rms/interfaces/person.interface';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { AddPersonModalComponent } from '../../add-person-modal/add-person-modal.component';
+import { PersonModalComponent } from '../../person-modal/person-modal.component';
 
 @Component({
   selector: 'app-upsert-project',
@@ -505,7 +505,7 @@ export class UpsertProjectComponent implements OnInit {
 
   // Necessary to write it as an arrow function
   addPerson = (person) => {
-    const addPersonModal = this.modalService.open(AddPersonModalComponent, { size: 'lg', backdrop: 'static' });
+    const addPersonModal = this.modalService.open(PersonModalComponent, { size: 'lg', backdrop: 'static' });
     addPersonModal.componentInstance.fullName = person;
 
     return addPersonModal.result.then((result) => {

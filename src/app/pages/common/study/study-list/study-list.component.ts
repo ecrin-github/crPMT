@@ -131,11 +131,10 @@ export class StudyListComponent implements OnInit {
   deleteRecord(id) {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
     deleteModal.componentInstance.type = 'study';
-    deleteModal.componentInstance.id = id;
 
     deleteModal.result.then((data: any) => {
-      this.spinner.show();
       if (data) {
+        this.spinner.show();
         this.studyService.deleteStudyById(id).subscribe((res: any) => {
           if (res.status === 204) {
             this.toastr.success('Study deleted successfully');

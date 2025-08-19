@@ -29,11 +29,13 @@ export class ListService {
     return this.http.get(`${base}/core/projects-by-person/${pId}`);
   }
 
-  // study lists
+  // Study list
 
   getStudyList() {
     return this.http.get(`${base}/core/studies`);
   }
+
+  // TODO: remove all calls below
 
   getStudyListByOrg(orgId: string) {
     return this.http.get(`${base}/mdm/studies/by-org?orgId=${orgId}`);
@@ -42,7 +44,6 @@ export class ListService {
   getRecentStudiesList(n: number) {
     return this.http.get(`${base}/studies/list/recent/${n}`);
   }
-
 
   // object lists
 

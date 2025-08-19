@@ -34,6 +34,7 @@ import { SummaryUserComponent } from '../common/user/summary-user/summary-user/s
 import { UpsertUserComponent } from '../common/user/upsert/upsert-user/upsert-user.component';
 import { ManagerGuard } from 'src/app/_rms/guards/role/manager.guard';
 import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
+import { PersonListComponent } from '../common/person/person-list/person-list.component';
 
 
 @NgModule({
@@ -192,25 +193,14 @@ import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
             },
             // People
             {
-                path: 'people',
+                path: 'persons',
                 pathMatch: 'full',
-                component: SummaryUserComponent,
+                component: PersonListComponent,
                 data: { 
                     shouldReuse: true,
                     key: 'summaryusercomponent',
-                    reuseRoutesFrom: ['people/:id/view', 'people/:id/add', 'people/:id/edit']
-                },
-                canActivate: [ManagerGuard]
-            },
-            {
-                path: 'people/add',
-                pathMatch: 'full',
-                component: UpsertUserComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'upsertusercomponent'
-                },
-                canActivate: [ManagerGuard]
+                    reuseRoutesFrom: ['persons/:id/view', 'persons/:id/add', 'persons/:id/edit']
+                }
             }
         ]),
     ],

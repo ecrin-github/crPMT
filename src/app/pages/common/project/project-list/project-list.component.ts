@@ -120,10 +120,9 @@ export class ProjectListComponent implements OnInit {
   deleteRecord(id) {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
     deleteModal.componentInstance.type = 'project';
-    deleteModal.componentInstance.id = id;
     deleteModal.result.then((data: any) => {
-      this.spinner.show();
       if (data) {
+        this.spinner.show();
         this.projectService.deleteProjectById(id).subscribe((res: any) => {
           if (res.status === 204) {
             this.toastr.success('Project deleted successfully');
@@ -141,36 +140,6 @@ export class ProjectListComponent implements OnInit {
       this.toastr.error(error);
       this.spinner.hide();
     });
-    // const linkedObject$ = this.listService.getObjectByMultiStudies(id);
-    // const combine$ = combineLatest([studyInvolvementDtp$, studyInvolvementDup$, linkedObject$]).subscribe(([studyInvolvementDtpRes, studyInvolvementDupRes, linkedObjectRes]: [any, any, any]) => {
-    //   if (studyInvolvementDtpRes && studyInvolvementDupRes && linkedObjectRes && linkedObjectRes.data) {
-    //     const dtpLinked = studyInvolvementDtpRes.count;
-    //     const dupLinked = studyInvolvementDupRes.count;
-    //     if (false) {
-    //       ;
-    //     } else {
-    //       const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-    //       deleteModal.componentInstance.type = 'project';
-    //       deleteModal.componentInstance.id = id;
-    //       deleteModal.result.then((data: any) => {
-    //         if (data) {
-    //           this.getProjectList();
-    //         }
-    //       }, error => { });
-    //     }
-    //   } else {
-    //     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-    //     deleteModal.componentInstance.type = 'project';
-    //     deleteModal.componentInstance.id = id;
-    //     deleteModal.result.then((data: any) => {
-    //       if (data) {
-    //         this.getProjectList();
-    //       }
-    //     }, error => { });
-    //   }
-    // }, error => {
-    //   this.toastr.error(error.error.title);
-    // })
   }
 
   closeModal() {

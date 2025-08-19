@@ -143,6 +143,10 @@ export class ContextService {
     return this.http.post(`${environment.baseUrlApi}/context/persons`, payload);
   }
 
+  editPerson(id, payload) {
+    return this.http.put(`${environment.baseUrlApi}/context/persons/${id}`, payload);
+  }
+
   deletePerson(id) {
     return this.http.delete(`${environment.baseUrlApi}/context/persons/${id}`, {observe: "response", responseType: 'json'});
   }

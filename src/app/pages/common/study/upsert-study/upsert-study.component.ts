@@ -22,7 +22,7 @@ import { ConfirmationWindowComponent } from '../../confirmation-window/confirmat
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { PersonInterface } from 'src/app/_rms/interfaces/person.interface';
-import { AddPersonModalComponent } from '../../add-person-modal/add-person-modal.component';
+import { PersonModalComponent } from '../../person-modal/person-modal.component';
 import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
 
 @Component({
@@ -388,7 +388,7 @@ export class UpsertStudyComponent implements OnInit {
 
   // Necessary to write it as an arrow function
   addPerson = (person) => {
-    const addPersonModal = this.modalService.open(AddPersonModalComponent, { size: 'lg', backdrop: 'static' });
+    const addPersonModal = this.modalService.open(PersonModalComponent, { size: 'lg', backdrop: 'static' });
     addPersonModal.componentInstance.fullName = person;
 
     return addPersonModal.result.then((result) => {
