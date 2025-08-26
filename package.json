@@ -1,6 +1,6 @@
 {
   "name": "crpmt",
-  "version": "v0.3.0dev",
+  "version": "v0.4.0dev",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
