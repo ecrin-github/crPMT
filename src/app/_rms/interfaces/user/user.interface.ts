@@ -1,7 +1,7 @@
 import { AddressInterface } from './address.interface';
 import { SocialNetworksInterface } from './social-networks.interface';
 import { AuthInterface } from './auth.interface';
-import { OrganisationInterface } from '../organisation/organisation.interface';
+import { OrganisationInterface } from '../context/organisation.interface';
 import { UserProfileInterface } from './user-profile.interface';
 
 export interface UserInterface {

@@ -1,4 +1,4 @@
-import { OrganisationInterface } from "../organisation/organisation.interface";
+import { OrganisationInterface } from "../context/organisation.interface";
 import { UserInterface } from "../user/user.interface";
 import { StudyContributorTypeInterface } from "./study-contributor-type.interface";
 

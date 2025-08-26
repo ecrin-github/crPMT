@@ -1,4 +1,4 @@
-import { ContactInterface } from "../contact.interface";
+import { PersonInterface } from "./person.interface";
 import { CountryInterface } from "./country.interface";
 
 export interface CTUInterface {
@@ -8,5 +8,5 @@ export interface CTUInterface {
     addressInfo: string;
     sasVerification: boolean;
     country: CountryInterface;
-    contact: ContactInterface;
+    contact: PersonInterface;
 }

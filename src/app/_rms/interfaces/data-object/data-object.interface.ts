@@ -1,4 +1,4 @@
-import { OrganisationInterface } from '../organisation/organisation.interface';
+import { OrganisationInterface } from '../context/organisation.interface';
 import { StudyDataInterface } from '../study/study.interface';
 import { ObjectContributorInterface } from './object-contributor.interface';
 import {ObjectDatasetInterface} from './object-dataset.interface';

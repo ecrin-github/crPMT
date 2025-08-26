@@ -21,6 +21,8 @@ import { ToastrModule } from 'ngx-toastr';
 import { NgxPermissionsModule } from 'ngx-permissions';
 import { FileSaverModule } from 'ngx-filesaver';
 import { MatTableModule } from '@angular/material/table';
+// https://github.com/ng-select/ng-select/issues/1464
+import { NgSelectModule } from '@ng-select/ng-select';
 
 
 @NgModule({
@@ -29,6 +31,7 @@ import { MatTableModule } from '@angular/material/table';
     AppComponent
   ],
   imports: [
+    NgSelectModule,
     BrowserModule,
     BrowserAnimationsModule,
     SplashScreenModule,

@@ -1,4 +1,4 @@
-import { OrganisationInterface } from '../organisation/organisation.interface';
+import { OrganisationInterface } from '../context/organisation.interface';
 
 export interface UserProfileInterface {
   id: string;  // different than user id

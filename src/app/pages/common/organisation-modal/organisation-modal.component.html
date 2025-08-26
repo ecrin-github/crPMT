@@ -1,24 +1,18 @@
 <div class="modal-content">
     <div class="modal-header">
-        <h5 class="modal-title">{{isAdd ? 'Add new person' : 'Edit person'}}</h5>
+        <h5 class="modal-title">{{isAdd ? 'Add new organisation' : 'Edit organisation'}}</h5>
     </div>
     <div class="modal-body">
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="fullName" class="font-style text-capitalize">Full name<sup>*</sup></label>
-                <input type="text" id="fullName" class="form-control" [(ngModel)]="fullName"/>
+                <label for="name" class="font-style text-capitalize">Short Name</label>
+                <input type="text" id="name" class="form-control" [(ngModel)]="shortName"/>
             </div>
         </div>
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="email" class="font-style text-capitalize">Email</label>
-                <input type="text" id="email" class="form-control" [(ngModel)]="email"/>
-            </div>
-        </div>
-        <div class="row form-group">
-            <div class="col-md-12">
-                <label for="position" class="font-style text-capitalize">Position</label>
-                <input type="text" id="position" class="form-control" [(ngModel)]="position"/>
+                <label for="name" class="font-style text-capitalize">Name<sup>*</sup></label>
+                <input type="text" id="name" class="form-control" [(ngModel)]="name"/>
             </div>
         </div>
         <div class="row form-group">
@@ -34,12 +28,6 @@
                         </div>
                     </ng-template>
                 </ng-select>
-            </div>
-        </div>
-        <div class="row form-group">
-            <div class="col-md-12">
-                <label for="isEuco" class="font-style text-capitalize">Is EuCo?</label>
-                <input type="checkbox" id="isEuco" class="form-control checkbox" [(ngModel)]="isEuco"/>
             </div>
         </div>
     </div>

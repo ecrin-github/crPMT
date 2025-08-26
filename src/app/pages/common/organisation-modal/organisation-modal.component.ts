@@ -4,17 +4,15 @@ import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interf
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 
 @Component({
-  selector: 'app-person-modal',
-  templateUrl: './person-modal.component.html',
-  styleUrls: ['./person-modal.component.scss']
+  selector: 'app-organisation-modal',
+  templateUrl: './organisation-modal.component.html',
+  styleUrls: ['./organisation-modal.component.scss']
 })
-export class PersonModalComponent implements OnInit {
+export class OrganisationModalComponent implements OnInit {
   id: String = '-1';
-  fullName: String = '';
-  email: String = '';
-  position: String = '';
+  shortName: String = '';
+  name: String = '';
   countryId: String = '';
-  isEuco: boolean = false;
   isAdd = true;
   countries: CountryInterface[] = [];
 
@@ -28,23 +26,25 @@ export class PersonModalComponent implements OnInit {
   }
 
   onSave() {
-    this.activeModal.close({'id': -1, 'fullName': this.fullName, 'email': this.email, 'position': this.position, 'country': this.countryId, 'isEuco': this.isEuco});
+    this.activeModal.close({'id': -1, 'shortName': this.shortName, 'name': this.name, 'country': this.countryId});
   }
 
   closeModal() {
     this.activeModal.close(null);
   }
 
-  loadPerson(person) {
-    this.id = person.id;
-    this.fullName = person.fullName;
-    this.email = person.email;
-    this.position = person.position;
-    this.countryId = person.country?.id;
-    this.isEuco = person.isEuco;
+  loadOrganisation(org) {
+    this.id = org.id;
+    this.shortName = org.shortName;
+    this.name = org.name;
+    this.countryId = org.country?.id;
   }
 
   searchCountries = (term: string, item) => {
     return this.contextService.searchCountries(term, item);
   }
+  // searchCountries(term: string, item) {
+  //   this.contextService.searchCountries(term, item);
+  // }
+
 }
