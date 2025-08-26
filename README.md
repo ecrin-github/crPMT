@@ -5,6 +5,19 @@ Versioning convention:  [major releases].[new features/major fixes/].[minor fixe
 
 # Changelog
 
+## [0.4.1dev] - 2025-08-26
+- Modify some field names in project and study pages to match the specifications
+
+## [0.4.0dev] - 2025-08-26
+- Added all EuCos to the list of selectable persons of various fields, they are also associated to a country and have "EuCo" status
+- Added person list page to modify persons info
+- Project and study views display less info, with links to go to the next "level" of info (project -> study, study -> study country)
+- Organised fields in project and study pages by section, following the specifications (and other interface improvements)
+- Project: added public summary field, modified coordinator field to be a dropdown with organisation objects, removed services field
+- Study: added sponsor organisation, sponsor country, medical fields, rare diseases, complex trial design, complex trial type, coordinating euco, coordinating country, services fields
+- It is now possible to add and properly edit a single study
+- Fixed some dropdown values in various fields
+
 ## [0.3.0dev] - 2025-07-10
 
 - Added funding sources, total patients expected, coordinator, PI, cEuCo, and ECRIN services fields to projects
