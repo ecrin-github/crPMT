@@ -9,7 +9,7 @@ const base = environment.baseUrlApi;
 })
 export class StudyService {
 
-  constructor( private http: HttpClient) { }
+  constructor(private http: HttpClient) { }
 
   /* Study data */
   addStudy(payload) {

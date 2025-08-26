@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable, of, Subscription } from 'rxjs';
@@ -13,6 +13,8 @@ import { catchError, mergeMap } from 'rxjs/operators';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
 import { UpsertStudyCtuComponent } from '../../study-ctu/upsert-study-ctu/upsert-study-ctu.component';
+import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';
+import { BackService } from 'src/app/_rms/services/back/back.service';
 
 @Component({
   selector: 'app-upsert-study-country',
@@ -24,15 +26,17 @@ export class UpsertStudyCountryComponent implements OnInit {
   @Input() studyCountriesData: Array<StudyCountryInterface>;
   @Input() studyId: string;
 
+  id: string;
   form: UntypedFormGroup;
   subscription: Subscription = new Subscription();
   arrLength = 0;
   hovered: boolean = false;
   len: any;
   submitted: boolean = false;
+  isAdd: boolean = false;
   isEdit: boolean = false;
   isView: boolean = false;
-  isAdd: boolean = false;
+  isSCPage: boolean = false;
   leadCountryInd: number = -1;
   countries: CountryInterface[] = [];
   studyCountries = [];
@@ -42,8 +46,11 @@ export class UpsertStudyCountryComponent implements OnInit {
     private modalService: NgbModal,
     private router: Router,
     private studyService: StudyService, 
+    private studyCountryService: StudyCountryService,
+    private activatedRoute: ActivatedRoute,
     private spinner: NgxSpinnerService, 
     private contextService: ContextService,
+    private backService: BackService,
     private toastr: ToastrService) {
     this.form = this.fb.group({
       studyCountries: this.fb.array([])
@@ -51,9 +58,43 @@ export class UpsertStudyCountryComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.router.url.includes('study-countries')) {
+      this.id = this.activatedRoute.snapshot.params.id;
+      this.isSCPage = true;
+    }
+    
+    if (this.isSCPage) {
+      setTimeout(() => {
+        this.spinner.show();
+      });
+    }
+
+    this.isAdd = this.router.url.includes('add');
     this.isEdit = this.router.url.includes('edit');
     this.isView = this.router.url.includes('view');
-    this.isAdd = this.router.url.includes('add');
+
+    let queryFuncs: Array<Observable<any>> = [];
+
+    // Note: be careful if you add new observables because of the way their result is retrieved later (combineLatest + pop)
+    // The code is built like this because in the version of RxJS used here combineLatest does not handle dictionaries
+    if (this.isSCPage && !this.isAdd) {
+      queryFuncs.push(this.getStudyCountry(this.id));
+    }
+
+    let obsArr: Array<Observable<any>> = [];
+    queryFuncs.forEach((funct) => {
+      obsArr.push(funct.pipe(catchError(error => of(this.toastr.error(error)))));
+    });
+
+    combineLatest(obsArr).subscribe(res => {
+      if (this.isSCPage && !this.isAdd) {
+        this.setStudyCountry(res.pop());
+      }
+
+      setTimeout(() => {
+        this.spinner.hide();
+      });
+    });
 
     this.contextService.countries.subscribe((countries) => {
       this.countries = countries;
@@ -80,6 +121,18 @@ export class UpsertStudyCountryComponent implements OnInit {
     });
   }
 
+  getStudyCountry(id) {
+    return this.studyCountryService.getStudyCountry(id);
+  }
+
+  setStudyCountry(scData) {
+    if (scData) {
+      this.studyCountries = [scData];
+      this.id = scData.id;
+      this.patchForm();
+    }
+  }
+
   patchForm() {
     this.form.setControl('studyCountries', this.patchArray());
   }
@@ -89,7 +142,7 @@ export class UpsertStudyCountryComponent implements OnInit {
     this.studyCountries.forEach((sc, index) => {
       formArray.push(this.fb.group({
         id: sc.id,
-        study: sc.study ? sc.study.id : null,
+        study: sc.study,
         country: [sc.country, [Validators.required]],
         leadCountry: sc.leadCountry,
         // Note: unknown why this array needs to be wrapped in another array
@@ -104,6 +157,7 @@ export class UpsertStudyCountryComponent implements OnInit {
   }
 
   onChangeCountry(i) {
+    // TODO: this function needs comments
     let existingSC = null;
     for (const sc of this.studyCountries) {
       if (sc?.country?.iso2 === this.g[i].value?.country?.iso2) {
@@ -316,6 +370,10 @@ export class UpsertStudyCountryComponent implements OnInit {
       event.target.classList.add("fa-regular");
       event.target.classList.remove("fa-solid");
     }
+  }
+
+  back(): void {
+    this.backService.back();
   }
 
   dateToString(date) {

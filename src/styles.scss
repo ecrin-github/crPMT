@@ -701,7 +701,7 @@ mat-footer-cell:first-of-type {
 
 .font-style {
   font-size: 1.175rem !important;
-  font-weight: 600 !important;
+  font-weight: 500 !important;
   color: #315492 !important;
 }
 
@@ -725,21 +725,41 @@ mat-footer-cell:first-of-type {
 }
 
 .view-sub-title {
-  font-size: 2rem !important;
-  font-weight: 600 !important;
-  color: #315492 !important;
-}
-
-.view-sub-sub-title {
   font-size: 1.7rem !important;
   font-weight: 600 !important;
   color: #315492 !important;
 }
 
-.view-sub-sub-sub-title {
+.view-sub-sub-title {
   font-size: 1.5rem !important;
   font-weight: 600 !important;
   color: #315492 !important;
+}
+
+.section-title {
+  margin-bottom: 1.75rem !important;
+}
+
+.section-title-field {
+  margin-bottom: 0.5rem !important;
+}
+
+.placeholder-multiple-fix {
+  top: 0 !important;
+  padding-bottom: 5px !important;
+}
+
+// Fix for placeholder position for ng-select with multiple selectable elements
+.ng-select.custom {
+  .ng-select-container {
+    .ng-value-container {
+      .ng-placeholder {
+        position: inherit !important;
+        top: 0 !important;
+        padding-bottom: 5px !important;
+      }
+    }
+  }
 }
 
 #formContainer {
@@ -850,7 +870,7 @@ mat-footer-cell:first-of-type {
   gap: 0.5rem;
 }
 
-.service-tag {
+.tag {
   border-width: 0.2rem;
   border-style: solid;
   border-radius: 0.4rem;
@@ -864,6 +884,10 @@ mat-footer-cell:first-of-type {
 .sc-field-container {
   display: grid;
   align-items: end;
+}
+
+.margin-side {
+  margin: 0 5rem !important;
 }
 
 // ng-select validation

@@ -152,6 +152,7 @@ export class PersonListComponent implements OnInit {
   }
 
   filterSearch() {
+    // TODO: override to be able to search "true" for isEuco?
     this.dataSource.filter = this.searchText;
   }
 

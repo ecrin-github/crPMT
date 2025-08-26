@@ -3,11 +3,10 @@ import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } fr
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { combineLatest, Observable, of, Subscription } from 'rxjs';
+import { combineLatest, Observable, of } from 'rxjs';
 import { catchError, finalize, map, mergeMap, reduce, switchMap, take } from 'rxjs/operators';
-import { OrganisationInterface } from 'src/app/_rms/interfaces/organisation/organisation.interface';
+import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
-import { CommonLookupService } from 'src/app/_rms/services/entities/common-lookup/common-lookup.service';
 import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
 import { ListService } from 'src/app/_rms/services/entities/list/list.service';
 import { PdfGeneratorService } from 'src/app/_rms/services/entities/pdf-generator/pdf-generator.service';
@@ -16,14 +15,15 @@ import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
 import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { StudyInterface } from 'src/app/_rms/interfaces/study/study.interface';
-import { dateToString, stringToDate } from 'src/assets/js/util';
+import { colorHash, dateToString, stringToDate } from 'src/assets/js/util';
 import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
-import { PersonInterface } from 'src/app/_rms/interfaces/person.interface';
-import { PersonModalComponent } from '../../person-modal/person-modal.component';
+import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
 import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
+import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
+import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
 
 @Component({
   selector: 'app-upsert-study',
@@ -37,46 +37,32 @@ export class UpsertStudyComponent implements OnInit {
   @Input() studiesData: Array<StudyInterface>;
   @Input() projectId: String;
 
+  // Context
+  complexTrialTypes: ClassValueInterface[] = [];
+  countries: CountryInterface[] = [];
+  eucos: PersonInterface[] = [];
+  medicalFields: ClassValueInterface[] = [];
+  organisations: OrganisationInterface[] = [];
+  persons: PersonInterface[] = [];
+  populations: ClassValueInterface[] = [];
+  services: ClassValueInterface[] = [];
+  regulatoryFrameworks: String[] = ['CTR', 'MDR/IVDR', 'COMBINED', 'OTHER'];
   studyStatuses: String[] = ["Start-up phase", "Running phase: Regulatory & ethical approvals", "Running phase: Follow up", "Running phase: Organisation of close-out", 
                               "Completion & termination phase", "Completed", "Withdrawn", "On hold"];
-  regulatoryFrameworks: String[] = ['CTR', 'MDR/IVDR', 'COMBINED', 'OTHER'];
-  populations: String[] = ["Adult", "Paediatric", "Adult & Paediatric"];
-  public isCollapsed: boolean = false;
-  studyForm: UntypedFormGroup;
-  isEdit: boolean = false;
-  isView: boolean = false;
-  isAdd: boolean = false;
-  studyTypes: [] = [];
-  genderEligibility: [] = [];
-  timeUnits: [] =[];
-  trialRegistries: any;
-  subscription: Subscription = new Subscription();
-  submitted: boolean = false;
+  treatmentUnits: String[] = ["Hours", "Days", "Months"]
   id: string;
-  organisationName: string;
-  organisations: Array<OrganisationInterface>;
-  studyFull: any;
-  regulatoryFramework: string = '';
-  sticky: boolean = false;
-  studyType: string = '';
-  addType: string = '';
-  registryId: number;
-  trialId: string;
-  identifierTypes: [] = [];
-  titleTypes: [] = [];
-  featureTypes: [] = [];
-  featureValuesAll: [] = [];
-  topicTypes: [] = [];
-  controlledTerminology: [] = [];
-  relationshipTypes: [] = [];
-  isBrowsing: boolean = false;
-  isManager: any;
-  orgId: string;
-  associatedObjects: any;
+  isAdd: boolean = false;
+  isEdit: boolean = false;
+  isStudyPage: boolean = false;
+  isView: boolean = false;
+  isComplexTrial: boolean[] = [];
+  isObservational: boolean[] = [];
+  projects = [];
   showEdit: boolean = false;
-  isObservational: boolean = false;
+  sticky: boolean = false;
+  submitted: boolean = false;
+  studyForm: UntypedFormGroup;
   studies = [];
-  persons: PersonInterface[] = [];
 
   constructor(private statesService: StatesService,
               private fb: UntypedFormBuilder, 
@@ -98,12 +84,15 @@ export class UpsertStudyComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    setTimeout(() => {
-      this.spinner.show();
-    });
-
     if (this.router.url.includes('studies')) {
       this.id = this.activatedRoute.snapshot.params.id;
+      this.isStudyPage = true;
+    }
+
+    if (this.isStudyPage) {
+      setTimeout(() => {
+        this.spinner.show();
+      });
     }
     
     // this.scrollService.handleScroll([`/studies/${this.id}/view`, `/studies/${this.id}/edit`, `/studies/add`]);
@@ -111,31 +100,64 @@ export class UpsertStudyComponent implements OnInit {
     this.isEdit = this.router.url.includes('edit');
     this.isView = this.router.url.includes('view');
     this.isAdd = this.router.url.includes('add');
+
+    if (this.isStudyPage && this.isAdd) {
+      this.addStudy();
+    }
     
     let queryFuncs: Array<Observable<any>> = [];
 
     // Note: be careful if you add new observables because of the way their result is retrieved later (combineLatest + pop)
     // The code is built like this because in the version of RxJS used here combineLatest does not handle dictionaries
-
-    if (this.id && (this.isEdit || this.isView)) {
+    if (this.isStudyPage && !this.isAdd) {
       queryFuncs.push(this.getStudyById(this.id));
+    }
+    if (this.isStudyPage && !this.isView) {
+      queryFuncs.push(this.listService.getProjectList());
     }
 
     let obsArr: Array<Observable<any>> = [];
     queryFuncs.forEach((funct) => {
-      obsArr.push(funct.pipe(catchError(error => of(this.toastr.error(error.error.title)))));
+      obsArr.push(funct.pipe(catchError(error => of(this.toastr.error(error)))));
     });
 
     combineLatest(obsArr).subscribe(res => {
-      this.setStudyById(res.pop());
+      if (this.isStudyPage && !this.isView) {
+        this.setProjects(res.pop());
+      }
+      
+      if (this.id && (this.isEdit || this.isView)) {
+        this.setStudyById(res.pop());
+      }
 
       setTimeout(() => {
         this.spinner.hide();
       });
     });
 
+    this.contextService.complexTrialTypes.subscribe((complexTrialTypes) => {
+      this.complexTrialTypes = complexTrialTypes;
+    });
+    this.contextService.countries.subscribe((countries) => {
+      this.countries = countries;
+    });
+    this.contextService.medicalFields.subscribe((medicalFields) => {
+      this.medicalFields = medicalFields;
+    });
+    this.contextService.organisations.subscribe((organisations) => {
+      this.organisations = organisations;
+    });
     this.contextService.persons.subscribe((persons) => {
       this.persons = persons;
+      if (persons) {
+        this.eucos = persons.filter(p => p.isEuco);
+      }
+    });
+    this.contextService.populations.subscribe((populations) => {
+      this.populations = populations;
+    });
+    this.contextService.services.subscribe((services) => {
+      this.services = services;
     });
 
     if (this.isAdd) {
@@ -158,24 +180,35 @@ export class UpsertStudyComponent implements OnInit {
   newStudy(): UntypedFormGroup {
     return this.fb.group({
       id: '',
-      category: '',
+      shortTitle: '',
+      title: '',
+      sponsorOrganisation: null,
+      pi: null,
+      sponsorCountry: null,
+      medicalFields: [],
+      populations: [],
+      rareDiseases: false,
+      regulatoryFramework: null,
+      complexTrialDesign: false,
+      complexTrialType: null,
+      trialRegistrationNumber: '',
+      summary: '',
+      cEuco: null,
+      coordinatingCountry: null,
+      totalPatientsExpected: null,
+      services: [],
+      recruitmentStart: null,
+      recruitmentEnd: null,
+      treatmentDurationPerPatient: '',
+      treatmentDurationPerPatientUnit: '',
+      treatmentAndFollowUpDurationPerPatient: '',
+      treatmentAndFollowUpDurationPerPatientUnit: '',
       firstPatientIn: null,
       lastPatientOut: null,
-      population: '',
-      recruitmentEnd: null,
-      recruitmentStart: null,
-      regulatoryFramework: '',
-      shortTitle: '',
-      sponsor: '',
-      summary: '',
       status: '',
-      title: '',
-      treatmentAndFollowUpDurationPerPatient: '',
-      treatmentPeriodPerPatient: '',
-      trialId: '',
-      trialRegistration: '',
-      pi: null,
       project: null,
+      trialId: '',
+      // submissions: null,
       studyCountries: [],
     });
   }
@@ -192,7 +225,13 @@ export class UpsertStudyComponent implements OnInit {
     }
   }
 
-  removeStudy(i: number) {
+  setProjects(projects) {
+    this.projects = projects;
+  }
+
+  deleteStudy($event, i: number) {
+    $event.stopPropagation(); // Expands the panel otherwise
+
     const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
     removeModal.componentInstance.itemType = "study";
 
@@ -230,24 +269,35 @@ export class UpsertStudyComponent implements OnInit {
     this.studies.forEach(s => {
       formArray.push(this.fb.group({
         id: s.id,
-        category: s.category,
+        shortTitle: s.shortTitle,
+        title: s.title,
+        sponsorOrganisation: s.sponsorOrganisation,
+        pi: s.pi,
+        sponsorCountry: s.sponsorCountry,
+        medicalFields: [s.medicalFields],
+        populations: [s.populations],
+        rareDiseases: s.rareDiseases,
+        regulatoryFramework: s.regulatoryFramework,
+        complexTrialDesign: s.complexTrialDesign,
+        complexTrialType: s.complexTrialType,
+        trialRegistrationNumber: s.trialRegistrationNumber,
+        summary: s.summary,
+        cEuco: s.cEuco,
+        coordinatingCountry: s.coordinatingCountry,
+        totalPatientsExpected: s.totalPatientsExpected,
+        services: [s.services],
+        recruitmentStart: s.recruitmentStart ? stringToDate(s.recruitmentStart) : null,
+        recruitmentEnd: s.recruitmentEnd ? stringToDate(s.recruitmentEnd) : null,
+        treatmentDurationPerPatient: s.treatmentDurationPerPatient,
+        treatmentDurationPerPatientUnit: s.treatmentDurationPerPatientUnit,
+        treatmentAndFollowUpDurationPerPatient: s.treatmentAndFollowUpDurationPerPatient,
+        treatmentAndFollowUpDurationPerPatientUnit: s.treatmentAndFollowUpDurationPerPatientUnit,
         firstPatientIn: s.firstPatientIn ? stringToDate(s.firstPatientIn) : null,
         lastPatientOut: s.lastPatientOut ? stringToDate(s.lastPatientOut) : null,
-        population: s.population,
-        recruitmentEnd: s.recruitmentEnd ? stringToDate(s.recruitmentEnd) : null,
-        recruitmentStart: s.recruitmentStart ? stringToDate(s.recruitmentStart) : null,
-        regulatoryFramework: s.regulatoryFramework,
-        shortTitle: s.shortTitle,
-        sponsor: s.sponsor,
         status: s.status,
-        summary: s.summary,
-        title: s.title,
-        treatmentAndFollowUpDurationPerPatient: s.treatmentAndFollowUpDurationPerPatient,
-        treatmentPeriodPerPatient: s.treatmentPeriodPerPatient,
-        trialId: s.trialId,
-        trialRegistration: s.trialRegistration,
-        pi: s.pi,
-        project: s.project?.id,
+        project: s.project,
+        trialId: s.trialId, // TODO: remove?
+        // submissions: null,
         // Note: unknown why this array needs to be wrapped in another array
         studyCountries: [s.studyCountries]
       }))
@@ -257,6 +307,12 @@ export class UpsertStudyComponent implements OnInit {
 
   patchStudyForm() {
     this.studyForm.setControl('studies', this.getFormArray());
+
+    // Setting initial boolean variables to display or not certain fields
+    for (let i=0; i < this.g.length; i++) {
+      this.onChangeComplexTrialDesign(i);
+      this.onChangeRegulatoryFramework(i);
+    }
   }
 
   addStudy() {
@@ -270,14 +326,69 @@ export class UpsertStudyComponent implements OnInit {
 
   updatePayload(payload, projectId, i) {
     payload.project = projectId;
+    payload.order = i;
     payload.firstPatientIn = dateToString(payload.firstPatientIn);
     payload.lastPatientOut = dateToString(payload.lastPatientOut);
     payload.recruitmentStart = dateToString(payload.recruitmentStart);
     payload.recruitmentEnd = dateToString(payload.recruitmentEnd);
+    
+    if (payload.cEuco?.id) {
+      payload.cEuco = payload.cEuco.id;
+    }
+    
+    if (payload.complexTrialType?.id) {
+      payload.complexTrialType = payload.complexTrialType.id;
+    }
+    
+    if (payload.coordinatingCountry?.id) {
+      payload.coordinatingCountry = payload.coordinatingCountry.id;
+    }
+    
+    if (payload.medicalFields?.length > 0) {
+      for (let i = 0; i < payload.medicalFields.length; i++) {
+        if (payload.medicalFields[i]?.id) {
+          payload.medicalFields[i] = payload.medicalFields[i].id;
+        }
+      }
+    } else {
+      payload.medicalFields = [];
+    }
+  
     if (payload.pi?.id) {
       payload.pi = payload.pi.id;
     }
-    payload.order = i;
+
+    if (payload.populations?.length > 0) {
+      for (let i = 0; i < payload.populations.length; i++) {
+        if (payload.populations[i]?.id) {
+          payload.populations[i] = payload.populations[i].id;
+        }
+      }
+    } else {
+      payload.populations = [];
+    }
+        
+    if (payload.regulatoryFramework?.id) {
+      payload.regulatoryFramework = payload.regulatoryFramework.id;
+    }
+
+    if (payload.services?.length > 0) {
+      for (let i = 0; i < payload.services.length; i++) {
+        if (payload.services[i]?.id) {
+          payload.services[i] = payload.services[i].id;
+        }
+      }
+    } else {
+      payload.services = [];
+    }
+        
+    if (payload.sponsorCountry?.id) {
+      payload.sponsorCountry = payload.sponsorCountry.id;
+    }
+        
+    if (payload.sponsorOrganisation?.id) {
+      payload.sponsorOrganisation = payload.sponsorOrganisation.id;
+    }
   }
   
   onSave(projectId: string): Observable<boolean[]> {
@@ -290,6 +401,10 @@ export class UpsertStudyComponent implements OnInit {
       if (!item.id) {  // Add
         let success = this.studyService.addStudy(item).pipe(
           mergeMap((res: any) => {
+            if (this.isStudyPage && this.isAdd) {  // Need id for redirection is single study add
+              this.id = res.id;
+            }
+
             if (res.statusCode === 201) {
               // this.reuseService.notifyComponents();
               return this.studyCountryComponents.get(i).onSave(res.id).pipe(
@@ -363,7 +478,7 @@ export class UpsertStudyComponent implements OnInit {
   }
 
   onSaveStudy() {
-    const projectId = this.studyForm.value?.studies[0]?.project;
+    const projectId = this.studyForm.value?.studies[0]?.project?.id;
     if (projectId) {
       this.onSave(projectId).subscribe((success) => {
         if (success) {
@@ -386,99 +501,116 @@ export class UpsertStudyComponent implements OnInit {
     return fv1?.id == fv2?.id;
   }
 
-  // Necessary to write it as an arrow function
-  addPerson = (person) => {
-    const addPersonModal = this.modalService.open(PersonModalComponent, { size: 'lg', backdrop: 'static' });
-    addPersonModal.componentInstance.fullName = person;
-
-    return addPersonModal.result.then((result) => {
-      this.spinner.show();
-      if (result === null) {
-        return new Promise(null);
-      }
-
-      return this.contextService.addPerson(result).pipe(
-        mergeMap((p:any) => {
-          result.id = p.id;
-          return this.contextService.updatePersons();
-        }),
-        mergeMap(() => {
-          this.spinner.hide();
-          return of(result);
-        }),
-        catchError((err) => {
-          this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
-          this.spinner.hide();
-          return of(null);
-        })
-      ).toPromise();
-    })
-    .catch((err) => {
-      this.spinner.hide();
-      this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
-      return null;
-    });
-  }
-
-  searchPersons(term: string, item) {
-    term = term.toLocaleLowerCase();
-    return item.fullName?.toLocaleLowerCase().indexOf(term) > -1 || item.email?.toLocaleLowerCase().indexOf(term) > -1;
-  }
-
-  onChangeRegulatoryFramework() {
-    if (this.studyForm.value?.studies[0].regulatoryFramework?.toLowerCase() == "other" ) {
-      this.isObservational = true;
+  onChangeComplexTrialDesign(i) {
+    if (this.studyForm.value?.studies[i].complexTrialDesign) {
+      this.isComplexTrial[i] = true;
     } else {
-      this.isObservational = false;
+      this.isComplexTrial[i] = false;
+    }
+  }
+  
+  onChangeRegulatoryFramework(i) {
+    if (this.studyForm.value?.studies[i].regulatoryFramework?.toLowerCase() == "other" ) {
+      this.isObservational[i] = true;
+    } else {
+      this.isObservational[i] = false;
+    }
+  }
+  
+  searchClassValues = (term: string, item) => {
+    return this.contextService.searchClassValues(term, item);
+  }
+
+  addComplexTrialType = (type) => {
+    return this.contextService.addComplexTrialTypeDropdown(type);
+  }
+
+  deleteComplexTrialType($event, cToRemove) {
+    $event.stopPropagation(); // Clicks the option otherwise
+
+    if (cToRemove.id == -1) { // Created locally by user
+      this.complexTrialTypes = this.complexTrialTypes.filter(c => !(c.id == cToRemove.id && c.value == cToRemove.value));
+    } else {  // Already existing
+      this.contextService.deleteComplexTrialTypeDropdown(cToRemove, !this.isAdd);
     }
   }
 
-  // TODO: refactor spinner hide
+  searchCountries = (term: string, item) => {
+    return this.contextService.searchCountries(term, item);
+  }
+
+  // Necessary to write them as arrow functions
+  searchOrganisations = (term: string, item) => {
+    return this.contextService.searchOrganisations(term, item);
+  }
+
+  addOrganisation = (orgName) => {
+    return this.contextService.addOrganisationDropdown(orgName);
+  }
+
+  deleteOrganisation($event, oToRemove) {
+    $event.stopPropagation(); // Clicks the option otherwise
+
+    if (oToRemove.id == -1) { // Created locally by user
+      this.organisations = this.organisations.filter(o => !(o.id == oToRemove.id && o.name == oToRemove.name));
+    } else {  // Already existing
+      this.contextService.deleteOrganisationDropdown(oToRemove, !this.isAdd);
+    }
+  }
+
+  // Necessary to write them as arrow functions
+  searchPersons = (term: string, item) => {
+    return this.contextService.searchPersons(term, item);
+  }
+
+  addPerson = (person) => {
+    return this.contextService.addPersonDropdown(person);
+  }
+
   deletePerson($event, pToRemove) {
     $event.stopPropagation(); // Clicks the option otherwise
 
     if (pToRemove.id == -1) {  // Created locally by user
       this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.fullName));
     } else {  // Already existing
-      this.spinner.show();
-      // Checking if other projects have this service
-      this.listService.getProjectsByPerson(pToRemove.id).subscribe((res: []) => {
-        // Allowing deletion on current project, even if person is selected in another field/component (too complicated otherwise)
-        let resWithoutCurrent: ProjectInterface[] = res;
-        if (!this.isAdd) {
-          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.projectId);
-        }
+      this.contextService.deletePersonDropdown(pToRemove, !this.isAdd);
+    }
+  }
 
-        if (resWithoutCurrent.length > 0) {
-          this.toastr.error(`Failed to delete this person as it is used in project${(resWithoutCurrent.length > 1) ? 's' : ''}:\
-           ${resWithoutCurrent.map(proj => proj.shortName).join(", ")}`, "Error deleting person", { timeOut: 20000, extendedTimeOut: 20000 });
-           this.spinner.hide();
-        } else {
-          // Delete person from the DB, then locally if succeeded
-          this.contextService.deletePerson(pToRemove.id).subscribe((res: any) => {
-            if (res.status !== 204) {
-              this.toastr.error('Error when deleting person', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
-              this.spinner.hide();
-            } else {
-              // Updating persons list
-              this.contextService.updatePersons().subscribe(() => {
-                this.spinner.hide();
-              });
-            }
-          }, error => {
-            this.toastr.error(error);
-            this.spinner.hide();
-          });
-        }
-      }, error => {
-        this.toastr.error(error);
-        this.spinner.hide();
-      });
+  searchProjects(term: string, item) {
+    term = term.toLocaleLowerCase();
+    return item.shortName?.toLocaleLowerCase().indexOf(term) > -1 || item.fullName?.toLocaleLowerCase().indexOf(term) > -1;
+  }
+
+  addService = (value) => {
+    return this.contextService.addServiceDropdown(value);
+  }
+
+  deleteService($event, sToRemove) {
+    $event.stopPropagation(); // Clicks the option otherwise
+
+    if (sToRemove.id == -1) {  // Created locally by user
+      this.services = this.services.filter(s => !(s.id == sToRemove.id && s.value == sToRemove.value));
+    } else {  // Already existing
+      this.contextService.deleteServiceDropdown(sToRemove, !this.isAdd);
     }
   }
 
   dateToString(date) {
     return dateToString(date);
+  }
+
+  getTagTextColor(text) {
+    return colorHash(text)?.hex;
+  }
+
+  getTagBgColor(text) {
+    const h = colorHash(text);
+    return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
+  }
+  
+  getTotalNumberOfSites() {
+    return "Coming soon!";
   }
 
   print() {
@@ -514,6 +646,5 @@ export class UpsertStudyComponent implements OnInit {
 
   ngOnDestroy() {
     this.scrollService.unsubscribeScroll();
-    this.subscription.unsubscribe();
   }
 }

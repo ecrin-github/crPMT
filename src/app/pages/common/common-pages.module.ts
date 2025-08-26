@@ -58,6 +58,7 @@ import { UpsertStudyCountryComponent } from './study-country/upsert-study-countr
 import { StudyListComponent } from './study/study-list/study-list.component';
 import { PersonModalComponent } from './person-modal/person-modal.component';
 import { PersonListComponent } from './person/person-list/person-list.component';
+import { OrganisationModalComponent } from './organisation-modal/organisation-modal.component';
 
 
 @NgModule({
@@ -107,53 +108,32 @@ import { PersonListComponent } from './person/person-list/person-list.component'
         UpsertStudyCountryComponent,
         StudyListComponent,
         PersonModalComponent,
-        PersonListComponent
+        PersonListComponent,
+        OrganisationModalComponent
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [
         CommonModule,
         RouterModule.forChild([
-            // DUP details pages
+            // Project details pages
             {
-                path: 'data-use/:id/view',
+                path: 'projects/:id/edit',
                 pathMatch: 'full',
-                component: UpsertDupComponent,
+                component: UpsertProjectComponent,
                 data: { 
                     shouldReuse: false,
-                    key: 'upsertdupcomponentview'
+                    key: 'upsertprojectcomponentedit'
                 },
                 canActivate: [RoleGuard]
             },
             {
-                path: 'data-use/:id/edit',
+                path: 'projects/:id/view',
                 pathMatch: 'full',
-                component: UpsertDupComponent,
+                component: UpsertProjectComponent,
                 data: { 
                     shouldReuse: false,
-                    key: 'upsertdupcomponentedit'
-                },
-                canActivate: [ManagerGuard]
-            },
-            // DTP details pages
-            {
-                path: 'data-transfers/:id/view',
-                pathMatch: 'full',
-                component: UpsertDtpComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'upsertdtpcomponentview'
-                },
-                canActivate: [RoleGuard]
-            },
-            {
-                path: 'data-transfers/:id/edit',
-                pathMatch: 'full',
-                component: UpsertDtpComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'upsertdtpcomponentedit'
-                },
-                canActivate: [ManagerGuard]
+                    key: 'upsertprojectcomponentview'
+                }
             },
             // Studies details pages
             {
@@ -175,66 +155,26 @@ import { PersonListComponent } from './person/person-list/person-list.component'
                     key: 'upsertstudycomponentview'
                 }
             },
-            // Project details pages
+            // Study countries details pages
             {
-                path: 'projects/:id/edit',
+                path: 'study-countries/:id/edit',
                 pathMatch: 'full',
-                component: UpsertProjectComponent,
+                component: UpsertStudyCountryComponent,
                 data: { 
                     shouldReuse: false,
-                    key: 'upsertprojectcomponentedit'
+                    key: 'upsertstudycountrycomponentedit'
                 },
                 canActivate: [RoleGuard]
             },
             {
-                path: 'projects/:id/view',
+                path: 'study-countries/:id/view',
                 pathMatch: 'full',
-                component: UpsertProjectComponent,
+                component: UpsertStudyCountryComponent,
                 data: { 
                     shouldReuse: false,
-                    key: 'upsertprojectcomponentview'
+                    key: 'upsertstudycountrycomponentview'
                 }
             },
-            // Object details pages
-            {
-                path: 'data-objects/:id/edit',
-                pathMatch: 'full',
-                component: UpsertObjectComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'upsertobjectcomponentedit'
-                },
-                canActivate: [RoleGuard]
-            },
-            {
-                path: 'data-objects/:id/view',
-                pathMatch: 'full',
-                component: UpsertObjectComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'upsertobjectcomponentview'
-                }
-            },
-            {
-                path: 'people/:id/edit',
-                pathMatch: 'full',
-                component: UpsertUserComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'upsertusercomponentedit'
-                },
-                canActivate: [ManagerGuard]
-            },
-            {
-                path: 'people/:id/view',
-                pathMatch: 'full',
-                component: UpsertUserComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'upsertusercomponentview'
-                },
-                canActivate: [ManagerGuard]
-            }
         ]),
         MatTableModule,
         MatPaginatorModule,

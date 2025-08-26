@@ -46,7 +46,7 @@ export class InternalMainPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.organisation = this.statesService.currentAuthOrgId;
-    this.organisationName = this.statesService.currentUser.userProfile?.organisation?.defaultName;
+    this.organisationName = "";
     // this.getStatistics();
   }
 

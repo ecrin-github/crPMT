@@ -66,59 +66,6 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                     key: 'internalmainpagecomponent'
                 }
             },
-            // {
-            //     path: '',
-            //     pathMatch: 'full',
-            //     component: InternalMainPageComponent,
-            //     data: { 
-            //         shouldReuse: false,
-            //         key: 'internalmainpagecomponent'
-            //     }
-            // },
-            // Data transfers
-            {
-                path: 'data-transfers',
-                pathMatch: 'full',
-                component: SummaryDtpComponent,
-                data: { 
-                    shouldReuse: true,
-                    key: 'summarydtpcomponent',
-                    reuseRoutesFrom: ['data-transfers/:id/view', 'data-transfers/:id/add', 'data-transfers/:id/edit']
-                },
-                canActivate: [RoleGuard]
-            },
-            {
-                path: 'data-transfers/add',
-                pathMatch: 'full',
-                component: UpsertDtpComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'upsertdtpcomponentadd'
-                },
-                canActivate: [ManagerGuard]
-            },
-            // Data use
-            {
-                path: 'data-use',
-                pathMatch: 'full',
-                component: SummaryDupComponent,
-                data: { 
-                    shouldReuse: true,
-                    key: 'summarydupcomponent',
-                    reuseRoutesFrom: ['data-use/:id/view', 'data-use/:id/add', 'data-use/:id/edit']
-                },
-                canActivate: [RoleGuard]
-            },
-            {
-                path: 'data-use/add',
-                pathMatch: 'full',
-                component: UpsertDupComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'upsertdupcomponentadd'
-                },
-                canActivate: [ManagerGuard]
-            },
             // Studies
             {
                 path: 'studies',
@@ -158,38 +105,6 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                     shouldReuse: true,
                     key: 'ProjectListComponent'
                 }
-            },
-            // Data objects
-            {
-                path: 'data-objects',
-                pathMatch: 'full',
-                component: SummaryObjectComponent,
-                data: { 
-                    shouldReuse: true,
-                    key: 'summaryobjectcomponent',
-                    reuseRoutesFrom: ['data-objects/:id/view', 'data-objects/:id/add', 'data-objects/:id/edit']
-                }
-            },
-            {
-                path: 'data-objects/add',
-                pathMatch: 'full',
-                component: UpsertObjectComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'upsertobjectcomponentadd'
-                },
-                canActivate: [RoleGuard]
-            },
-            // Reports
-            {
-                path: 'reports',
-                pathMatch: 'full',
-                component: ReportsPageInternalComponent,
-                data: { 
-                    shouldReuse: false,
-                    key: 'reportspageinternalcomponent'
-                },
-                canActivate: [ManagerGuard]
             },
             // People
             {

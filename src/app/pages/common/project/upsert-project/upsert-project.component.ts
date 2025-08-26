@@ -5,7 +5,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable, of, Subscription } from 'rxjs';
 import { catchError, finalize, map, mergeMap } from 'rxjs/operators';
-import { OrganisationInterface } from 'src/app/_rms/interfaces/organisation/organisation.interface';
+import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
 import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
 import { PdfGeneratorService } from 'src/app/_rms/services/entities/pdf-generator/pdf-generator.service';
@@ -16,12 +16,11 @@ import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interf
 import { colorHash, dateToString, stringToDate } from 'src/assets/js/util';
 import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.component';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
-import { FundingSourceInterface } from 'src/app/_rms/interfaces/context/funding-source.interface';
-import { ServiceInterface } from 'src/app/_rms/interfaces/context/service.interface';
 import { ListService } from 'src/app/_rms/services/entities/list/list.service';
-import { PersonInterface } from 'src/app/_rms/interfaces/person.interface';
+import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PersonModalComponent } from '../../person-modal/person-modal.component';
+import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
 
 @Component({
   selector: 'app-upsert-project',
@@ -33,47 +32,20 @@ export class UpsertProjectComponent implements OnInit {
 
   @ViewChild(UpsertStudyComponent) studyComponent: UpsertStudyComponent;
 
-  public isCollapsed: boolean = false;
-  projectForm: UntypedFormGroup;
+  fundingSources: ClassValueInterface[] = [];
+  organisations: OrganisationInterface[] = [];
+  services: ClassValueInterface[] = [];
+  persons: PersonInterface[] = [];
+  id: string;
+  isAdd: boolean = false;
   isEdit: boolean = false;
   isView: boolean = false;
-  isAdd: boolean = false;
-  projectTypes: [] = [];
-  projectStatuses: [] = [];
-  genderEligibility: [] = [];
-  timeUnits: [] =[];
-  trialRegistries: any;
-  subscription: Subscription = new Subscription();
-  submitted: boolean = false;
-  id: string;
-  sdSid: string;
-  organisationName: string;
-  organisations: Array<OrganisationInterface>;
-  projectData: ProjectInterface;
-  projectFull: any;
-  publicTitle: string = '';
-  monthValues = [{id:'1', name:'January'}, {id:'2', name:'February'}, {id:'3', name: 'March'}, {id:'4', name: 'April'}, {id:'5', name: 'May'}, {id:'6', name: 'June'}, {id:'7', name: 'July'}, {id:'8', name: 'August'}, {id:'9', name: 'September'}, {id:'10', name: 'October'}, {id:'11', name:'November'}, {id:'12', name: 'December'}];
-  sticky: boolean = false;
-  projectType: string = '';
-  addType: string = '';
-  registryId: number;
-  identifierTypes: [] = [];
-  titleTypes: [] = [];
-  featureTypes: [] = [];
-  featureValuesAll: [] = [];
-  topicTypes: [] = [];
-  controlledTerminology: [] = [];
-  relationshipTypes: [] = [];
-  fundingSources: FundingSourceInterface[] = [];
-  services: ServiceInterface[] = [];
-  persons: PersonInterface[] = [];
-  isBrowsing: boolean = false;
-  isManager: any;
-  orgId: string;
-  associatedObjects: any;
-  pageSize: Number = 10000;
-  showEdit: boolean = false;
   hasPublicFunding: boolean = false;
+  showEdit: boolean = false;
+  submitted: boolean = false;
+  sticky: boolean = false;
+  projectData: ProjectInterface;
+  projectForm: UntypedFormGroup;
 
   constructor(private contextService: ContextService,
               private fb: UntypedFormBuilder, 
@@ -89,19 +61,18 @@ export class UpsertProjectComponent implements OnInit {
               private jsonGenerator: JsonGeneratorService, 
               private backService: BackService) {
     this.projectForm = this.fb.group({
-      shortName: ['', Validators.required],
       name: '',
-      gaNumber: '',
-      url: '',
+      shortName: ['', Validators.required],
+      coordinator: null,
       startDate: null,
       endDate: null,
-      studyData: null,
-      coordinator: null,
-      cEuco: null,
-      totalPatientsExpected: '',
-      reportingPeriods: [],
       fundingSources: [],
-      services: []
+      gaNumber: '',
+      studyData: [],
+      reportingPeriods: [],
+      publicSummary: null,
+      url: '',
+      // totalPatientsExpected: '',
     });
   }
 
@@ -148,6 +119,10 @@ export class UpsertProjectComponent implements OnInit {
       this.fundingSources = fundingSources;
     });
 
+    this.contextService.organisations.subscribe((organisations) => {
+      this.organisations = organisations;
+    });
+
     this.contextService.persons.subscribe((persons) => {
       this.persons = persons;
     });
@@ -182,19 +157,19 @@ export class UpsertProjectComponent implements OnInit {
 
   patchProjectForm() {
     this.projectForm.patchValue({
-      shortName: this.projectData.shortName,
       name: this.projectData.name,
-      gaNumber: this.projectData.gaNumber,
-      url: this.projectData.url,
+      shortName: this.projectData.shortName,
+      coordinator: this.projectData.coordinator,
       startDate: this.projectData.startDate ? stringToDate(this.projectData.startDate) : null,
       endDate: this.projectData.endDate ? stringToDate(this.projectData.endDate) : null,
-      totalPatientsExpected: this.projectData.totalPatientsExpected,
-      coordinator: this.projectData.coordinator,
-      cEuco: this.projectData.cEuco,
-      studyData: this.projectData.studies,
       fundingSources: this.projectData.fundingSources,
-      services: this.projectData.services,
+      gaNumber: this.projectData.gaNumber,
+      studyData: this.projectData.studies,
       reportingPeriods: this.projectData.reportingPeriods,
+      publicSummary: this.projectData.publicSummary,
+      url: this.projectData.url,
+      // TODO: publications
+      // totalPatientsExpected: this.projectData.totalPatientsExpected,
     });
 
     this.onChangeFundingSources();
@@ -209,8 +184,8 @@ export class UpsertProjectComponent implements OnInit {
     payload.startDate = dateToString(payload.startDate);
     payload.endDate = dateToString(payload.endDate);
 
-    if (payload.cEuco?.id) {
-      payload.cEuco = payload.cEuco.id;
+    if (payload.coordinator?.id) {
+      payload.coordinator = payload.coordinator.id;
     }
 
     if (payload.fundingSources?.length > 0) {
@@ -221,16 +196,6 @@ export class UpsertProjectComponent implements OnInit {
       }
     } else {
       payload.fundingSources = [];
-    }
-
-    if (payload.services?.length > 0) {
-      for (let i = 0; i < payload.services.length; i++) {
-        if (payload.services[i]?.id) {
-          payload.services[i] = payload.services[i].id;
-        }
-      }
-    } else {
-      payload.services = [];
     }
   }
 
@@ -251,7 +216,7 @@ export class UpsertProjectComponent implements OnInit {
         const success = this.projectService.editProject(this.id, payload).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 200) {
-              // this.reuseService.notifyComponents();
+              this.reuseService.notifyComponents();
               return this.studyComponent.onSave(res.id).pipe(
                 mergeMap((success) => {
                   if (success) {
@@ -338,7 +303,7 @@ export class UpsertProjectComponent implements OnInit {
 
   onChangeFundingSources() {
     if (this.projectForm.value.fundingSources?.length > 0 && 
-      !(this.projectForm.value.fundingSources?.length == 1 && this.projectForm.value.fundingSources[0]?.name?.toLowerCase() == "private funding" )) {
+      !(this.projectForm.value.fundingSources?.length == 1 && this.projectForm.value.fundingSources[0]?.value?.toLowerCase() == "private funding" )) {
         this.hasPublicFunding = true;
     } else {
       this.hasPublicFunding = false;
@@ -346,14 +311,14 @@ export class UpsertProjectComponent implements OnInit {
   }
 
   // Necessary to write it as an arrow function
-  addFundingSource = (fsName) => {
-    let fs = {"id": "", "name": ""};
+  addFundingSource = (fsValue) => {
+    let fs = {"id": "", "value": ""};
     
     this.spinner.show();
-    return this.contextService.addFundingSource({'name': fsName}).pipe(
+    return this.contextService.addFundingSource({'value': fsValue}).pipe(
       mergeMap((s: any) => {
         fs.id = s.id;
-        fs.name = s.name;
+        fs.value = s.value;
         return this.contextService.updateFundingSources();
       }),
       mergeMap(() => {
@@ -373,12 +338,12 @@ export class UpsertProjectComponent implements OnInit {
 
   searchFundingSources(term: string, item) {
     term = term.toLocaleLowerCase();
-    return item.name?.toLocaleLowerCase().indexOf(term) > -1;
+    return item.value?.toLocaleLowerCase().indexOf(term) > -1;
   }
 
   displayFundingSources(fundingSources) {
     if (fundingSources) {
-      return fundingSources.map(fs => fs.name).join(", ");
+      return fundingSources.map(fs => fs.value).join(", ");
     }
     return "";
   }
@@ -387,210 +352,52 @@ export class UpsertProjectComponent implements OnInit {
     $event.stopPropagation(); // Clicks the option otherwise
 
     if (fsToRemove.id == -1) {  // Created locally by user
-      this.fundingSources = this.fundingSources.filter(fs => !(fs.id == fsToRemove.id && fs.name == fsToRemove.name));
+      this.fundingSources = this.fundingSources.filter(fs => !(fs.id == fsToRemove.id && fs.value == fsToRemove.value));
     } else {  // Already existing
-      this.spinner.show();
-      // Checking if other projects have this funding source
-      this.listService.getProjectsByFundingSource(fsToRemove.id).subscribe((res: []) => {
-        // Filtering out current project, as deletion on current project means the funding source has been de-selected
-        let resWithoutCurrent: ProjectInterface[] = res;
-        if (!this.isAdd) {
-          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.id);
-        }
-
-        if (resWithoutCurrent.length > 0) {
-          this.toastr.error(`Failed to delete this funding source as it is used in project${(resWithoutCurrent.length > 1) ? 's' : ''}:\
-           ${resWithoutCurrent.map(proj => proj.shortName).join(", ")}`, "Error deleting funding source", { timeOut: 20000, extendedTimeOut: 20000 });
-           this.spinner.hide();
-        } else {
-          // Delete funding source from the DB, then locally if succeeded
-          this.contextService.deleteFundingSource(fsToRemove.id).subscribe((res: any) => {
-            if (res.status !== 204) {
-              this.toastr.error('Error when deleting funding source', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
-            } else {
-              // Updating funding sources list
-              this.contextService.updateFundingSources().subscribe(() => {
-                this.spinner.hide();
-              });
-            }
-            this.spinner.hide();
-          }, error => {
-            this.toastr.error(error);
-            this.spinner.hide();
-          });
-        }
-      }, error => {
-        this.toastr.error(error);
-        this.spinner.hide();
-      });
+      this.contextService.deleteFundingSourceDropdown(fsToRemove, !this.isAdd);
     }
   }
 
-  // Necessary to write it as an arrow function
-  addService = (serviceName) => {
-    let service = {"id": "", "name": ""};
-    
-    this.spinner.show();
-    return this.contextService.addService({'name': serviceName}).pipe(
-      mergeMap((s: any) => {
-        service.id = s.id;
-        service.name = s.name;
-        return this.contextService.updateServices();
-      }),
-      mergeMap(() => {
-        this.spinner.hide();
-        return of(service);
-      }),
-      catchError((err) => {
-        this.toastr.error(err, "Error adding service", { timeOut: 20000, extendedTimeOut: 20000 });
-        return of(null);
-      })
-    ).toPromise();
+  // Necessary to write them as arrow functions
+  searchOrganisations = (term: string, item) => {
+    return this.contextService.searchOrganisations(term, item);
   }
 
-  searchServices(term: string, item) {
-    term = term.toLocaleLowerCase();
-    return item.name?.toLocaleLowerCase().indexOf(term) > -1;
+  addOrganisation = (orgName) => {
+    return this.contextService.addOrganisationDropdown(orgName);
   }
 
-  displayServices(services) {
-    if (services) {
-      return services.map(fs => fs.name).join(", ");
-    }
-    return "";
-  }
-
-  deleteService($event, sToRemove) {
+  deleteOrganisation($event, oToRemove) {
     $event.stopPropagation(); // Clicks the option otherwise
 
-    if (sToRemove.id == -1) {  // Created locally by user
-      this.services = this.services.filter(s => !(s.id == sToRemove.id && s.name == sToRemove.name));
+    if (oToRemove.id == -1) { // Created locally by user
+      this.organisations = this.organisations.filter(o => !(o.id == oToRemove.id && o.name == oToRemove.name));
     } else {  // Already existing
-      this.spinner.show();
-      // Checking if other projects have this service
-      this.listService.getProjectsByService(sToRemove.id).subscribe((res: []) => {
-        // Filtering out current project, as deletion on current project means the service has been de-selected
-        let resWithoutCurrent: ProjectInterface[] = res;
-        if (!this.isAdd) {
-          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.id);
-        }
-
-        if (resWithoutCurrent.length > 0) {
-          this.toastr.error(`Failed to delete this service as it is used in project${(resWithoutCurrent.length > 1) ? 's' : ''}:\
-           ${resWithoutCurrent.map(proj => proj.shortName).join(", ")}`, "Error deleting service", { timeOut: 20000, extendedTimeOut: 20000 });
-           this.spinner.hide();
-        } else {
-          // Delete service from the DB, then locally if succeeded
-          this.contextService.deleteService(sToRemove.id).subscribe((res: any) => {
-            if (res.status !== 204) {
-              this.toastr.error('Error when deleting service', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
-            } else {
-              // Updating services list
-              this.contextService.updateServices().subscribe(() => {
-                this.spinner.hide();
-              });
-            }
-            this.spinner.hide();
-          }, error => {
-            this.toastr.error(error);
-            this.spinner.hide();
-          });
-        }
-      }, error => {
-        this.toastr.error(error);
-        this.spinner.hide();
-      });
+      this.contextService.deleteOrganisationDropdown(oToRemove, !this.isAdd);
     }
   }
 
-  // Necessary to write it as an arrow function
+  // Necessary to write them as arrow functions
+  searchPersons = (term: string, item) => {
+    this.contextService.searchPersons(term, item);
+  }
+
   addPerson = (person) => {
-    const addPersonModal = this.modalService.open(PersonModalComponent, { size: 'lg', backdrop: 'static' });
-    addPersonModal.componentInstance.fullName = person;
-
-    return addPersonModal.result.then((result) => {
-      this.spinner.show();
-      if (result === null) {
-        return new Promise(null);
-      }
-
-      return this.contextService.addPerson(result).pipe(
-        mergeMap((p:any) => {
-          result.id = p.id;
-          return this.contextService.updatePersons();
-        }),
-        mergeMap(() => {
-          this.spinner.hide();
-          return of(result);
-        })
-      ).toPromise();
-    })
-    .catch((err) => {
-      this.spinner.hide();
-      return null;
-    });
+    return this.contextService.addPersonDropdown(person);
   }
 
-  searchPersons(term: string, item) {
-    term = term.toLocaleLowerCase();
-    return item.fullName?.toLocaleLowerCase().indexOf(term) > -1 || item.email?.toLocaleLowerCase().indexOf(term) > -1;
-  }
-
-  // TODO: generic method
   deletePerson($event, pToRemove) {
     $event.stopPropagation(); // Clicks the option otherwise
 
     if (pToRemove.id == -1) {  // Created locally by user
       this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.fullName));
     } else {  // Already existing
-      this.spinner.show();
-      // Checking if other projects have this service
-      this.listService.getProjectsByPerson(pToRemove.id).subscribe((res: []) => {
-        // Allowing deletion on current project, even if person is selected in another field/component (too complicated otherwise)
-        let resWithoutCurrent: ProjectInterface[] = res;
-        if (!this.isAdd) {
-          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.id);
-        }
-
-        if (resWithoutCurrent.length > 0) {
-          this.toastr.error(`Failed to delete this person as it is used in project${(resWithoutCurrent.length > 1) ? 's' : ''}:\
-           ${resWithoutCurrent.map(proj => proj.shortName).join(", ")}`, "Error deleting person", { timeOut: 20000, extendedTimeOut: 20000 });
-           this.spinner.hide();
-        } else {
-          // Delete person from the DB, then locally if succeeded
-          this.contextService.deletePerson(pToRemove.id).subscribe((res: any) => {
-            if (res.status !== 204) {
-              this.toastr.error('Error when deleting person', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
-            } else {
-              // Updating persons list
-              this.contextService.updatePersons().subscribe(() => {
-                this.spinner.hide();
-              });
-            }
-            this.spinner.hide();
-          }, error => {
-            this.toastr.error(error);
-            this.spinner.hide();
-          });
-        }
-      }, error => {
-        this.toastr.error(error);
-        this.spinner.hide();
-      });
+      this.contextService.deletePersonDropdown(pToRemove, !this.isAdd);
     }
   }
 
-  getTotalNumberOfSites() {
-    return "Coming soon!";
-  }
-
-  getTagTextColor(text) {
-    return colorHash(text)?.hex;
-  }
-
-  getTagBgColor(text) {
-    const h = colorHash(text);
-    return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
+  searchCountries(term: string, item) {
+    this.contextService.searchCountries(term, item);
   }
 
   getHttpLink(link: string) {
@@ -629,10 +436,5 @@ export class UpsertProjectComponent implements OnInit {
       left: 0, 
       behavior: 'smooth' 
     });
-  }
-
-  ngOnDestroy() {
-    this.scrollService.unsubscribeScroll();
-    this.subscription.unsubscribe();
   }
 }

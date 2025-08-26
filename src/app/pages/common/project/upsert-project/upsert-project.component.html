@@ -1,9 +1,9 @@
-<div class="card">
+<div class="card margin-side">
     <div class="card-header">
         <div id="navbar">
             <div class="row upsert-navbar">
-                <div class="col-md-8">
-                    <div class="view-title">{{projectForm.value.shortName ? projectForm.value.shortName : projectForm.value.name ? projectForm.value.name : ''}}</div>
+                <div class="col-md-8 d-inline-flex">
+                    <div class="view-title d-flex align-items-center">Project: {{projectForm.value.shortName ? projectForm.value.shortName : projectForm.value.name ? projectForm.value.name : ''}}</div>
                 </div>
                 <div class="col-md-4 text-right">
                     <ng-container *ngIf="isView">
@@ -30,14 +30,14 @@
 
     <div class="card-body" id="formContainer">
         <form [formGroup]="projectForm">
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <div class="text-value" class="mb-5 pb-4 view-sub-title">Project</div>
+            <div class="row section-title">
+                <div class="col-md-12 text-left">
+                    <div class="text-value" class="view-sub-sub-title">General information</div>
                 </div>
             </div>
             <div class="row form-group">
                 <div class="col-md-2">
-                    <div for="shortName" class="font-style text-capitalize">Short name<sup>*</sup></div>
+                    <div for="shortName" class="font-style text-capitalize">Short name<sup *ngIf="!isView">*</sup></div>
                     <input type="text" id="shortName" class="form-control" placeholder="e.g. INVENTS"
                         formControlName="shortName" *ngIf="!isView" />
                     <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && g.shortName.errors">
@@ -46,7 +46,7 @@
                     <div *ngIf="isView" class="text-value">{{projectData?.shortName ? projectData?.shortName : ''}}</div>
                 </div>
                 <div class="col-md-10">
-                    <div for="name" class="font-style text-capitalize">Name<sup>*</sup></div>
+                    <div for="name" class="font-style text-capitalize">Name<sup *ngIf="!isView">*</sup></div>
                     <textarea cols="30" rows="2" class="form-control" placeholder="Full project name"
                         formControlName="name" *ngIf="!isView" id="name" [ngClass]="{ 'is-invalid': submitted && g.name.errors }"></textarea>
                     <div *ngIf="isView" class="text-value">{{projectData?.name}}</div>
@@ -68,7 +68,6 @@
                         </div>
                     </div>
                     <div *ngIf="isView" class="text-value">{{projectData?.startDate}}</div>
-                    <!-- <div *ngIf="isView" class="text-value">{{dateToString(projectData?.startDate)}}</div> -->
                 </div>
                 <div class="col-md-2">
                     <div for="endDate" class="font-style text-capitalize">End date</div>
@@ -84,21 +83,120 @@
                             </button>
                         </div>
                     </div>
-                    <!-- <div *ngIf="isView" class="text-value">{{dateToString(projectData?.endDate)}}</div> -->
                     <div *ngIf="isView" class="text-value">{{projectData?.endDate}}</div>
                 </div>
-                <div class="col-md-2">
-                    <div for="totalPatientsExpected" class="font-style text-capitalize">Total patients expected</div>
-                    <input type="text" id="totalPatientsExpected" class="form-control"
-                        formControlName="totalPatientsExpected" *ngIf="!isView"/>
-                    <div *ngIf="isView" class="text-value">{{projectData?.totalPatientsExpected}}</div>
+                <div class="col-md-6">
+                    <div for="coordinator" class="font-style text-capitalize">Coordinator</div>
+                    <ng-select [items]="organisations" formControlName="coordinator" [searchFn]="searchOrganisations" [compareWith]="compareIds"
+                    [virtualScroll]="false" class="form-control ng-form-control" [clearSearchOnAdd]="true"
+                    notFoundText="No organisation found" placeholder="Start typing to add a new organisation" *ngIf="!isView" 
+                    addTagText="Add" [addTag]="addOrganisation" appendTo="body">
+                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                            <span class="ng-value-label">{{item.name}}{{item.shortName ? ' (' + item.shortName + ')' : ''}}{{item.country?.name ? ', ' + item.country.name : ''}}</span>
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                            <div class="row m-0">
+                                <div class="col-md-11 col-11 p-0 m-0">
+                                    <div class="col-md-12 p-0 m-0">{{item.name}}{{item.shortName ? ' (' + item.shortName + ')' : ''}}{{item.country?.name ? ', ' + item.country.name : ''}}</div>
+                                </div>
+                                <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                    <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                        <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteOrganisation($event, item)">
+                                        </i>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </ng-select>
+                    <div *ngIf="isView" class="text-value">{{projectData?.coordinator ? (projectData.coordinator.name + 
+                            (projectData.coordinator.shortName ? ' (' + projectData.coordinator.shortName + ')' : '') +
+                            (projectData.coordinator.country?.name ? ', ' + projectData.coordinator.country.name : '')) : ''}}
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <div for="totalNumberOfSites" class="font-style text-capitalize">Total no. of sites</div>
-                    <div class="text-value">{{getTotalNumberOfSites()}}</div>
+            </div>
+            <hr>
+            <div class="row section-title">
+                <div class="col-md-12 text-left">
+                    <div class="text-value" class="view-sub-sub-title">Project Funding</div>
                 </div>
+            </div>
+            <div class="row form-group">
                 <div class="col-md-4">
-                    <div for="url" class="font-style text-capitalize">URL</div>
+                    <div for="fundingSources" class="font-style text-capitalize">Funding source(s)</div>
+                    <ng-select [items]="fundingSources" formControlName="fundingSources" [multiple]="true" (change)="onChangeFundingSources()"
+                        [searchFn]="searchFundingSources" [compareWith]="compareIds" [clearSearchOnAdd]="true"
+                        [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" 
+                        notFoundText="No funding source found" placeholder="Start typing to add a new funding source" *ngIf="!isView" 
+                        addTagText="Add" [addTag]="addFundingSource" appendTo="body">
+                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                            <span class="ng-value-label">{{item.value}}</span>
+                            <span class="ng-value-icon right" (click)="clear(item)">×</span>
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                            <div class="row m-0">
+                                <div class="col-md-11 col-11 p-0 m-0">{{item.value}}</div>
+                                <div class="col-md-1 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                    <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteFundingSource($event, item)">
+                                    </i>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </ng-select>
+                    <div class="text-value" *ngIf="isView">{{displayFundingSources(projectData?.fundingSources)}}</div>
+                </div>
+                <div class="col-md-2" *ngIf="hasPublicFunding">
+                    <div for="gaNumber" class="font-style text-capitalize">GA number</div>
+                    <input type="text" id="gaNumber" class="form-control" placeholder="e.g. 101136365"
+                        formControlName="gaNumber" *ngIf="!isView"/>
+                    <div *ngIf="isView" class="text-value">{{projectData?.gaNumber ? projectData?.gaNumber : ''}}</div>
+                </div>
+            </div>
+            <hr>
+            <div class="row section-title-field">
+                <div class="col-md-12 text-left">
+                    <div class="text-value" class="view-sub-sub-title">Clinical studies</div>
+                </div>
+            </div>
+            <ng-container *ngIf="!isView; else viewStudies">
+                <app-upsert-study [studiesData]="projectData?.studies" [projectId]="id" [isView]="isView" [isEdit]="isEdit"></app-upsert-study>
+            </ng-container>
+            <ng-template #viewStudies>
+                <div class="row form-group">
+                    <div class="col-md-12">
+                        <ul>
+                            <li *ngFor="let study of projectData?.studies" class="text-value">
+                                <a [routerLink]="['/studies', study.id, 'view']">{{study.shortTitle}}</a>{{study.cEuco ? ', cEuCo: ' + study.cEuco.fullName + ' (' + study.cEuco.country?.name + ')' : ''}}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </ng-template>
+            <hr>
+            <div class="row section-title">
+                <div class="col-md-12 text-left">
+                    <div class="text-value" class="view-sub-sub-title">Timelines according to Consortium</div>
+                </div>
+            </div>
+            <div>
+                Coming soon!
+            </div>
+            <hr>
+            <div class="row section-title">
+                <div class="col-md-12 text-left">
+                    <div class="text-value" class="view-sub-sub-title">Publication information</div>
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col-md-12">
+                    <div for="publicSummary" class="font-style text-capitalize">Public summary</div>
+                    <textarea cols="30" rows="3" class="form-control" placeholder="Project's public summary (including ECRIN role)"
+                        formControlName="publicSummary" *ngIf="!isView" id="publicSummary"></textarea>
+                    <div *ngIf="isView" class="text-value">{{projectData?.publicSummary}}</div>
+                </div>
+            </div>
+            <div class="row form-group">
+                <div class="col-md-6">
+                    <div for="url" class="font-style text-capitalize">Project website</div>
                     <input type="text" id="url" class="form-control" placeholder="Link the the project's website"
                         formControlName="url" *ngIf="!isView" />
                     <a href="{{getHttpLink(projectData?.url)}}" target="_blank">
@@ -108,106 +206,11 @@
             </div>
             <div class="row form-group">
                 <div class="col-md-6">
-                    <div class="row">
-                        <div class="col-md-5">
-                            <div for="pi" class="font-style text-capitalize">Coordinator</div>
-                            <input type="text" id="coordinator" class="form-control" formControlName="coordinator" *ngIf="!isView" />
-                            <div *ngIf="isView" class="text-value">{{projectData?.coordinator}}</div>
-                        </div>
-                        <div class="col-md-7">
-                            <div for="cEuco" class="font-style text-capitalize">Coordinating EuCo</div>
-                            <ng-select [items]="persons" formControlName="cEuco" [searchFn]="searchPersons" [compareWith]="compareIds"
-                                [virtualScroll]="false" class="form-control ng-form-control" 
-                                notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" 
-                                addTagText="Add" [addTag]="addPerson" appendTo="body">
-                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
-                                    <span class="ng-value-label">{{item.fullName}}</span>
-                                </ng-template>
-                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
-                                    <div class="row m-0">
-                                        <div class="col-md-11 col-11 p-0 m-0">
-                                            <div class="col-md-12">{{item.fullName}}</div>
-                                            <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.email}}</div>
-                                        </div>
-                                        <div class="col-md-1 col-1 p-0 m-0 d-flex">
-                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deletePerson($event, item)">
-                                                </i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </ng-template>
-                            </ng-select>
-                            <div class="text-value" *ngIf="isView">{{projectData?.cEuco?.fullName}}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="row">
-                        <div class="col-md-9">
-                            <div for="fundingSources" class="font-style text-capitalize">Funding source(s)</div>
-                            <ng-select [items]="fundingSources" formControlName="fundingSources" [multiple]="true" (change)="onChangeFundingSources()"
-                                [searchFn]="searchFundingSources" [compareWith]="compareIds" [clearSearchOnAdd]="true"
-                                [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control" 
-                                notFoundText="No funding source found" placeholder="Start typing to add a new funding source" *ngIf="!isView" 
-                                addTagText="Add" [addTag]="addFundingSource" appendTo="body">
-                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
-                                    <span class="ng-value-label">{{item.name}}</span>
-                                    <span class="ng-value-icon right" (click)="clear(item)">×</span>
-                                </ng-template>
-                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
-                                    <div class="row m-0">
-                                        <div class="col-md-11 col-11 p-0 m-0">{{item.name}}</div>
-                                        <div class="col-md-1 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                            <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteFundingSource($event, item)">
-                                            </i>
-                                        </div>
-                                    </div>
-                                </ng-template>
-                            </ng-select>
-                            <div class="text-value" *ngIf="isView">{{displayFundingSources(projectData?.fundingSources)}}</div>
-                        </div>
-                        <div class="col-md-3" *ngIf="hasPublicFunding">
-                            <div for="gaNumber" class="font-style text-capitalize">GA number</div>
-                            <input type="text" id="gaNumber" class="form-control" placeholder="e.g. 101136365"
-                                formControlName="gaNumber" *ngIf="!isView"/>
-                            <div *ngIf="isView" class="text-value">{{projectData?.gaNumber ? projectData?.gaNumber : ''}}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row form-group">
-                <div class="col-md-6">
-                    <div for="services" class="font-style text-capitalize">ECRIN services</div>
-                    <ng-select [items]="services" formControlName="services" [multiple]="true"
-                        [searchFn]="searchServices" [compareWith]="compareIds" [clearSearchOnAdd]="true"
-                        [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control" 
-                        notFoundText="No service found" placeholder="Start typing to add a new service" *ngIf="!isView" 
-                        addTagText="Add" [addTag]="addService" appendTo="body">
-                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
-                            <span class="ng-value-label">{{item.name}}</span>
-                            <span class="ng-value-icon right" (click)="clear(item)">×</span>
-                        </ng-template>
-                        <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
-                            <div class="row m-0">
-                                <div class="col-md-11 col-11 p-0 m-0">{{item.name}}</div>
-                                <div class="col-md-1 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                    <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteService($event, item)">
-                                    </i>
-                                </div>
-                            </div>
-                        </ng-template>
-                    </ng-select>
-                    <div *ngIf="isView" class="tags-container">
-                        <span *ngFor="let service of projectData?.services" class="service-tag" 
-                            [ngStyle]="{ 'border-color': getTagTextColor(service.name), 'background-color': getTagBgColor(service.name) }">{{service.name}}</span>
-                    </div>
-                    <!-- <div class="text-value" *ngIf="isView">{{displayServices(projectData?.services)}}</div> -->
+                    <div for="url" class="font-style text-capitalize">Publications</div>
+                    <div>Coming soon!</div>
                 </div>
             </div>
         </form>
-        <hr>
-        <app-upsert-study [studiesData]="projectData?.studies" [projectId]="id" [isView]="isView" [isEdit]="isEdit"></app-upsert-study>
     </div>
 </div>
 <br />

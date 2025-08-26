@@ -6,7 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable, of, Subscription } from 'rxjs';
 import { catchError, filter, finalize, map, pairwise, switchMap, timeout } from 'rxjs/operators';
 import { DataObjectInterface } from 'src/app/_rms/interfaces/data-object/data-object.interface';
-import { OrganisationInterface } from 'src/app/_rms/interfaces/organisation/organisation.interface';
+import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
 import { StudyDataInterface } from 'src/app/_rms/interfaces/study/study.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
 import { CommonLookupService } from 'src/app/_rms/services/entities/common-lookup/common-lookup.service';

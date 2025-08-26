@@ -15,7 +15,7 @@ import { PersonModalComponent } from '../../person-modal/person-modal.component'
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ListService } from 'src/app/_rms/services/entities/list/list.service';
 import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
-import { PersonInterface } from 'src/app/_rms/interfaces/person.interface';
+import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
 import { StudyCTUInterface } from 'src/app/_rms/interfaces/study/study-ctus.interface';
 
 @Component({
@@ -190,49 +190,13 @@ export class UpsertCentreComponent implements OnInit {
     });
   }
 
-  // TODO: refactor spinner hide
-  // TODO: to common/util
   deletePerson($event, pToRemove) {
     $event.stopPropagation(); // Clicks the option otherwise
 
     if (pToRemove.id == -1) {  // Created locally by user
       this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.fullName));
     } else {  // Already existing
-      this.spinner.show();
-      // Checking if other projects have this service
-      this.listService.getProjectsByPerson(pToRemove.id).subscribe((res: []) => {
-        // Allowing deletion on current project, even if person is selected in another field/component (too complicated otherwise)
-        let resWithoutCurrent: ProjectInterface[] = res;
-        if (!this.isAdd) {
-          // TODO
-          resWithoutCurrent = res.filter((project: ProjectInterface) => project.id != this.projectId);
-        }
-
-        if (resWithoutCurrent.length > 0) {
-          this.toastr.error(`Failed to delete this person as it is used in project${(resWithoutCurrent.length > 1) ? 's' : ''}:\
-           ${resWithoutCurrent.map(proj => proj.shortName).join(", ")}`, "Error deleting person", { timeOut: 20000, extendedTimeOut: 20000 });
-           this.spinner.hide();
-        } else {
-          // Delete person from the DB, then locally if succeeded
-          this.contextService.deletePerson(pToRemove.id).subscribe((res: any) => {
-            if (res.status !== 204) {
-              this.toastr.error('Error when deleting person', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
-              this.spinner.hide();
-            } else {
-              // Updating persons list
-              this.contextService.updatePersons().subscribe(() => {
-                this.spinner.hide();
-              });
-            }
-          }, error => {
-            this.toastr.error(error);
-            this.spinner.hide();
-          });
-        }
-      }, error => {
-        this.toastr.error(error);
-        this.spinner.hide();
-      });
+      this.contextService.deletePersonDropdown(pToRemove, !this.isAdd);
     }
   }
 

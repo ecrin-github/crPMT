@@ -1,65 +1,91 @@
-<div class="row mt-5 pb-4">
-    <div class="col-2 text-left">
-        <div class="view-sub-sub-sub-title underline">Study countries</div>
-    </div>
-</div>
 <form [formGroup]="form" ngNativeValidate>
     <div formArrayName="studyCountries">
         <div class="row" *ngFor="let sc of getStudyCountriesForm().controls; let i = index;"
             [formGroupName]="i">
             <div class="col-12" [id]="'featpanel'+i">
                 <hr *ngIf="i > 0">
-                <div class="row">
-                    <div class="col-md-2">
-                        <div class="row">
-                            <div class="col-md-12 col-12">
-                                <div *ngIf="!isView">
-                                    <div for="country" class="font-style text-capitalize d-inline-block" *ngIf="!isView">Country*</div>
-                                    <button class="btn-invisible ml-1" (click)="onFlagClick(i)">
-                                        <i [ngClass]="sc.value.leadCountry ? 'lead-country-icon' : 'not-lead-country-icon'" 
-                                        class="fa fa-flag fa-regular"
-                                        [title]="sc.value.leadCountry ? 'Remove lead country status' : 'Make lead country'"
-                                        (mouseout)="changeFlag($event)" (mouseover)="changeFlag($event)"></i>
-                                    </button>
-                                    <i class="fa fa-trash ml-4 sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeStudyCountry(i)">
-                                    </i>
-                                    <ng-select [items]="countries" formControlName="country" [searchFn]="searchCountries"
-                                        [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds" (change)="onChangeCountry(i)"
-                                        notFoundText="No countries found" placeholder="Select country" *ngIf="!isView" 
-                                        appendTo="body" name="country" [ngClass]="{ 'is-invalid': submitted && getControls(i).country.errors?.required }">
-                                        <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
-                                        <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
-                                            <div class="row m-0">
-                                                <div class="col-md-12 col-12 p-0 m-0">{{item.name}}</div>
-                                            </div>
-                                        </ng-template>
-                                    </ng-select>
+                <ng-container *ngIf="!isSCPage; else cardView">
+                    <ng-container *ngTemplateOutlet="scView"></ng-container>
+                </ng-container>
+                <ng-template #cardView>
+                    <div class="card margin-side">
+                        <div class="card-header">
+                            <div id="navbar">
+                                <div class="row upsert-navbar">
+                                    <div class="col-md-8 d-inline-flex">
+                                        <div class="view-title d-flex align-items-center">
+                                            <a [routerLink]="['/studies', sc.value.study?.id, 'view']">{{sc.value.study?.shortTitle}}</a>&nbsp;study country: {{sc.value.country?.name}}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 text-right">
+                                        <ng-container *ngIf="isView">
+                                            <!-- <a [routerLink]="['/studies', id, 'edit']" class="btn btn-primary mr-1">
+                                                <i class="fa fa-edit"></i> Edit
+                                            </a> -->
+                                            <!-- <button class="btn btn-primary mr-1" (click)="print()">
+                                                <i class="fa fa-print"></i> PDF
+                                            </button>
+                                            <button class="btn btn-primary mr-1" (click)="jsonExport()">
+                                                <i class="fa fa-code"></i> JSON
+                                            </button> -->
+                                            <button class="btn btn-warning" (click)="back()">Back</button>
+                                        </ng-container>
+                                        <!-- <ng-container *ngIf="!isView">
+                                            <button class="btn btn-success mr-5" (click)="onSaveStudy()">Save</button>
+                                            <button class="btn btn-warning" (click)="back()">Cancel</button>
+                                        </ng-container> -->
+                                    </div>
                                 </div>
-                                <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).country.errors?.required">
-                                    <p>Please select the country</p>
-                                </div>
-                                <span *ngIf="isView" class="text-value country-name">{{sc.value.country?.name}}
-                                    <i class="fa fa-regular fa-flag lead-country-icon ml-1" *ngIf="sc.value.leadCountry" title="Lead country"></i>
-                                </span>
                             </div>
                         </div>
-                        <div class="row mt-2">
-                            <div class="col-md-12">
-                                <div for="totalNumberOfSites" class="font-style text-capitalize">Total no. of sites</div>
-                                <div class="text-value">{{getTotalNumberOfSites()}}</div>
-                            </div>
+                        <div id="permanentNavbar"></div>
+                        <div class="card-body" id="formContainer">
+                            <ng-container *ngTemplateOutlet="scView"></ng-container>
                         </div>
                     </div>
-                    <div class="col-md-10 justify-content-center">
-                        <app-upsert-study-ctu #studyCTUs [studyCTUsData]="sc.value.studyCTUs" [studyCountry]="sc.value"></app-upsert-study-ctu>
+                </ng-template>
+
+                <ng-template #scView>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="row">
+                                <div class="col-md-12 col-12">
+                                    <div *ngIf="!isView">
+                                        <div for="country" class="font-style text-capitalize d-inline-block" *ngIf="!isView">Country*</div>
+                                        <i class="fa fa-trash ml-4 sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeStudyCountry(i)">
+                                        </i>
+                                        <ng-select [items]="countries" formControlName="country" [searchFn]="searchCountries"
+                                            [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds" (change)="onChangeCountry(i)"
+                                            notFoundText="No countries found" placeholder="Select country" *ngIf="!isView" 
+                                            appendTo="body" name="country" [ngClass]="{ 'is-invalid': submitted && getControls(i).country.errors?.required }">
+                                            <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                                <div class="row m-0">
+                                                    <div class="col-md-12 col-12 p-0 m-0">{{item.name}}</div>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                    <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).country.errors?.required">
+                                        <p>Please select the country</p>
+                                    </div>
+                                    <span *ngIf="isView" class="text-value country-name">{{sc.value.country?.name}}
+                                        <i class="fa fa-regular fa-flag lead-country-icon ml-1" *ngIf="sc.value.leadCountry" title="Lead country"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-10 justify-content-center">
+                            <app-upsert-study-ctu #studyCTUs [studyCTUsData]="sc.value.studyCTUs" [studyCountry]="sc.value"></app-upsert-study-ctu>
+                        </div>
                     </div>
-                </div>
+                </ng-template>
             </div>
         </div>
     </div>
 </form>
 <div class="row mt-5 pb-4" *ngIf="!isView">
-    <div class="col-2 text-left justify-content-left">
+    <div class="col-3 text-left justify-content-left">
         <button class="btn btn-primary" (click)="addStudyCountry()">
             <i class="fa fa-plus"></i>New study country
         </button>

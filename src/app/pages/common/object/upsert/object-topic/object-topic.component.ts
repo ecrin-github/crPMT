@@ -9,7 +9,6 @@ import { CommonLookupService } from 'src/app/_rms/services/entities/common-looku
 import { DataObjectService } from 'src/app/_rms/services/entities/data-object/data-object.service';
 import { ConfirmationWindowComponent } from '../../../confirmation-window/confirmation-window.component';
 import { Router } from '@angular/router';
-import { TopicVocabularies } from 'src/app/_rms/interfaces/context/topic-vocabularies/topic-vocabularies';
 
 @Component({
   selector: 'app-object-topic',
@@ -231,7 +230,7 @@ export class ObjectTopicComponent implements OnInit {
     })
     this.emitTopic.emit({data: payload, isEmit: false});
   }
-  compareCTs(ct1: TopicVocabularies, ct2: TopicVocabularies): boolean {
+  compareCTs(ct1: any, ct2: any): boolean {
     return ct1?.id == ct2?.id;
   }
   customSearchCTs(term: string, item) {

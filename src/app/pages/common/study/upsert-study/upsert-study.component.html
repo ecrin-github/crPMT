@@ -4,224 +4,532 @@
             [formGroupName]="i">
             <div class="col-12" [id]="'featpanel'+i">
                 <hr *ngIf="i > 0">
-                <div class="row">
-                    <div class="col-8 text-left d-flex align-items-center">
-                        <div class="view-sub-sub-title mb-4 study-title">Study{{this.id ? '' : ' ' + (i+1)}}{{study.value.shortTitle ? ": " + study.value.shortTitle : "" }}</div>
-                        <i class="fa fa-trash ml-4 mb-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView && !id" (click)="removeStudy(i)">
-                        </i>
-                    </div>
-                    <div class="col-md-4 text-right" *ngIf="id">
-                        <ng-container *ngIf="isView">
-                            <a [routerLink]="['/studies', id, 'edit']" class="btn btn-primary mr-1">
-                                <i class="fa fa-edit"></i> Edit
-                            </a>
-                            <button class="btn btn-warning" (click)="back()">Back</button>
-                        </ng-container>
-                        <ng-container *ngIf="!isView">
-                            <button class="btn btn-success mr-5" (click)="onSaveStudy()">Save</button>
-                            <button class="btn btn-warning" (click)="back()">Cancel</button>
-                        </ng-container>
-                    </div>
-                </div>
-                <div class="row form-group">
-                    <div class="col-md-2">
-                        <div for="shortTitle" class="font-style text-capitalize">Short title</div>
-                        <input type="text" id="shortTitle" class="form-control" placeholder="e.g. RECOVERY"
-                            formControlName="shortTitle" *ngIf="!isView" />
-                        <div *ngIf="isView" class="text-value">{{study.value.shortTitle}}</div>
-                    </div>
-                    <div class="col-md-10">
-                        <div for="title" class="font-style text-capitalize">Title</div>
-                        <textarea cols="30" rows="2" class="form-control" placeholder="Full study title"
-                            formControlName="title" *ngIf="!isView" id="title"
-                            [ngClass]="{ 'is-invalid': submitted && getControls(i).title.errors }"></textarea>
-                            <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).title.errors">
-                                <p *ngIf="submitted && getControls(i).title.errors.required">Please enter the study title</p>
+                <!-- Displaying in an expansion panel only if displayed in parent project component, else displaying as "card" (like project) -->
+                <!-- Note: probably cleaner way to do this is to put single study form in separate child component and load form into parent component,
+                    maybe more complicated? see https://blog.profanis.me/blog/reactive-forms-in-parent-child-components -->
+                <ng-container *ngIf="!isStudyPage; else cardView">
+                    <mat-expansion-panel [expanded]="false">
+                        <mat-expansion-panel-header>
+                            <span class="view-sub-sub-title">Study{{this.id ? '' : ' ' + (i+1)}}{{study.value.shortTitle ? ": " + study.value.shortTitle : "" }}</span>
+                            <i class="fa fa-trash ml-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView && !id" (click)="deleteStudy($event, i)">
+                            </i>
+                        </mat-expansion-panel-header>
+                        <hr class="mt-0">
+                        <ng-container *ngTemplateOutlet="studyView"></ng-container>
+                    </mat-expansion-panel>
+                </ng-container>
+                <ng-template #cardView>
+                    <div class="card margin-side">
+                        <div class="card-header">
+                            <div id="navbar">
+                                <div class="row upsert-navbar">
+                                    <div class="col-md-8 d-inline-flex">
+                                        <div class="view-title d-flex align-items-center">Study: {{study.value.shortTitle}}
+                                            (<a [routerLink]="['/studies', study.value.project?.id, 'view']">{{study.value.project?.shortName}}</a>)</div>
+                                    </div>
+                                    <div class="col-md-4 text-right">
+                                        <ng-container *ngIf="isView">
+                                            <a [routerLink]="['/studies', id, 'edit']" class="btn btn-primary mr-1">
+                                                <i class="fa fa-edit"></i> Edit
+                                            </a>
+                                            <!-- <button class="btn btn-primary mr-1" (click)="print()">
+                                                <i class="fa fa-print"></i> PDF
+                                            </button>
+                                            <button class="btn btn-primary mr-1" (click)="jsonExport()">
+                                                <i class="fa fa-code"></i> JSON
+                                            </button> -->
+                                            <button class="btn btn-warning" (click)="back()">Back</button>
+                                        </ng-container>
+                                        <ng-container *ngIf="!isView">
+                                            <button class="btn btn-success mr-5" (click)="onSaveStudy()">Save</button>
+                                            <button class="btn btn-warning" (click)="back()">Cancel</button>
+                                        </ng-container>
+                                    </div>
+                                </div>
                             </div>
-                        <div *ngIf="isView" class="text-value">{{study.value.title}}</div>
+                        </div>
+                        <div id="permanentNavbar"></div>
+                        <div class="card-body" id="formContainer">
+                            <ng-container *ngTemplateOutlet="studyView"></ng-container>
+                        </div>
                     </div>
-                </div>
-                <div class="row form-group">
-                    <div class="col-md-2">
-                        <div for="trialId" class="font-style text-capitalize">Trial ID</div>
-                        <input type="text" id="trialId" class="form-control" placeholder=""
-                            formControlName="trialId" *ngIf="!isView" />
-                        <div *ngIf="isView" class="text-value">{{study.value.trialId}}</div>
+                </ng-template>
+
+                <ng-template #studyView>
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="text-value" class="view-sub-sub-title">General information</div>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <div for="trialRegistration" class="font-style text-capitalize">Trial registration</div>
-                        <input type="text" id="trialRegistration" class="form-control" placeholder=""
-                            formControlName="trialRegistration" *ngIf="!isView" />
-                        <div *ngIf="isView" class="text-value">{{study.value.trialRegistration}}</div>
+                    <div class="row form-group" *ngIf="isStudyPage && !isView">
+                        <div class="col-md-4">
+                            <div for="project" class="font-style text-capitalize">Parent project</div>
+                            <ng-select [items]="projects" formControlName="project" [searchFn]="searchProjects" [compareWith]="compareIds"
+                                [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No project found" 
+                                placeholder="Please select a project to link this study to" appendTo="body">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <span class="ng-value-label">{{item.shortName}}</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-12 col-12 p-0 m-0">
+                                            <div class="col-md-12">{{item.shortName}}</div>
+                                            <!-- <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.email}}</div> -->
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                        </div>
                     </div>
-                    <div class="col-md-2">
-                        <div for="category" class="font-style text-capitalize">Category</div>
-                        <input type="text" id="category" class="form-control" placeholder="study type?"
-                            formControlName="category" *ngIf="!isView" />
-                        <div *ngIf="isView" class="text-value">{{study.value.category}}</div>
+                    <div class="row form-group">
+                        <div class="col-md-2">
+                            <div for="shortTitle" class="font-style text-capitalize">Short title</div>
+                            <input type="text" id="shortTitle" class="form-control" placeholder="e.g. RECOVERY"
+                                formControlName="shortTitle" *ngIf="!isView" />
+                            <div *ngIf="isView" class="text-value">{{study.value.shortTitle}}</div>
+                        </div>
+                        <div class="col-md-10">
+                            <div for="title" class="font-style text-capitalize">Title</div>
+                            <textarea cols="30" rows="2" class="form-control" placeholder="Full study title"
+                                formControlName="title" *ngIf="!isView" id="title"
+                                [ngClass]="{ 'is-invalid': submitted && getControls(i).title.errors }"></textarea>
+                                <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).title.errors">
+                                    <p *ngIf="submitted && getControls(i).title.errors.required">Please enter the study title</p>
+                                </div>
+                            <div *ngIf="isView" class="text-value">{{study.value.title}}</div>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <div for="status" class="font-style text-capitalize">Status</div>
-                        <ng-select [items]="studyStatuses" formControlName="status"
-                            [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
-                            notFoundText="No study status found" placeholder="Select study status" *ngIf="!isView" 
-                            appendTo="body">
-                        </ng-select>
-                        <div class="text-value" *ngIf="isView">{{study.value.status}}</div>
-                    </div>
-                    <div class="col-md-2">
-                        <div for="regulatoryFramework" class="font-style text-capitalize">Regulatory Framework</div>
-                        <ng-select [items]="regulatoryFrameworks" formControlName="regulatoryFramework"  (change)="onChangeRegulatoryFramework()"
-                            [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
-                            notFoundText="No regulatory frameworks found" placeholder="Select regulatory framework" *ngIf="!isView" 
-                            appendTo="body">
-                        </ng-select>
-                        <div class="text-value" *ngIf="isView">{{study.value.regulatoryFramework}}</div>
-                    </div>
-                </div>
-                <div class="row form-group">
-                    <div class="col-md-6">
-                        <div class="row">
-                            <div class="col-md-7">
-                                <div for="pi" class="font-style text-capitalize">PI</div>
-                                <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds"
-                                    [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" 
-                                    placeholder="Start typing to add a new person" *ngIf="!isView" 
-                                    addTagText="Add" [addTag]="addPerson" appendTo="body">
-                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
-                                        <span class="ng-value-label">{{item.fullName}}</span>
-                                    </ng-template>
-                                    <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
-                                        <div class="row m-0">
-                                            <div class="col-md-11 col-11 p-0 m-0">
-                                                <div class="col-md-12">{{item.fullName}}</div>
-                                                <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.email}}</div>
-                                            </div>
-                                            <div class="col-md-1 col-1 p-0 m-0 d-flex">
-                                                <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                                    <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deletePerson($event, item)">
-                                                    </i>
-                                                </div>
+                    <div class="row form-group">
+                        <div class="col-md-4">
+                            <div for="sponsorOrganisation" class="font-style text-capitalize">Sponsor organisation</div>
+                            <ng-select [items]="organisations" formControlName="sponsorOrganisation" [searchFn]="searchOrganisations" [compareWith]="compareIds"
+                            [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No organisation found" 
+                            placeholder="Start typing to add a new organisation" *ngIf="!isView" addTagText="Add" [addTag]="addOrganisation" appendTo="body">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <span class="ng-value-label">{{item.name}}{{item.shortName ? ' (' + item.shortName + ')' : ''}}{{item.country?.name ? ', ' + item.country.name : ''}}</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-11 col-11 p-0 m-0">
+                                            <div class="col-md-12 p-0 m-0">{{item.name}}{{item.shortName ? ' (' + item.shortName + ')' : ''}}{{item.country?.name ? ', ' + item.country.name : ''}}</div>
+                                        </div>
+                                        <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteOrganisation($event, item)">
+                                                </i>
                                             </div>
                                         </div>
-                                    </ng-template>
-                                </ng-select>
-                                <div class="text-value" *ngIf="isView">{{study.value.pi?.fullName}}</div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div class="text-value" *ngIf="isView">{{study.value.sponsorOrganisation?.name}}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div for="pi" class="font-style text-capitalize">PI (lead?)</div>
+                            <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds"
+                                [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" 
+                                placeholder="Start typing to add a new person" *ngIf="!isView" [clearSearchOnAdd]="true"
+                                addTagText="Add" [addTag]="addPerson" appendTo="body">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <span class="ng-value-label">{{item.fullName}}</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-11 col-11 p-0 m-0">
+                                            <div class="col-md-12">{{item.fullName}}</div>
+                                            <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.email}}</div>
+                                        </div>
+                                        <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deletePerson($event, item)">
+                                                </i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div class="text-value" *ngIf="isView">{{study.value.pi?.fullName}}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div for="sponsorCountry" class="font-style text-capitalize">Sponsor Country</div>
+                            <ng-select [items]="countries" formControlName="sponsorCountry" [searchFn]="searchCountries"
+                                [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
+                                notFoundText="No countries found" placeholder="Select sponsor country" *ngIf="!isView" 
+                                appendTo="body" name="sponsorCountry">
+                                <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-12 col-12 p-0 m-0">{{item.name}}</div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div class="text-value" *ngIf="isView">{{study.value.sponsorCountry?.name}}</div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-4">
+                            <div for="medicalFields" class="font-style text-capitalize">Medical fields</div>
+                            <ng-select [items]="medicalFields" formControlName="medicalFields" [multiple]="true"
+                                [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true"
+                                [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" 
+                                notFoundText="No medical field found" placeholder="Medical fields" *ngIf="!isView" appendTo="body">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <span class="ng-value-label">{{item.value}}</span>
+                                    <span class="ng-value-icon right" (click)="clear(item)">×</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-12 p-0 m-0">{{item.value}}</div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div *ngIf="isView" class="tags-container">
+                                <span *ngFor="let mf of study.value.medicalFields" class="tag" 
+                                    [ngStyle]="{ 'border-color': getTagTextColor(mf.value), 'background-color': getTagBgColor(mf.value) }">{{mf.value}}</span>
                             </div>
-                            <div class="col-md-5">
-                                <div for="sponsor" class="font-style text-capitalize">Sponsor</div>
-                                <input type="text" id="sponsor" class="form-control" placeholder="Sponsor name"
-                                    formControlName="sponsor" *ngIf="!isView" />
-                                <div *ngIf="isView" class="text-value">{{study.value.sponsor}}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div for="populations" class="font-style text-capitalize">Population(s)</div>
+                            <ng-select [items]="populations" formControlName="populations" [multiple]="true"
+                                [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true"
+                                [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" 
+                                notFoundText="No population found" placeholder="Populations" *ngIf="!isView" appendTo="body">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <span class="ng-value-label">{{item.value}}</span>
+                                    <span class="ng-value-icon right" (click)="clear(item)">×</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-12 p-0 m-0">{{item.value}}</div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div *ngIf="isView" class="tags-container">
+                                <span *ngFor="let population of study.value.populations" class="tag" 
+                                    [ngStyle]="{ 'border-color': getTagTextColor(population.value), 'background-color': getTagBgColor(population.value) }">{{population.value}}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div for="rareDiseases" class="font-style text-capitalize">Rare diseases</div>
+                            <input *ngIf="!isView" type="checkbox" id="rareDiseases" class="form-control checkbox" formControlName="rareDiseases"/>
+                            <div *ngIf="isView" class="text-value">{{study.value.rareDiseases ? 'Yes' : 'No'}}</div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-4">
+                            <div for="regulatoryFramework" class="font-style text-capitalize">Regulatory Framework</div>
+                            <ng-select [items]="regulatoryFrameworks" formControlName="regulatoryFramework"  (change)="onChangeRegulatoryFramework(i)"
+                                [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
+                                notFoundText="No regulatory frameworks found" placeholder="Select regulatory framework" *ngIf="!isView" 
+                                appendTo="body">
+                            </ng-select>
+                            <div class="text-value" *ngIf="isView">{{study.value.regulatoryFramework}}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div for="complexTrialDesign" class="font-style text-capitalize">Complex trial design</div>
+                            <input *ngIf="!isView" type="checkbox" id="complexTrialDesign" class="form-control checkbox" 
+                                (change)="onChangeComplexTrialDesign(i)" formControlName="complexTrialDesign"/>
+                            <div *ngIf="isView" class="text-value">{{study.value.complexTrialDesign ? 'Yes' : 'No'}}</div>
+                        </div>
+                        <div class="col-md-4" *ngIf="isComplexTrial[i]">
+                            <div for="pi" class="font-style text-capitalize">Complex trial type</div>
+                            <ng-select [items]="complexTrialTypes" formControlName="complexTrialType" [searchFn]="searchClassValues"
+                                [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" 
+                                notFoundText="No complex trial type found" placeholder="Start typing to add a new type" 
+                                *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addComplexTrialType" appendTo="body">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <span class="ng-value-label">{{item.value}}</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-11 col-11 p-0 m-0">
+                                            <div class="col-md-12 p-0 m-0">{{item.value}}</div>
+                                        </div>
+                                        <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteComplexTrialType($event, item)">
+                                                </i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div class="text-value" *ngIf="isView">{{study.value.complexTrialType}}</div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-4">
+                            <div for="trialRegistrationNumber" class="font-style text-capitalize">Trial registration number</div>
+                            <input type="text" id="trialRegistrationNumber" class="form-control" placeholder=""
+                                formControlName="trialRegistrationNumber" *ngIf="!isView" />
+                            <div *ngIf="isView" class="text-value">{{study.value.trialRegistrationNumber}}</div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-12">
+                            <div for="summary" class="font-style text-capitalize">Summary</div>
+                            <textarea cols="30" rows="3" class="form-control" placeholder="Study summary"
+                                formControlName="summary" *ngIf="!isView" id="summary" [ngClass]="{ 'is-invalid': submitted && getControls(i).summary.errors }"></textarea>
+                                <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).summary.errors">
+                                    <p *ngIf="submitted && getControls(i).summary.errors.required">Please enter the study summary</p>
+                                </div>
+                            <div *ngIf="isView" class="text-value">{{study.value.summary}}</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="text-value" class="view-sub-sub-title">Country, Site information</div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-4">
+                            <div for="cEuco" class="font-style text-capitalize">Coordinating EuCo</div>
+                            <ng-select [items]="eucos" formControlName="cEuco" [searchFn]="searchPersons" [compareWith]="compareIds"
+                                [virtualScroll]="false" class="form-control ng-form-control" 
+                                notFoundText="No people found" placeholder="Start typing to add a new EuCo" *ngIf="!isView" 
+                                addTagText="Add" [addTag]="addPerson" appendTo="body">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <span class="ng-value-label">{{item.fullName}}</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-12 p-0 m-0">{{item.fullName}} ({{item.country?.name}})</div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div class="text-value" *ngIf="isView">{{study.value.cEuco?.fullName}}{{study.value.cEuco?.country ? ' (' + study.value.cEuco?.country?.name + ')' : ''}}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div for="cEuco" class="font-style text-capitalize">Coordinating country</div>
+                            <ng-select [items]="countries" formControlName="coordinatingCountry" [searchFn]="searchCountries"
+                                [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
+                                notFoundText="No countries found" placeholder="Select coordinating country" *ngIf="!isView" 
+                                appendTo="body" name="coordinatingCountry">
+                                <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-12 col-12 p-0 m-0">{{item.name}}</div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div class="text-value" *ngIf="isView">{{study.value.coordinatingCountry?.name}}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div for="totalPatientsExpected" class="font-style text-capitalize">Total patients expected</div>
+                            <input type="text" id="totalPatientsExpected" class="form-control"
+                                formControlName="totalPatientsExpected" *ngIf="!isView"/>
+                            <div *ngIf="isView" class="text-value">{{study.value.totalPatientsExpected}}</div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div for="services" class="font-style text-capitalize">ECRIN services</div>
+                            <ng-select [items]="services" formControlName="services" [multiple]="true"
+                                [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true"
+                                [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" 
+                                notFoundText="No service found" placeholder="Start typing to add a new service" *ngIf="!isView" 
+                                addTagText="Add" [addTag]="addService" appendTo="body">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <span class="ng-value-label">{{item.value}}</span>
+                                    <span class="ng-value-icon right" (click)="clear(item)">×</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-11 col-11 p-0 m-0">{{item.value}}</div>
+                                        <div class="col-md-1 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                            <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteService($event, item)">
+                                            </i>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div *ngIf="isView" class="tags-container">
+                                <span *ngFor="let service of study.value.services" class="tag" 
+                                    [ngStyle]="{ 'border-color': getTagTextColor(service.value), 'background-color': getTagBgColor(service.value) }">{{service.value}}</span>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-2">
-                        <div for="population" class="font-style text-capitalize">Population</div>
-                        <ng-select [items]="populations" formControlName="population"
-                            [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
-                            notFoundText="No populations found" placeholder="Select population" *ngIf="!isView" 
-                            appendTo="body">
-                        </ng-select>
-                        <div class="text-value" *ngIf="isView">{{study.value.population}}</div>
-                    </div>
-                    <div class="col-md-2">
-                        <div for="recruitmentStart" class="font-style text-capitalize">Recruitment start</div>
-                        <div class="input-group" *ngIf="!isView">
-                            <input class="form-control" placeholder="yyyy-mm-dd"
-                                name="recruitmentStart" ngbDatepicker #recruitmentStart="ngbDatepicker"
-                                [ngClass]="{ 'is-invalid': submitted && getControls(i).recruitmentStart.errors }"
-                                formControlName="recruitmentStart" container='body'>
-                            <div class="input-group-append">
-                                <button class="btn btn-primary"
-                                    (click)="recruitmentStart.toggle()" type="button">
-                                    <i class="fa fa-calendar"></i>
-                                </button>
+                    <ng-container *ngIf="!isView; else viewStudyCountries">
+                        <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [studyId]="study.value.id" [projectId]="projectId"></app-upsert-study-country>
+                    </ng-container>
+                    <ng-template #viewStudyCountries>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <div class="font-style underline">Study countries</div>
+                                <ul>
+                                    <li *ngFor="let sc of study.value.studyCountries">
+                                        <!-- <span class="text-value">{{sc.country?.name}}</span> -->
+                                        <a [routerLink]="['/study-countries', sc.id, 'view']" class="text-value">{{sc.country?.name}}</a>
+                                        <ul>
+                                            <li *ngFor="let sctu of sc.studyCtus" class="text-value">
+                                                {{sctu.ctu.name}} ({{sctu.centres.length}} site{{sctu.centres.length != 1 ? 's' : ''}})
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
-                        <div *ngIf="isView" class="text-value">{{dateToString(study.value.recruitmentStart)}}</div>
-                    </div>
-                    <div class="col-md-2">
-                        <div for="recruitmentEnd" class="font-style text-capitalize">Recruitment end</div>
-                        <div class="input-group" *ngIf="!isView">
-                            <input class="form-control" placeholder="yyyy-mm-dd"
-                                name="recruitmentEnd" ngbDatepicker #recruitmentEnd="ngbDatepicker"
-                                [ngClass]="{ 'is-invalid': submitted && getControls(i).recruitmentEnd.errors }"
-                                formControlName="recruitmentEnd" container='body'>
-                            <div class="input-group-append">
-                                <button class="btn btn-primary"
-                                    (click)="recruitmentEnd.toggle()" type="button">
-                                    <i class="fa fa-calendar"></i>
-                                </button>
+                        <!-- <div class="row mt-5 pb-4">
+                            <div class="col-2 text-left">
+                                <div class="view-sub-sub-sub-title underline">Study countries</div>
                             </div>
+                        </div> -->
+                    </ng-template>
+                    <hr>
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="text-value" class="view-sub-sub-title">Clinical study timelines</div>
                         </div>
-                        <div *ngIf="isView" class="text-value">{{dateToString(study.value.recruitmentEnd)}}</div>
                     </div>
-                </div>
-                <div class="row form-group align-items-end">
-                    <div class="col-md-2">
-                        <div for="firstPatientIn" class="font-style text-capitalize">First patient in</div>
-                        <div class="input-group" *ngIf="!isView">
-                            <input class="form-control" placeholder="yyyy-mm-dd"
-                                name="firstPatientIn" ngbDatepicker #firstPatientIn="ngbDatepicker"
-                                [ngClass]="{ 'is-invalid': submitted && getControls(i).firstPatientIn.errors }"
-                                formControlName="firstPatientIn" container='body'>
-                            <div class="input-group-append">
-                                <button class="btn btn-primary"
-                                    (click)="firstPatientIn.toggle()" type="button">
-                                    <i class="fa fa-calendar"></i>
-                                </button>
+                    <div class="row form-group">
+                        <div class="col-md-3">
+                            <div for="recruitmentStart" class="font-style text-capitalize">Recruitment start</div>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd"
+                                            name="recruitmentStart" ngbDatepicker #recruitmentStart="ngbDatepicker"
+                                            [ngClass]="{ 'is-invalid': submitted && getControls(i).recruitmentStart.errors }"
+                                            formControlName="recruitmentStart" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary"
+                                                (click)="recruitmentStart.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            <div *ngIf="isView" class="text-value">{{dateToString(study.value.recruitmentStart)}}</div>
                         </div>
-                        <div *ngIf="isView" class="text-value">{{dateToString(study.value.firstPatientIn)}}</div>
-                    </div>
-                    <div class="col-md-2">
-                        <div for="lastPatientOut" class="font-style text-capitalize">Last Patient Out</div>
-                        <div class="input-group" *ngIf="!isView">
-                            <input class="form-control" placeholder="yyyy-mm-dd"
-                                name="lastPatientOut" ngbDatepicker #lastPatientOut="ngbDatepicker"
-                                [ngClass]="{ 'is-invalid': submitted && getControls(i).lastPatientOut.errors }"
-                                formControlName="lastPatientOut" container='body'>
-                            <div class="input-group-append">
-                                <button class="btn btn-primary"
-                                    (click)="lastPatientOut.toggle()" type="button">
-                                    <i class="fa fa-calendar"></i>
-                                </button>
+                        <div class="col-md-3">
+                            <div for="recruitmentEnd" class="font-style text-capitalize">Recruitment end</div>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd"
+                                            name="recruitmentEnd" ngbDatepicker #recruitmentEnd="ngbDatepicker"
+                                            [ngClass]="{ 'is-invalid': submitted && getControls(i).recruitmentEnd.errors }"
+                                            formControlName="recruitmentEnd" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary"
+                                                (click)="recruitmentEnd.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            <div *ngIf="isView" class="text-value">{{dateToString(study.value.recruitmentEnd)}}</div>
                         </div>
-                        <div *ngIf="isView" class="text-value">{{dateToString(study.value.lastPatientOut)}}</div>
                     </div>
-                    <div class="col-md-3">
-                        <div for="treatmentAndFollowUpDurationPerPatient" class="font-style text-capitalize">Treatment And F/U Duration/Patient</div>
-                        <input type="text" id="treatmentAndFollowUpDurationPerPatient" class="form-control"
-                            formControlName="treatmentAndFollowUpDurationPerPatient" *ngIf="!isView" />
-                        <div *ngIf="isView" class="text-value">{{study.value.treatmentAndFollowUpDurationPerPatient}}</div>
-                    </div>
-                    <div class="col-md-3"  *ngIf="!isObservational">
-                        <div for="treatmentPeriodPerPatient" class="font-style text-capitalize">Treatment Period/Patient</div>
-                        <input type="text" id="treatmentPeriodPerPatient" class="form-control"
-                            formControlName="treatmentPeriodPerPatient" *ngIf="!isView" />
-                        <div *ngIf="isView" class="text-value">{{study.value.treatmentPeriodPerPatient}}</div>
-                    </div>
-                </div>
-                <div class="row form-group">
-                    <div class="col-md-12">
-                        <div for="summary" class="font-style text-capitalize">Summary</div>
-                        <textarea cols="30" rows="3" class="form-control" placeholder="Study summary"
-                            formControlName="summary" *ngIf="!isView" id="summary" [ngClass]="{ 'is-invalid': submitted && getControls(i).summary.errors }"></textarea>
-                            <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).summary.errors">
-                                <p *ngIf="submitted && getControls(i).summary.errors.required">Please enter the study summary</p>
+                    <div class="row form-group align-items-end">
+                        <div class="col-md-3" *ngIf="!isObservational[i]">
+                            <div for="treatmentDurationPerPatient" class="font-style text-capitalize">Treatment Duration/Patient</div>
+                            <div class="row">
+                                <div class="col-md-3 pr-0">
+                                    <input type="text" id="treatmentDurationPerPatient" class="form-control"
+                                        formControlName="treatmentDurationPerPatient" *ngIf="!isView" />
+                                </div>
+                                <div class="col-md-6 pl-0">
+                                    <ng-select [items]="treatmentUnits" formControlName="treatmentDurationPerPatientUnit"
+                                        [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
+                                        notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" 
+                                        appendTo="body">
+                                    </ng-select>
+                                </div>
                             </div>
-                        <div *ngIf="isView" class="text-value">{{study.value.summary}}</div>
+                            <div *ngIf="isView" class="text-value">{{study.value.treatmentDurationPerPatient}} {{study.value.treatmentDurationPerPatientUnit}}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div for="treatmentAndFollowUpDurationPerPatient" class="font-style text-capitalize">Treatment And F/U Duration/Patient</div>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="row">
+                                        <div class="col-md-3 pr-0">
+                                            <input type="text" id="treatmentAndFollowUpDurationPerPatient" class="form-control"
+                                                formControlName="treatmentAndFollowUpDurationPerPatient" *ngIf="!isView" />
+                                        </div>
+                                        <div class="col-md-6 pl-0">
+                                            <ng-select [items]="treatmentUnits" formControlName="treatmentAndFollowUpDurationPerPatientUnit"
+                                                [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
+                                                notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" 
+                                                appendTo="body">
+                                            </ng-select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isView" class="text-value">{{study.value.treatmentAndFollowUpDurationPerPatient}} {{study.value.treatmentAndFollowUpDurationPerPatientUnit}}</div>
+                        </div>
                     </div>
-                </div>
-                <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [studyId]="study.value.id" [projectId]="projectId"></app-upsert-study-country>
+                    <div class="row form-group">
+                        <div class="col-md-3">
+                            <div for="firstPatientIn" class="font-style text-capitalize">First patient in</div>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd"
+                                            name="firstPatientIn" ngbDatepicker #firstPatientIn="ngbDatepicker"
+                                            [ngClass]="{ 'is-invalid': submitted && getControls(i).firstPatientIn.errors }"
+                                            formControlName="firstPatientIn" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary"
+                                                (click)="firstPatientIn.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isView" class="text-value">{{dateToString(study.value.firstPatientIn)}}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div for="lastPatientOut" class="font-style text-capitalize">Last Patient Out</div>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd"
+                                            name="lastPatientOut" ngbDatepicker #lastPatientOut="ngbDatepicker"
+                                            [ngClass]="{ 'is-invalid': submitted && getControls(i).lastPatientOut.errors }"
+                                            formControlName="lastPatientOut" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary"
+                                                (click)="lastPatientOut.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isView" class="text-value">{{dateToString(study.value.lastPatientOut)}}</div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="text-value" class="view-sub-sub-title">Overall status</div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-4">
+                            <div for="status" class="font-style text-capitalize">Status</div>
+                            <ng-select [items]="studyStatuses" formControlName="status"
+                                [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
+                                notFoundText="No study status found" placeholder="Select study status" *ngIf="!isView" 
+                                appendTo="body">
+                            </ng-select>
+                            <div class="text-value" *ngIf="isView">{{study.value.status}}</div>
+                        </div>
+                    </div>
+                </ng-template>
             </div>
         </div>
     </div>
 </form>
 <hr *ngIf="getStudiesForm().controls.length > 0">
-<div class="row mt-5 pb-4" *ngIf="!isView && !id">
+<div class="row" *ngIf="!isStudyPage && !isView">
     <div class="col-2 d-flex align-items-center justify-content-left">
         <button class="btn btn-primary" (click)="addStudy()">
             <i class="fa fa-plus"></i>New study

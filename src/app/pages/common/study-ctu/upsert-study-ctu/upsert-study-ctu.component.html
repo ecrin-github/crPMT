@@ -1,6 +1,6 @@
-<mat-expansion-panel [expanded]="true">
+<mat-expansion-panel [expanded]="false">
     <mat-expansion-panel-header>
-        <span [title]="studyCountry?.country?.name" class="view-sub-sub-sub-title">{{displayCountryFlag()}} CTUs</span>
+        <span [title]="studyCountry?.country?.name" class="view-sub-sub-title">{{displayCountryFlag()}} CTUs</span>
     </mat-expansion-panel-header>
     <form [formGroup]="form" ngNativeValidate>
         <ng-template [ngIf]="getStudyCTUsForm().length <= 0 && isView">
@@ -40,7 +40,7 @@
                                         <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeStudyCTU(i)"></i>
                                     </div>
                                 </div>
-                                <div class="view-sub-sub-sub-title mb-4 text-center" *ngIf="isView">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}
+                                <div class="view-sub-sub-title mb-4 text-center" *ngIf="isView">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}
                                     <button [aria-expanded]="isView ? 'false' : 'true'" [aria-controls]="'ctuInfo'+studyCountry?.country?.iso2+i" class="ctuToggleButton"
                                         [ngClass]="isView ? 'ctuToggleButtonClosed' : 'ctuToggleButtonOpened'" title="Display more CTU info"
                                         [id]="'toggleButton'+studyCountry?.country?.iso2+i" (click)="toggleCTUInfo($event)">❯</button>

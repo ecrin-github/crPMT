@@ -21,12 +21,20 @@ export class ListService {
     return this.http.get(`${base}/core/projects-by-funding-source/${fsId}`);
   }
 
+  getProjectsByOrganisation(orgId) {
+    return this.http.get(`${base}/core/projects-by-organisation/${orgId}`);
+  }
+
   getProjectsByService(sId) {
     return this.http.get(`${base}/core/projects-by-service/${sId}`);
   }
 
   getProjectsByPerson(pId) {
     return this.http.get(`${base}/core/projects-by-person/${pId}`);
+  }
+
+  getReferenceCountByClass(id, className) {
+    return this.http.get(`${base}/core/reference-count-by-class/${className}/${id}`);
   }
 
   // Study list
