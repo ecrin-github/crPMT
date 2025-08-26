@@ -83,13 +83,13 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-2">
-                            <div for="shortTitle" class="font-style text-capitalize">Short title</div>
+                            <div for="shortTitle" class="font-style text-capitalize">Short name</div>
                             <input type="text" id="shortTitle" class="form-control" placeholder="e.g. RECOVERY"
                                 formControlName="shortTitle" *ngIf="!isView" />
                             <div *ngIf="isView" class="text-value">{{study.value.shortTitle}}</div>
                         </div>
                         <div class="col-md-10">
-                            <div for="title" class="font-style text-capitalize">Title</div>
+                            <div for="title" class="font-style text-capitalize">Name</div>
                             <textarea cols="30" rows="2" class="form-control" placeholder="Full study title"
                                 formControlName="title" *ngIf="!isView" id="title"
                                 [ngClass]="{ 'is-invalid': submitted && getControls(i).title.errors }"></textarea>

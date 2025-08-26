@@ -86,7 +86,7 @@
                     <div *ngIf="isView" class="text-value">{{projectData?.endDate}}</div>
                 </div>
                 <div class="col-md-6">
-                    <div for="coordinator" class="font-style text-capitalize">Coordinator</div>
+                    <div for="coordinator" class="font-style text-capitalize">Coordinator (Consortium)</div>
                     <ng-select [items]="organisations" formControlName="coordinator" [searchFn]="searchOrganisations" [compareWith]="compareIds"
                     [virtualScroll]="false" class="form-control ng-form-control" [clearSearchOnAdd]="true"
                     notFoundText="No organisation found" placeholder="Start typing to add a new organisation" *ngIf="!isView" 
@@ -188,7 +188,7 @@
             </div>
             <div class="row form-group">
                 <div class="col-md-12">
-                    <div for="publicSummary" class="font-style text-capitalize">Public summary</div>
+                    <div for="publicSummary" class="font-style text-capitalize">Public summary (including ECRIN role)</div>
                     <textarea cols="30" rows="3" class="form-control" placeholder="Project's public summary (including ECRIN role)"
                         formControlName="publicSummary" *ngIf="!isView" id="publicSummary"></textarea>
                     <div *ngIf="isView" class="text-value">{{projectData?.publicSummary}}</div>
