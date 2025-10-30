@@ -3,7 +3,7 @@
         <h5 class="modal-title">{{title}}</h5>
     </div>
     <div class="modal-body">
-        <div class="row ml-3 form-group">
+        <div class="row ms-3 form-group">
             <div class="col-md-12" *ngIf="type === 'study'" [formGroup]="studyForm">
                 <label for="study" class="font-style text-capitalize">Study</label>
                 <ng-select id="study" [items]="studyList" bindLabel="id" bindValue="id" formControlName="studyId"
@@ -23,7 +23,7 @@
                 </ng-select>
             </div>
         </div>
-        <div class="row ml-3 form-group">
+        <div class="row ms-3 form-group">
             <div class="col-md-12" *ngIf="type === 'study' || type === 'dataObject'" [formGroup]="objectForm">
                 <label for="study" class="font-style text-capitalize">Data Object</label>
                 <ng-select [items]="objectList" bindLabel="id" bindValue="id" formControlName="objectId"
@@ -43,7 +43,7 @@
                 </ng-select>
             </div>
         </div>
-        <div class="row ml-3 form-group">
+        <div class="row ms-3 form-group">
             <div class="col-md-12" *ngIf="type === 'user'" [formGroup]="userForm">
                 <label for="study" class="font-style text-capitalize">People</label>
                 <ng-select [items]="userList" bindLabel="id" bindValue="id" formControlName="person"

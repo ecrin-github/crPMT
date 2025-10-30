@@ -58,12 +58,12 @@
                 <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
                 <mat-cell *matCellDef="let row">
                     <a [routerLink]="['/people', row.id, 'view']" *ngxPermissionsOnly="['Admin', 'Manager']">
-                        <i class="fa fa-eye mr-4" style="color:#0688fa;"></i>
+                        <i class="fa fa-eye me-4" style="color:#0688fa;"></i>
                     </a>
                     <a [routerLink]="['/people', row.id, 'edit']" *ngxPermissionsOnly="['Admin', 'Manager']">
-                        <i class="fa fa-edit mr-4" style="color:#0688fa;"></i>
+                        <i class="fa fa-edit me-4" style="color:#0688fa;"></i>
                     </a>
-                    <i class="fa fa-trash mr-4" style="color:#f24437; cursor: pointer;" (click)="deleteRecord(row.id)" *ngxPermissionsOnly="['Admin', 'Manager']">
+                    <i class="fa fa-trash me-4" style="color:#f24437; cursor: pointer;" (click)="deleteRecord(row.id)" *ngxPermissionsOnly="['Admin', 'Manager']">
 
                     </i>
                 </mat-cell>

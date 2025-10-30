@@ -12,7 +12,6 @@ import {InternalMainPageComponent} from './main-page/internal-main-page.componen
 import {ReportsPageInternalComponent} from './reports/reports-page-internal.component';
 
 // Additional modules
-import {WidgetsModule} from '../../_rms/partials/content/widgets/widgets.module';
 import {ReactiveFormsModule} from '@angular/forms';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -55,7 +54,6 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
         NgxPermissionsModule.forChild(),
         CommonModule,
         CommonPagesModule,
-        WidgetsModule,
         RouterModule.forChild([
             {
                 path: '',

@@ -71,12 +71,12 @@
                 <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
                 <mat-cell *matCellDef="let row">
                     <a [routerLink]="isBrowsing ? ['/browsing/data-objects', row.sdOid, 'view'] : ['/data-objects', row.sdOid, 'view']">
-                        <i class="fa fa-eye mr-4" style="color:#0688fa;"></i>
+                        <i class="fa fa-eye me-4" style="color:#0688fa;"></i>
                     </a>
                     <a [routerLink]="['/data-objects', row.sdOid, 'edit']" *ngIf="!isBrowsing && (row.organisation?.id === orgId || isManager)">
-                        <i class="fa fa-edit mr-4" style="color:#0688fa;"></i>
+                        <i class="fa fa-edit me-4" style="color:#0688fa;"></i>
                     </a>
-                    <i class="fa fa-trash mr-4" style="color:#f24437; cursor: pointer;" (click)="deleteRecord(row.id)" 
+                    <i class="fa fa-trash me-4" style="color:#f24437; cursor: pointer;" (click)="deleteRecord(row.id)" 
                         *ngIf="!isBrowsing && (row.organisation?.id === orgId || isManager)">
 
                     </i>

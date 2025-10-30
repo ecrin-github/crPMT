@@ -17,12 +17,12 @@
                         <div class="col-md-7">
                             <h2>{{isView ? 'View User Data' : isEdit ? 'Edit User Data' : 'Add User Data'}}</h2>
                         </div>
-                        <div class="col-md-5 text-right">
+                        <div class="col-md-5 d-flex justify-content-end">
                             <ng-container *ngxPermissionsOnly="['Admin', 'Manager']">
-                                <a [routerLink]="['/people', id, 'edit']" *ngIf="isView" class="btn btn-primary mr-1">
+                                <a [routerLink]="['/people', id, 'edit']" *ngIf="isView" class="btn btn-primary me-1">
                                     <i class="fa fa-edit"></i>Edit
                                 </a>
-                                <button class="btn btn-success mr-5" *ngIf="!isView" (click)="onSave()">{{isEdit ?'Apply Changes' : 'Save'}}</button>
+                                <button class="btn btn-success me-5" *ngIf="!isView" (click)="onSave()">{{isEdit ?'Apply Changes' : 'Save'}}</button>
                             </ng-container>
                             <button class="btn btn-warning" (click)="back()">{{isEdit ? 'Cancel' : 'Back'}}</button>
                         </div>

@@ -95,7 +95,7 @@ var KTLayoutChat = function () {
 		html += '		<span class="text-muted font-size-sm">2 Hours</span>';
 		html += '		<a href="#" class="text-dark-75 text-hover-primary font-weight-bold font-size-h6">You</a>';
 		html += '	</div>';
-		html += '	<div class="symbol symbol-circle symbol-40 ml-3">';
+		html += '	<div class="symbol symbol-circle symbol-40 ms-3">';
 		html += '		<img alt="Pic" src="assets/media/users/300_12.jpg"/>';
 		html += '	</div>';
 		html += '</div>';
@@ -117,7 +117,7 @@ var KTLayoutChat = function () {
 
 			var html = '';
 			html += '<div class="d-flex align-items-center">';
-			html += '	<div class="symbol symbol-circle symbol-40 mr-3">';
+			html += '	<div class="symbol symbol-circle symbol-40 me-3">';
 			html += '		<img alt="Pic" src="assets/media/users/300_12.jpg"/>';
 			html += '	</div>';
 			html += '	<div>';

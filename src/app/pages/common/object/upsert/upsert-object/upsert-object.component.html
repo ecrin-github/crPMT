@@ -8,20 +8,20 @@
                 <div class="col-md-8 text-right">
                     <ng-container *ngIf="isView">
                         <ng-container *ngIf="showEdit || isManager">
-                            <a [routerLink]="['/data-objects', sdOid, 'edit']" class="btn btn-primary mr-1">
+                            <a [routerLink]="['/data-objects', sdOid, 'edit']" class="btn btn-primary me-1">
                                 <i class="fa fa-edit"></i> Edit
                             </a>
                         </ng-container>
-                        <button class="btn btn-primary mr-1" (click)="printPdf()">
+                        <button class="btn btn-primary me-1" (click)="printPdf()">
                             <i class="fa fa-print"></i> PDF
                         </button>
-                        <button class="btn btn-primary mr-1" (click)="jsonExport()">
+                        <button class="btn btn-primary me-1" (click)="jsonExport()">
                             <i class="fa fa-code"></i> JSON
                         </button>
                         <button class="btn btn-warning" (click)="back()">Back</button>
                     </ng-container>
                     <ng-container *ngIf="!isView">
-                        <button class="btn btn-success mr-5" (click)="onSave()">{{isEdit ? 'Apply Changes' : 'Save'}}</button>
+                        <button class="btn btn-success me-5" (click)="onSave()">{{isEdit ? 'Apply Changes' : 'Save'}}</button>
                         <button class="btn btn-warning" (click)="back()">Cancel</button>
                     </ng-container>
                 </div>
@@ -279,13 +279,13 @@
                     <div class="col-md-4 form-check m-auto">
                         <label class="form-check-label font-style text-capitalize" for="deidentDirect">Direct ID's</label>
                         <i class="fa fa-info-circle pl-1" title="If direct identifiers have been removed or not"></i>
-                        <input class="form-check-input ml-4" type="checkbox" id="deidentDirect" formControlName="deidentDirect" *ngIf="!isView">
+                        <input class="form-check-input ms-4" type="checkbox" id="deidentDirect" formControlName="deidentDirect" *ngIf="!isView">
                         <h6 class="text-value" *ngIf="isView">{{objectData?.objectDatasets[0]?.deidentDirect ? objectData?.objectDatasets[0]?.deidentDirect : 'False'}}</h6>
                     </div>
                     <div class="col-md-4 form-check m-auto">
                         <label class="form-check-label font-style text-capitalize" for="deidentHipaa">HIPAA Applied</label>
                         <i class="fa fa-info-circle pl-1" title="If HIPAA rules have been followed"></i>
-                        <input class="form-check-input ml-4" type="checkbox" id="deidentHipaa" formControlName="deidentHipaa" *ngIf="!isView">
+                        <input class="form-check-input ms-4" type="checkbox" id="deidentHipaa" formControlName="deidentHipaa" *ngIf="!isView">
                         <h6 class="text-value" *ngIf="isView">{{objectData?.objectDatasets[0]?.deidentHipaa ? objectData?.objectDatasets[0]?.deidentHipaa : 'False'}}</h6>
                     </div>
                 </div>
@@ -293,19 +293,19 @@
                     <div class="col-md-4 form-check m-auto">
                         <label class="form-check-label font-style text-capitalize" for="deidentDates">Dates Rebased</label>
                         <i class="fa fa-info-circle pl-1" title="If dates have been rebased or turned into day numbers"></i>
-                        <input class="form-check-input ml-4" type="checkbox" id="deidentDates" formControlName="deidentDates" *ngIf="!isView">
+                        <input class="form-check-input ms-4" type="checkbox" id="deidentDates" formControlName="deidentDates" *ngIf="!isView">
                         <h6 class="text-value" *ngIf="isView">{{objectData?.objectDatasets[0]?.deidentDates ? objectData?.objectDatasets[0]?.deidentDates : 'False'}}</h6>
                     </div>
                     <div class="col-md-4 form-check m-auto">
                         <label class="form-check-label font-style text-capitalize" for="deidentNonarr">No Narrative</label>
                         <i class="fa fa-info-circle pl-1" title="If narrative fields have been removed"></i>
-                        <input class="form-check-input ml-4" type="checkbox" id="deidentNonarr" formControlName="deidentNonarr" *ngIf="!isView">
+                        <input class="form-check-input ms-4" type="checkbox" id="deidentNonarr" formControlName="deidentNonarr" *ngIf="!isView">
                         <h6 class="text-value" *ngIf="isView">{{objectData?.objectDatasets[0]?.deidentNonarr ? objectData?.objectDatasets[0]?.deidentNonarr : 'False'}}</h6>
                     </div>
                     <div class="col-md-4 form-check m-auto">
                         <label class="form-check-label font-style text-capitalize" for="deidentKanon">KANON Applied</label>
                         <i class="fa fa-info-circle pl-1" title="If k-anonymisation is claimed"></i>
-                        <input class="form-check-input ml-4" type="checkbox" id="deidentKanon" formControlName="deidentKanon" *ngIf="!isView">
+                        <input class="form-check-input ms-4" type="checkbox" id="deidentKanon" formControlName="deidentKanon" *ngIf="!isView">
                         <h6 class="text-value" *ngIf="isView">{{objectData?.objectDatasets[0]?.deidentKanon ? objectData?.objectDatasets[0]?.deidentKanon : 'False'}}</h6>
                     </div>
                 </div>
@@ -341,13 +341,13 @@
                     <div class="col-md-4 form-check m-auto">
                         <label class="form-check-label font-style text-capitalize" for="consentNoncommercial">Noncommercial only</label>
                         <i class="fa fa-info-circle pl-1"></i>
-                        <input class="form-check-input ml-4" type="checkbox" id="consentNoncommercial" formControlName="consentNoncommercial" *ngIf="!isView">
+                        <input class="form-check-input ms-4" type="checkbox" id="consentNoncommercial" formControlName="consentNoncommercial" *ngIf="!isView">
                         <h6 class="text-value" *ngIf="isView">{{objectData?.objectDatasets[0]?.consentNoncommercial ? objectData?.objectDatasets[0]?.consentNoncommercial : 'False'}}</h6>
                     </div>
                     <div class="col-md-4 form-check m-auto">
                         <label class="form-check-label font-style text-capitalize" for="consentGeogRestrict">Geographic restrictions</label>
                         <i class="fa fa-info-circle pl-1"></i>
-                        <input class="form-check-input ml-4" type="checkbox" id="consentGeogRestrict" formControlName="consentGeogRestrict" *ngIf="!isView">
+                        <input class="form-check-input ms-4" type="checkbox" id="consentGeogRestrict" formControlName="consentGeogRestrict" *ngIf="!isView">
                         <h6 class="text-value" *ngIf="isView">{{objectData?.objectDatasets[0]?.consentGeogRestrict ? objectData?.objectDatasets[0]?.consentGeogRestrict : 'False'}}</h6>
                     </div>
                 </div>
@@ -355,19 +355,19 @@
                     <div class="col-md-4 form-check m-auto">
                         <label class="form-check-label font-style text-capitalize" for="consentResearchType">Research type related</label>
                         <i class="fa fa-info-circle pl-1"></i>
-                        <input class="form-check-input ml-4" type="checkbox" id="consentResearchType" formControlName="consentResearchType" *ngIf="!isView">
+                        <input class="form-check-input ms-4" type="checkbox" id="consentResearchType" formControlName="consentResearchType" *ngIf="!isView">
                         <h6 class="text-value" *ngIf="isView">{{objectData?.objectDatasets[0]?.consentResearchType ? objectData?.objectDatasets[0]?.consentResearchType : 'False'}}</h6>
                     </div>
                     <div class="col-md-4 form-check m-auto">
                         <label class="form-check-label font-style text-capitalize" for="consentGeneticOnly">Genetic research only</label>
                         <i class="fa fa-info-circle pl-1"></i>
-                        <input class="form-check-input ml-4" type="checkbox" id="consentGeneticOnly" formControlName="consentGeneticOnly" *ngIf="!isView">
+                        <input class="form-check-input ms-4" type="checkbox" id="consentGeneticOnly" formControlName="consentGeneticOnly" *ngIf="!isView">
                         <h6 class="text-value" *ngIf="isView">{{objectData?.objectDatasets[0]?.consentGeneticOnly ? objectData?.objectDatasets[0]?.consentGeneticOnly : 'False'}}</h6>
                     </div>
                     <div class="col-md-4 form-check m-auto">
                         <label class="form-check-label font-style text-capitalize" for="consentNoMethods">No methods</label>
                         <i class="fa fa-info-circle pl-1" title="If re-use for algorithmic development is permitted"></i>
-                        <input class="form-check-input ml-4" type="checkbox" id="consentNoMethods" formControlName="consentNoMethods" *ngIf="!isView">
+                        <input class="form-check-input ms-4" type="checkbox" id="consentNoMethods" formControlName="consentNoMethods" *ngIf="!isView">
                         <h6 class="text-value" *ngIf="isView">{{objectData?.objectDatasets[0]?.consentNoMethods ? objectData?.objectDatasets[0]?.consentNoMethods : 'False'}}</h6>
                     </div>
                 </div>

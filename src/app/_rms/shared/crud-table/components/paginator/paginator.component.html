@@ -1,5 +1,5 @@
 <!-- start: Paginator -->
-<div class="d-flex flex-wrap py-2 mr-3">
+<div class="d-flex flex-wrap py-2 me-3">
   <ng-pagination
     [collectionSize]="paginator.total"
     [(page)]="paginator.page"
@@ -13,14 +13,14 @@
 <div class="d-flex align-items-center py-3">
   <!-- begin: loading -->
   <div class="d-flex align-items-center" *ngIf="isLoading">
-    <div class="mr-2 text-muted">Loading...</div>
-    <div class="spinner spinner-primary mr-10"></div>
+    <div class="me-2 text-muted">Loading...</div>
+    <div class="spinner spinner-primary me-10"></div>
   </div>
   <!-- end: loading -->
 
   <!-- begin: pageSize -->
   <select
-    class="form-control form-control-sm font-weight-bold mr-4 border-0 bg-light false"
+    class="form-control form-control-sm font-weight-bold me-4 border-0 bg-light false"
     style="width: 75px"
     [(ngModel)]="paginator.pageSize"
     (change)="sizeChange()"

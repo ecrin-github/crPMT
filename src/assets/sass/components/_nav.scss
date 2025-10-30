@@ -2,6 +2,8 @@
 // Nav
 //
 
+$rounded-pill: 0;	// Bootstrap 5 fix
+
 // Extended nav
 .nav {
 	.nav-link {
@@ -346,15 +348,15 @@
 
 			&:first-child {
 				.nav-link {
-					@include border-top-left-radius($rounded-pill);
-					@include border-bottom-left-radius($rounded-pill);
+					@include border-top-radius($rounded-pill);
+					@include border-bottom-radius($rounded-pill);
 				}
 			}
 
 			&:last-child {
 				.nav-link {
-					@include border-top-right-radius($rounded-pill);
-					@include border-bottom-right-radius($rounded-pill);
+					@include border-top-radius($rounded-pill);
+					@include border-bottom-radius($rounded-pill);
 				}
 			}
 		}
@@ -363,15 +365,15 @@
 		&.nav-rounded {
 			&:first-child {
 				.nav-link {
-					@include border-top-left-radius($border-radius);
-					@include border-bottom-left-radius($border-radius);
+					@include border-top-radius($border-radius);
+					@include border-bottom-radius($border-radius);
 				}
 			}
 
 			&:last-child {
 				.nav-link {
-					@include border-top-right-radius($border-radius);
-					@include border-bottom-right-radius($border-radius);
+					@include border-top-radius($border-radius);
+					@include border-bottom-radius($border-radius);
 				}
 			}
 		}

@@ -8,20 +8,20 @@
                 <div class="col-md-7 text-right">
                     <ng-container *ngIf="isView">
                         <ng-container *ngIf="role !== 'User'">
-                            <a [routerLink]="['/data-transfers', id, 'edit']" class="btn btn-primary mr-1">
+                            <a [routerLink]="['/data-transfers', id, 'edit']" class="btn btn-primary me-1">
                                 <i class="fa fa-edit"></i> Edit
                             </a>
                         </ng-container>
-                        <button class="btn btn-primary mr-1" (click)="printDocument()">
+                        <button class="btn btn-primary me-1" (click)="printDocument()">
                             <i class="fa fa-print"></i> PDF
                         </button>
-                        <button class="btn btn-primary mr-1" (click)="jsonExport()">
+                        <button class="btn btn-primary me-1" (click)="jsonExport()">
                             <i class="fa fa-code"></i> JSON
                         </button>
                         <button class="btn btn-warning" (click)="back()">Back</button>
                     </ng-container>
                     <ng-container *ngIf="!isView">
-                        <button class="btn btn-success mr-5" (click)="onSave()">{{isEdit ? 'Apply Changes' : 'Save'}}</button>
+                        <button class="btn btn-success me-5" (click)="onSave()">{{isEdit ? 'Apply Changes' : 'Save'}}</button>
                         <button class="btn btn-warning" (click)="back()">Cancel</button>
                     </ng-container>
                 </div>
@@ -272,7 +272,7 @@
                                     </div>
                                 </div>
                                 <div class="d-flex justify-content-between border-top pt-10">
-                                    <div class="mr-2">
+                                    <div class="me-2">
                                         <div class="btn btn-light-primary font-weight-bold text-uppercase px-9 py-4"
                                             [hidden]="currentStep === 1" (click)="changeStep(false)">
                                             Previous
@@ -296,7 +296,7 @@
                                     <div class="col-md-6">
                                         <label class="form-check-label font-style text-capitalize" for="conformsToDefault">
                                             conforms to default</label>
-                                        <input class="form-check-input ml-4" type="checkbox" id="conformsToDefault"
+                                        <input class="form-check-input ms-4" type="checkbox" id="conformsToDefault"
                                             formControlName="conformsToDefault" (change)="conformsToDefaultChange()" *ngIf="!isView">
                                         <h6 class="text-value" *ngIf="isView">
                                             {{dtaData && dtaData[0]?.conformsToDefault ? 'Yes' : 'No'}}
