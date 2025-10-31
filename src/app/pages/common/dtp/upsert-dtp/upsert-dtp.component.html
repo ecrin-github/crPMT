@@ -27,7 +27,7 @@
                 </div>
             </div>
             <div class="row mt-5">
-                <div class="pl-5">
+                <div class="ps-5">
                     <h4>{{dtpData?.displayName}}</h4>
                 </div>
             </div>
@@ -83,7 +83,7 @@
                             </div>
                             <div class="row form-group" *ngIf="isEdit || isView">
                                 <div class="col-md-6">
-                                    <label for="" class="font-style text-capitalize pr-5">Status</label>
+                                    <label for="" class="font-style text-capitalize pe-5">Status</label>
                                     <h6 class="text-value" *ngIf="!isView">{{g.status?.value?.name}}</h6>
                                     <h6 class="text-value" *ngIf="isView">{{dtpData?.status?.name}}</h6>
                                 </div>
@@ -417,10 +417,10 @@
                                         </div>
                                         <div class="col-md-12" *ngFor="let note of notes().controls;let i = index" [formGroupName]="i">
                                             <div class="card border-0">
-                                                <div class="card-body pl-0 pr-0 pb-0 pt-5">
-                                                    <i class="fa fa-times float-right pr-1 text-danger" style="cursor: pointer;"
+                                                <div class="card-body ps-0 pe-0 pb-0 pt-5">
+                                                    <i class="fa fa-times float-right pe-1 text-danger" style="cursor: pointer;"
                                                         (click)="deleteDtpNote(i)" *ngIf="!isView"></i>
-                                                    <i class="fa fa-check float-right pr-2 text-success" style="cursor: pointer;"
+                                                    <i class="fa fa-check float-right pe-2 text-success" style="cursor: pointer;"
                                                         (click)="saveDtpNote(note)" *ngIf="!isView"></i>
                                                     <h6>{{(note.value.author?.firstName || note.value.author?.lastName ? 
                                                         (note.value.author?.firstName ? note.value.author.firstName + ' ' : '') 
@@ -450,12 +450,12 @@
                                 </ng-container>
                                 <ng-container *ngIf="associatedStudies.length > 0">
                                     <ul>
-                                        <li *ngFor="let study of associatedStudies; let i = index" class="pl-4">
+                                        <li *ngFor="let study of associatedStudies; let i = index" class="ps-4">
                                             <a [routerLink]="['/studies', study.study?.sdSid, 'view']">
                                                 {{study.study?.sdSid}}
                                             </a>
                                             <span title="{{study.study?.displayTitle}}">({{(study.study?.displayTitle && study.study?.displayTitle.length <= sliceLength) ? study.study?.displayTitle : (study.study?.displayTitle | slice:0:sliceLength) + '...'}})</span>
-                                            <i class="fa fa-times pl-3" (click)="removeDtpStudy(study)"
+                                            <i class="fa fa-times ps-3" (click)="removeDtpStudy(study)"
                                                 *ngIf="!isView"></i>
                                         </li>
                                     </ul>
@@ -469,18 +469,18 @@
                                 </ng-container>
                                 <ng-container *ngIf="associatedObjects.length > 0">
                                     <ul>
-                                        <li *ngFor="let object of associatedObjects; let i = index" class="pl-4">
+                                        <li *ngFor="let object of associatedObjects; let i = index" class="ps-4">
                                             <a [routerLink]="['/data-objects', object.dataObject?.sdOid, 'view']">
                                                 {{object.dataObject?.sdOid}} -
                                             </a>
                                             <span class="associated-do-title" title="{{object.dataObject?.displayTitle}}">{{(object.dataObject?.displayTitle && object.dataObject?.displayTitle.length <= sliceLength) ? object.dataObject?.displayTitle : (object.dataObject?.displayTitle | slice:0:sliceLength) + '...'}}</span>
-                                            <i class="fa fa-times pl-3" (click)="removeDtpObject(object.id)"
+                                            <i class="fa fa-times ps-3" (click)="removeDtpObject(object.id)"
                                                 *ngIf="!isView"></i>
 
                                             <!-- Access type and embargo -->
                                             <div class="d-inline-flex align-items-center alert alert-info" 
                                                 [ngClass]="i === 0 ? 'alert-small-first' : 'alert-small'" role="alert">
-                                                <div class="pr-2">
+                                                <div class="pe-2">
                                                     <i class="fa fa-info-circle fa-lg info-icon"></i>
                                                 </div>
                                                 <div class="capitalize-first-word">
@@ -494,7 +494,7 @@
                                             <ng-container *ngIf="instanceArray[i]?.length <= 0">
                                                 <ul style="list-style-type: none;">
                                                     <li style="font-style:italic" class="dtp-associated-do-li">Currently there are no instances related to the data object, please create at least one before uploading
-                                                        <span class="pl-2">
+                                                        <span class="ps-2">
                                                             <a class="btn btn-sm btn-success" style="font-style:normal" [routerLink]="['/data-objects', object.dataObject?.sdOid, 'edit']">Create one</a>
                                                         </span>
                                                     </li>
@@ -509,30 +509,30 @@
                                                             <ng-container *ngIf="isView; else notView">
                                                                 <ng-container *ngIf="lastCompletedStep >= 3; else missingSteps">
                                                                     <ng-container *ngIf="canUpload(); else unauthorized">
-                                                                        <span class="pl-2" title="Data upload to the TSD Repository">
+                                                                        <span class="ps-2" title="Data upload to the TSD Repository">
                                                                             <button class="btn btn-sm btn-success" (click)="goToTsd(instance)">Upload</button>
                                                                         </span>
                                                                     </ng-container>
                                                                     <ng-template #unauthorized>
-                                                                        <span class="pl-2" title="You have to be part of the associated people (below) of the DTP to be able to upload">
+                                                                        <span class="ps-2" title="You have to be part of the associated people (below) of the DTP to be able to upload">
                                                                             <button class="btn btn-sm btn-secondary" disabled>Upload</button>
                                                                         </span>
                                                                     </ng-template>
                                                                 </ng-container>
                                                                 <ng-template #missingSteps>
-                                                                    <span class="pl-2" title="DTP step should be at 'Transfer' to be able to upload the data">
+                                                                    <span class="ps-2" title="DTP step should be at 'Transfer' to be able to upload the data">
                                                                         <button class="btn btn-sm btn-secondary" disabled>Upload</button>
                                                                     </span>
                                                                 </ng-template>
                                                             </ng-container>
                                                             <ng-template #notView>
-                                                                <span class="pl-2" title="Data upload is not enabled when editing the DTP">
+                                                                <span class="ps-2" title="Data upload is not enabled when editing the DTP">
                                                                     <button class="btn btn-sm btn-secondary" disabled>Upload</button>
                                                                 </span>
                                                             </ng-template>
                                                         </ng-container>
                                                         <ng-template #alreadyUploaded>
-                                                            <span class="pl-2" title="Uploaded data is stored in TSD">
+                                                            <span class="ps-2" title="Uploaded data is stored in TSD">
                                                                 <button class="btn btn-sm btn-success" disabled>Already uploaded</button>
                                                             </span>
                                                         </ng-template>
@@ -551,12 +551,12 @@
                                 </ng-container>
                                 <ng-container *ngIf="associatedUsers.length > 0">
                                     <ul>
-                                        <li *ngFor="let user of associatedUsers; let i = index" class="pl-4">
+                                        <li *ngFor="let user of associatedUsers; let i = index" class="ps-4">
                                             <ng-container *ngIf="isManager; else displayUserInfo">
                                                 <a [routerLink]="['/people', user.person?.id, 'view']">
                                                     {{user.person?.firstName}} {{user.person?.lastName}}
                                                 </a> ({{user.person?.email}})
-                                                <i class="fa fa-times pl-3" (click)="removeDtpUser(user.id)"
+                                                <i class="fa fa-times ps-3" (click)="removeDtpUser(user.id)"
                                                     *ngIf="!isView"></i>
                                             </ng-container>
                                             <ng-template #displayUserInfo>

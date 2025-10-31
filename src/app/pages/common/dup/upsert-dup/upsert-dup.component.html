@@ -30,7 +30,7 @@
                 </div>
             </div>
             <div class="row mt-5">
-                <div class="pl-5">
+                <div class="ps-5">
                     <h4>{{dupData?.displayName}}</h4>
                 </div>
             </div>
@@ -83,7 +83,7 @@
                             </div>
                             <div class="row form-group" *ngIf="isEdit || isView">
                                 <div class="col-md-6">
-                                    <label for="" class="font-style text-capitalize pr-5">Status</label>
+                                    <label for="" class="font-style text-capitalize pe-5">Status</label>
                                     <h6 class="text-value" *ngIf="!isView">{{g.status?.value?.name}}</h6>
                                     <h6 class="text-value" *ngIf="isView">{{dupData?.status?.name}}</h6>
                                 </div>
@@ -465,10 +465,10 @@
                                         </div>
                                         <div class="col-md-12" *ngFor="let note of notes().controls;let i = index" [formGroupName]="i">
                                             <div class="card border-0">
-                                                <div class="card-body pl-0 pr-0 pb-0 pt-5">
-                                                    <i class="fa fa-times float-right pr-1 text-danger" style="cursor: pointer;"
+                                                <div class="card-body ps-0 pe-0 pb-0 pt-5">
+                                                    <i class="fa fa-times float-right pe-1 text-danger" style="cursor: pointer;"
                                                         (click)="deleteDupNote(i)" *ngIf="!isView"></i>
-                                                    <i class="fa fa-check float-right pr-2 text-success" style="cursor: pointer;"
+                                                    <i class="fa fa-check float-right pe-2 text-success" style="cursor: pointer;"
                                                         (click)="saveDupNote(note)" *ngIf="!isView"></i>
                                                     <h6>{{(note.value.author?.firstName || note.value.author?.lastName ? 
                                                         (note.value.author?.firstName ? note.value.author.firstName + ' ' : '') 
@@ -487,10 +487,10 @@
                                                 *ngIf="!isView"><i class="fa fa-plus p-0"></i></button></div>
                                         <div class="col-md-12" *ngFor="let note of notes().controls;let i = index" [formGroupName]="i">
                                             <div class="card border-0">
-                                                <div class="card-body pl-0 pr-0 pb-0 pt-5">
-                                                    <i class="fa fa-times float-right pr-1 text-danger" style="cursor: pointer;"
+                                                <div class="card-body ps-0 pe-0 pb-0 pt-5">
+                                                    <i class="fa fa-times float-right pe-1 text-danger" style="cursor: pointer;"
                                                         (click)="deleteDupNote(i)" *ngIf="!isView"></i>
-                                                    <i class="fa fa-check float-right pr-2 text-success" style="cursor: pointer;"
+                                                    <i class="fa fa-check float-right pe-2 text-success" style="cursor: pointer;"
                                                         (click)="saveDupNote(note)" *ngIf="!isView"></i>
                                                     <h6>{{findPeopleById(dupNotes[i]?.author)}} <small>{{dupNotes[i]?.createdOn | date}}</small></h6>
                                                     <textarea id="notes" cols="30" rows="3" class="form-control" formControlName="text"
@@ -519,12 +519,12 @@
                                 </ng-container>
                                 <ng-container *ngIf="associatedStudies.length > 0">
                                     <ul>
-                                        <li *ngFor="let study of associatedStudies; let i = index" class="pl-4">
+                                        <li *ngFor="let study of associatedStudies; let i = index" class="ps-4">
                                             <a [routerLink]="['/studies', study.study?.sdSid, 'view']">
                                                 {{study.study?.sdSid}}
                                             </a>
                                             <span title="{{study.study?.displayTitle}}">({{(study.study?.displayTitle && study.study?.displayTitle.length <= sliceLength) ? study.study?.displayTitle : (study.study?.displayTitle | slice:0:sliceLength) + '...'}})</span>
-                                            <i class="fa fa-times pl-3" (click)="removeDupStudy(study)"
+                                            <i class="fa fa-times ps-3" (click)="removeDupStudy(study)"
                                                 *ngIf="!isView"></i>
                                         </li>
                                     </ul>
@@ -539,12 +539,12 @@
                                 </ng-container>
                                 <ng-container *ngIf="associatedObjects.length > 0">
                                     <ul>
-                                        <li *ngFor="let object of associatedObjects; let i = index" class="pl-2 pt-5">
+                                        <li *ngFor="let object of associatedObjects; let i = index" class="ps-2 pt-5">
                                             <a [routerLink]="['/data-objects', object.dataObject?.sdOid, 'view']">
                                                 {{object.dataObject?.sdOid}} -
                                             </a>
                                             <span class="associated-do-title" title="{{object.dataObject?.displayTitle}}">{{(object.dataObject?.displayTitle && object.dataObject?.displayTitle.length <= sliceLength) ? object.dataObject?.displayTitle : (object.dataObject?.displayTitle | slice:0:sliceLength) + '...'}}</span>
-                                            <i class="fa fa-times pl-3" (click)="removeDupObject(object.id)"
+                                            <i class="fa fa-times ps-3" (click)="removeDupObject(object.id)"
                                                 *ngIf="!isView"></i>
 
                                             <!-- DO Instances -->
@@ -559,30 +559,30 @@
                                                                 <ng-container *ngIf="isView; else notView">
                                                                     <ng-container *ngIf="lastCompletedStep >= 2; else missingSteps">
                                                                         <ng-container *ngIf="canAccess(); else unauthorized">
-                                                                            <span class="pl-2" title="Data upload to the TSD Repository">
+                                                                            <span class="ps-2" title="Data upload to the TSD Repository">
                                                                                 <a class="btn btn-sm btn-success" target="_blank" href="{{instance.url}}">Access data</a>
                                                                             </span>
                                                                         </ng-container>
                                                                         <ng-template #unauthorized>
-                                                                            <span class="pl-2" title="You have to be part of the associated people (below) of the DUP to be able to get access to the data">
+                                                                            <span class="ps-2" title="You have to be part of the associated people (below) of the DUP to be able to get access to the data">
                                                                                 <button class="btn btn-sm btn-secondary" disabled>Access data</button>
                                                                             </span>
                                                                         </ng-template>
                                                                     </ng-container>
                                                                     <ng-template #missingSteps>
-                                                                        <span class="pl-2" title="DUP step should be at 'Availability of the data' to be able to access the data">
+                                                                        <span class="ps-2" title="DUP step should be at 'Availability of the data' to be able to access the data">
                                                                             <button class="btn btn-sm btn-secondary" disabled>Access data</button>
                                                                         </span>
                                                                     </ng-template>
                                                                 </ng-container>
                                                                 <ng-template #notView>
-                                                                    <span class="pl-2" title="Data access is not enabled when editing the DUP">
+                                                                    <span class="ps-2" title="Data access is not enabled when editing the DUP">
                                                                         <button class="btn btn-sm btn-secondary" disabled>Access data</button>
                                                                     </span>
                                                                 </ng-template>
                                                             </ng-container>
                                                             <ng-template #notUploaded>
-                                                                <span class="pl-2" title="Data needs to be uploaded to TSD before accessing it">
+                                                                <span class="ps-2" title="Data needs to be uploaded to TSD before accessing it">
                                                                     <button class="btn btn-sm btn-secondary" disabled>Data not uploaded</button>
                                                                 </span>
                                                             </ng-template>
@@ -592,7 +592,7 @@
                                                 <ng-template #noInstances>
                                                     <ul style="list-style-type: none;">
                                                         <li style="font-style:italic" class="dup-associated-do-li">There are no instances related to the data object, please create at least one before uploading and requesting access
-                                                            <span class="pl-2">
+                                                            <span class="ps-2">
                                                                 <a [routerLink]="['/data-objects', object.dataObject?.sdOid, 'edit']" style="font-style:normal" class="btn btn-success btn-sm">Go to data object</a>
                                                             </span>
                                                         </li>
@@ -622,12 +622,12 @@
                                 </ng-container>
                                 <ng-container *ngIf="associatedUsers.length > 0">
                                     <ul>
-                                        <li *ngFor="let user of associatedUsers; let i = index" class="pl-4">
+                                        <li *ngFor="let user of associatedUsers; let i = index" class="ps-4">
                                             <ng-container *ngIf="isManager; else displayUserInfo">
                                                 <a [routerLink]="['/people', user.person?.id, 'view']">
                                                     {{user.person?.firstName}} {{user.person?.lastName}}
                                                 </a> ({{user.person?.email}})
-                                                <i class="fa fa-times pl-3" (click)="removeDupUser(user.id)"
+                                                <i class="fa fa-times ps-3" (click)="removeDupUser(user.id)"
                                                     *ngIf="!isView"></i>
                                             </ng-container>
                                             <ng-template #displayUserInfo>
