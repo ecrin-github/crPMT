@@ -2,8 +2,8 @@
 // Forms
 //
 
-$input-line-height-sm: 0;	// Bootstrap 5 fix
-$input-line-height-lg: 0;	// Bootstrap 5 fix
+$input-line-height-sm: $input-line-height;	// Bootstrap 5 fix
+$input-line-height-lg: $input-line-height;	// Bootstrap 5 fix
 
 // Form group
 .form-group {
