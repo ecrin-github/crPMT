@@ -14,10 +14,36 @@ export class StudyCountryService {
     getStudyCountry(id) {
       return this.http.get(`${base}/core/study-countries/${id}`);
     }
-    // editStudyCountry(sid, id, payload) {
-    //   return this.http.put(`${base}/core/studies/${sid}/study-countries/${id}`, payload);
-    // }
-    // deleteStudyCountry(sid, id) {
-    //   return this.http.delete(`${base}/core/studies/${sid}/study-countries/${id}`, {observe: "response", responseType: 'json'});
-    // }
+    editStudyCountry(id, payload) {
+      return this.http.put(`${base}/core/study-countries/${id}`, payload);
+    }
+    deleteStudyCountry(id) {
+      return this.http.delete(`${base}/core/study-countries/${id}`, {observe: "response", responseType: 'json'});
+    }
+
+    addSubmissionFromStudyCountry(scId, payload) {
+      return this.http.post(`${base}/core/study-countries/${scId}/submissions`, payload);
+    }
+    getSubmissionFromStudyCountry(scId, id) {
+      return this.http.get(`${base}/core/study-countries/${scId}/submissions/${id}`);
+    }
+    editSubmissionFromStudyCountry(scId, id, payload) {
+      return this.http.put(`${base}/core/study-countries/${scId}/submissions/${id}`, payload);
+    }
+    deleteSubmissionFromStudyCountry(scId, id) {
+      return this.http.delete(`${base}/core/study-countries/${scId}/submissions/${id}`, {observe: "response", responseType: 'json'});
+    }
+
+    addNotificationFromStudyCountry(scId, payload) {
+      return this.http.post(`${base}/core/study-countries/${scId}/notifications`, payload);
+    }
+    getNotificationFromStudyCountry(scId, id) {
+      return this.http.get(`${base}/core/study-countries/${scId}/notifications/${id}`);
+    }
+    editNotificationFromStudyCountry(scId, id, payload) {
+      return this.http.put(`${base}/core/study-countries/${scId}/notifications/${id}`, payload);
+    }
+    deleteNotificationFromStudyCountry(scId, id) {
+      return this.http.delete(`${base}/core/study-countries/${scId}/notifications/${id}`, {observe: "response", responseType: 'json'});
+    }
 }

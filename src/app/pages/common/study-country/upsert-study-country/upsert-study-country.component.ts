@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { combineLatest, Observable, of, Subscription } from 'rxjs';
-import { dateToString } from 'src/assets/js/util';
+import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor } from 'src/assets/js/util';
 import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
 import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
@@ -15,6 +15,8 @@ import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interf
 import { UpsertStudyCtuComponent } from '../../study-ctu/upsert-study-ctu/upsert-study-ctu.component';
 import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';
 import { BackService } from 'src/app/_rms/services/back/back.service';
+import { UpsertSubmissionComponent } from '../../submission/upsert-submission/upsert-submission.component';
+import { UpsertNotificationComponent } from '../../notification/upsert-notification/upsert-notification.component';
 
 @Component({
   selector: 'app-upsert-study-country',
@@ -23,6 +25,10 @@ import { BackService } from 'src/app/_rms/services/back/back.service';
 })
 export class UpsertStudyCountryComponent implements OnInit {
   @ViewChildren('studyCTUs') studyCTUComponents: QueryList<UpsertStudyCtuComponent>;
+  @ViewChildren('regulatorySubmissions') submissionsComponents: QueryList<UpsertSubmissionComponent>;
+  @ViewChildren('amendments') amendmentsComponents: QueryList<UpsertSubmissionComponent>;
+  @ViewChildren('otherNotifications') otherNotificationsComponents: QueryList<UpsertSubmissionComponent>;
+  @ViewChildren('notifications') notificationsComponents: QueryList<UpsertNotificationComponent>;
   @Input() studyCountriesData: Array<StudyCountryInterface>;
   @Input() studyId: string;
 
@@ -37,7 +43,6 @@ export class UpsertStudyCountryComponent implements OnInit {
   isEdit: boolean = false;
   isView: boolean = false;
   isSCPage: boolean = false;
-  leadCountryInd: number = -1;
   countries: CountryInterface[] = [];
   studyCountries = [];
 
@@ -114,9 +119,12 @@ export class UpsertStudyCountryComponent implements OnInit {
   newStudyCountry(): UntypedFormGroup {
     return this.fb.group({
       id: null,
-      study: null,
+      amendments: [],
       country: [null, Validators.required],
-      leadCountry: false,
+      otherNotifications: [],
+      notifications: [],
+      submissions: [],
+      study: null,
       studyCTUs: null
     });
   }
@@ -127,6 +135,7 @@ export class UpsertStudyCountryComponent implements OnInit {
 
   setStudyCountry(scData) {
     if (scData) {
+      delete scData["statusCode"];
       this.studyCountries = [scData];
       this.id = scData.id;
       this.patchForm();
@@ -140,18 +149,31 @@ export class UpsertStudyCountryComponent implements OnInit {
   patchArray(): UntypedFormArray {
     const formArray = new UntypedFormArray([]);
     this.studyCountries.forEach((sc, index) => {
-      formArray.push(this.fb.group({
+      let fbData = {
         id: sc.id,
-        study: sc.study,
+        amendments: [[]],
         country: [sc.country, [Validators.required]],
-        leadCountry: sc.leadCountry,
-        // Note: unknown why this array needs to be wrapped in another array
+        notifications: [sc.notifications],
+        otherNotifications: [[]],
+        submissions: [[]],
+        study: sc.study,
         studyCTUs: [sc.studyCtus]
-      }))
+      };
 
-      if (sc.leadCountry) {
-        this.leadCountryInd = index;
+      // Separating initial submissions, amendments, and other notifications in the UI
+      if (sc.submissions) {
+        for (const sub of sc.submissions) {
+          if (sub.isAmendment) {
+            fbData["amendments"][0].push(sub);
+          } else if (sub.isOtherNotification) {
+            fbData["otherNotifications"][0].push(sub);
+          } else {
+            fbData["submissions"][0].push(sub);
+          }
+        }
       }
+      
+      formArray.push(this.fb.group(fbData));
     });
     return formArray;
   }
@@ -172,9 +194,10 @@ export class UpsertStudyCountryComponent implements OnInit {
       delete existingSC["order"];
       this.getStudyCountriesForm().at(i).setValue(existingSC);
     } else {
+      const study = this.g[i].value.study;
       const country = this.g[i].value.country;
       this.g[i].reset();
-      this.getStudyCountriesForm().at(i).patchValue({country: country});
+      this.getStudyCountriesForm().at(i).patchValue({study: study, country: country});
     }
   }
 
@@ -185,15 +208,13 @@ export class UpsertStudyCountryComponent implements OnInit {
     }
   }
 
-  getTotalNumberOfSites() {
-    return "Coming soon!"
-  }
-
   addStudyCountry() {
     this.getStudyCountriesForm().push(this.newStudyCountry());
   }
 
-  removeStudyCountry(i: number) {
+  deleteStudyCountry($event, i: number) {
+    $event.stopPropagation(); // Expands the panel otherwise
+
     const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
     removeModal.componentInstance.itemType = "study country";
 
@@ -202,13 +223,10 @@ export class UpsertStudyCountryComponent implements OnInit {
         const scId = this.getStudyCountriesForm().value[i].id;
         if (!scId) { // Study country has been locally added only
           this.getStudyCountriesForm().removeAt(i);
-        } else {  // Existing study country
-          this.studyService.deleteStudyCountry(this.studyId, scId).subscribe((res: any) => {
+        } else {  // Existing study
+          this.studyCountryService.deleteStudyCountry(scId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getStudyCountriesForm().removeAt(i);
-
-              // Removing study country from studyCountries list, otherwise there will be a failing API call to delete it on save
-              this.studyCountries = this.studyCountries.filter((item:any) => item.id != scId);
               this.toastr.success('Study country deleted successfully');
             } else {
               this.toastr.error('Error when deleting study country', res.statusText);
@@ -221,7 +239,7 @@ export class UpsertStudyCountryComponent implements OnInit {
     }, error => {});
   }
 
-  formValid() {
+  isFormValid() {
     this.submitted = true;
     
     // Manually checking country field (shouldn't be empty)
@@ -231,7 +249,11 @@ export class UpsertStudyCountryComponent implements OnInit {
       }
     }
 
-    return this.form.valid && !this.studyCTUComponents.some(b => !b.formValid());
+    if (!this.form.valid) {
+      this.toastr.error("Please correct the errors in the study countries form");
+    }
+
+    return this.form.valid && !this.studyCTUComponents.some(b => !b.isFormValid());
   }
 
   updatePayload(payload, studyId, i) {
@@ -245,10 +267,13 @@ export class UpsertStudyCountryComponent implements OnInit {
       payload.country = payload.country.id;
     }
 
-    payload.order = i;
+    // Note: needs to be changed if possible to add a new study country not from the higher level pages
+    if (!this.isSCPage) {
+      payload.order = i;
+    }
   }
 
-  onSave(studyId: string): Observable<boolean[]> {
+  onSave(studyId: string): Observable<boolean[]> {  // TODO: refactor
     this.submitted = true;
     let saveObs$: Array<Observable<boolean>> = [];
 
@@ -265,12 +290,60 @@ export class UpsertStudyCountryComponent implements OnInit {
         saveObs$.push(this.studyService.addStudyCountry(studyId, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 201) {
-              return this.studyCTUComponents.get(i).onSave(res.id, studyId).pipe(
-                mergeMap((success) => {
-                  if (success) {
-                    return of(true);
+              const sctuObs$ = this.studyCTUComponents.get(i).onSave(res.id, item.study).pipe(
+                mergeMap((successArr: boolean[]) => {
+                  const success: boolean = successArr.every(b => b);
+                  if (!success) {
+                    this.toastr.error('Failed to add study CTUs');
                   }
-                  return of(false);
+                  return of(success);
+                })
+              );
+
+              const amendmentsObs$ = this.amendmentsComponents.get(i).onSave(res.id).pipe(
+                mergeMap((successArr: boolean[]) => {
+                  const success: boolean = successArr.every(b => b);
+                  if (!success) {
+                    this.toastr.error('Failed to add amendments');
+                  }
+                  return of(success);
+                })
+              );
+
+              const notificationsObs$ = this.notificationsComponents.get(i).onSave(res.id).pipe(
+                mergeMap((successArr: boolean[]) => {
+                  const success: boolean = successArr.every(b => b);
+                  if (!success) {
+                    this.toastr.error('Failed to add notifications');
+                  }
+                  return of(success);
+                })
+              );
+
+              const otherNotificationsObs$ = this.otherNotificationsComponents.get(i).onSave(res.id).pipe(
+                mergeMap((successArr: boolean[]) => {
+                  const success: boolean = successArr.every(b => b);
+                  if (!success) {
+                    this.toastr.error('Failed to add other notifications');
+                  }
+                  return of(success);
+                })
+              );
+
+              const submissionsObs$ = this.submissionsComponents.get(i).onSave(res.id).pipe(
+                mergeMap((successArr: boolean[]) => {
+                  const success: boolean = successArr.every(b => b);
+                  if (!success) {
+                    this.toastr.error('Failed to add submissions');
+                  }
+                  return of(success);
+                })
+              );
+
+              return combineLatest([sctuObs$, amendmentsObs$, notificationsObs$, otherNotificationsObs$, submissionsObs$]).pipe(
+                mergeMap((successArr: boolean[]) => {
+                  const success: boolean = successArr.every(b => b);
+                  return of(success);
                 })
               );
             }
@@ -294,10 +367,52 @@ export class UpsertStudyCountryComponent implements OnInit {
           })
         );
 
-        saveObs$.push(sctuObs$);
+        const amendmentsObs$ = this.amendmentsComponents.get(i).onSave(item.id).pipe(
+          mergeMap((successArr: boolean[]) => {
+            const success: boolean = successArr.every(b => b);
+            if (!success) {
+              this.toastr.error('Failed to update amendments');
+            }
+            return of(success);
+          })
+        );
 
-        // TODO: don't do editObs if sctuObs$ false?
-        
+        const notificationsObs$ = this.notificationsComponents.get(i).onSave(item.id).pipe(
+          mergeMap((successArr: boolean[]) => {
+            const success: boolean = successArr.every(b => b);
+            if (!success) {
+              this.toastr.error('Failed to update notifications');
+            }
+            return of(success);
+          })
+        );
+
+        const otherNotificationsObs$ = this.otherNotificationsComponents.get(i).onSave(item.id).pipe(
+          mergeMap((successArr: boolean[]) => {
+            const success: boolean = successArr.every(b => b);
+            if (!success) {
+              this.toastr.error('Failed to update notifications');
+            }
+            return of(success);
+          })
+        );
+
+        const submissionsObs$ = this.submissionsComponents.get(i).onSave(item.id).pipe(
+          mergeMap((successArr: boolean[]) => {
+            const success: boolean = successArr.every(b => b);
+            if (!success) {
+              this.toastr.error('Failed to update submissions');
+            }
+            return of(success);
+          })
+        );
+
+        saveObs$.push(sctuObs$);
+        saveObs$.push(amendmentsObs$);
+        saveObs$.push(notificationsObs$);
+        saveObs$.push(otherNotificationsObs$);
+        saveObs$.push(submissionsObs$);
+
         const scObs$ = this.studyService.editStudyCountry(studyId, item.id, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 200) {
@@ -340,26 +455,48 @@ export class UpsertStudyCountryComponent implements OnInit {
     return combineLatest(saveObs$);
   }
 
+  onSaveStudyCountry() {
+    this.spinner.show();
+
+    if (this.isFormValid()) {
+      const studyId = this.form.value?.studyCountries[0]?.study?.id;
+      if (studyId) {
+        this.onSave(studyId).subscribe((success) => {
+          this.spinner.hide();
+          if (success) {
+            this.toastr.success("Data saved successfully");
+            this.router.navigate([`/study-countries/${this.id}/view`]);
+          }
+        });
+      } else {
+        this.spinner.hide();
+        this.toastr.error("Couldn't get study ID from study country");
+      }
+    }
+  }
+
   compareIds(fv1, fv2): boolean {
     return fv1?.id == fv2?.id;
+  }
+
+  getCountryFlag(country) {
+    if (country?.iso2) {
+      return getFlagEmoji(country.iso2);
+    }
+    return '';
+  }
+
+  getTagBorderColor(text) {
+    return getTagBorderColor(text);
+  }
+
+  getTagBgColor(text) {
+    return getTagBgColor(text);
   }
 
   searchCountries(term: string, item) {
     term = term.toLocaleLowerCase();
     return item.name?.toLocaleLowerCase().indexOf(term) > -1;
-  }
-
-  onFlagClick(i) {
-    if (this.leadCountryInd == i) {
-      this.g[i].value.leadCountry = false;
-      this.leadCountryInd = -1;
-    } else {
-      this.g[i].value.leadCountry = true;
-      if (this.leadCountryInd != -1) {
-        this.g[this.leadCountryInd].value.leadCountry = false;
-      }
-      this.leadCountryInd = i;
-    }
   }
 
   changeFlag(event) {
