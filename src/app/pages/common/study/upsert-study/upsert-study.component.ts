@@ -15,7 +15,7 @@ import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
 import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { StudyInterface } from 'src/app/_rms/interfaces/study/study.interface';
-import { colorHash, dateToString, stringToDate } from 'src/assets/js/util';
+import { colorHash, dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
 import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -45,11 +45,13 @@ export class UpsertStudyComponent implements OnInit {
   organisations: OrganisationInterface[] = [];
   persons: PersonInterface[] = [];
   populations: ClassValueInterface[] = [];
+  regulatoryFrameworkDetails: ClassValueInterface[] = [];
+  filteredRegulatoryFrameworkDetails: ClassValueInterface[] = [];
   services: ClassValueInterface[] = [];
   regulatoryFrameworks: String[] = ['CTR', 'MDR/IVDR', 'COMBINED', 'OTHER'];
   studyStatuses: String[] = ["Start-up phase", "Running phase: Regulatory & ethical approvals", "Running phase: Follow up", "Running phase: Organisation of close-out", 
                               "Completion & termination phase", "Completed", "Withdrawn", "On hold"];
-  treatmentUnits: String[] = ["Hours", "Days", "Months"]
+  timeUnits: String[] = ["Hours", "Days", "Weeks", "Months"]
   id: string;
   isAdd: boolean = false;
   isEdit: boolean = false;
@@ -57,11 +59,14 @@ export class UpsertStudyComponent implements OnInit {
   isView: boolean = false;
   isComplexTrial: boolean[] = [];
   isObservational: boolean[] = [];
+  hasRegulatoryFrameworkDetails: boolean[] = [];
   projects = [];
   showEdit: boolean = false;
   sticky: boolean = false;
   submitted: boolean = false;
   studyForm: UntypedFormGroup;
+  summaryMaxChars: number = 1300;
+  summaryRemainingChars: number = this.summaryMaxChars;
   studies = [];
 
   constructor(private statesService: StatesService,
@@ -156,6 +161,9 @@ export class UpsertStudyComponent implements OnInit {
     this.contextService.populations.subscribe((populations) => {
       this.populations = populations;
     });
+    this.contextService.regulatoryFrameworkDetails.subscribe((regulatoryFrameworkDetails) => {
+      this.regulatoryFrameworkDetails = regulatoryFrameworkDetails;
+    });
     this.contextService.services.subscribe((services) => {
       this.services = services;
     });
@@ -183,12 +191,13 @@ export class UpsertStudyComponent implements OnInit {
       shortTitle: '',
       title: '',
       sponsorOrganisation: null,
-      pi: null,
+      coordinatingInvestigator: null,
       sponsorCountry: null,
       medicalFields: [],
       populations: [],
       rareDiseases: false,
       regulatoryFramework: null,
+      regulatoryFrameworkDetails: [],
       complexTrialDesign: false,
       complexTrialType: null,
       trialRegistrationNumber: '',
@@ -197,8 +206,8 @@ export class UpsertStudyComponent implements OnInit {
       coordinatingCountry: null,
       totalPatientsExpected: null,
       services: [],
-      recruitmentStart: null,
-      recruitmentEnd: null,
+      recruitmentPeriod: null,
+      recruitmentPeriodUnit: null,
       treatmentDurationPerPatient: '',
       treatmentDurationPerPatientUnit: '',
       treatmentAndFollowUpDurationPerPatient: '',
@@ -242,7 +251,6 @@ export class UpsertStudyComponent implements OnInit {
           this.getStudiesForm().removeAt(i);
         } else {  // Existing study
           this.studyService.deleteStudyById(studyId).subscribe((res: any) => {
-            console.log(res);
             if (res.status === 204) {
               this.getStudiesForm().removeAt(i);
               this.toastr.success('Study deleted successfully');
@@ -272,10 +280,11 @@ export class UpsertStudyComponent implements OnInit {
         shortTitle: s.shortTitle,
         title: s.title,
         sponsorOrganisation: s.sponsorOrganisation,
-        pi: s.pi,
+        coordinatingInvestigator: s.coordinatingInvestigator,
         sponsorCountry: s.sponsorCountry,
         medicalFields: [s.medicalFields],
         populations: [s.populations],
+        regulatoryFrameworkDetails: [s.regulatoryFrameworkDetails],
         rareDiseases: s.rareDiseases,
         regulatoryFramework: s.regulatoryFramework,
         complexTrialDesign: s.complexTrialDesign,
@@ -286,8 +295,8 @@ export class UpsertStudyComponent implements OnInit {
         coordinatingCountry: s.coordinatingCountry,
         totalPatientsExpected: s.totalPatientsExpected,
         services: [s.services],
-        recruitmentStart: s.recruitmentStart ? stringToDate(s.recruitmentStart) : null,
-        recruitmentEnd: s.recruitmentEnd ? stringToDate(s.recruitmentEnd) : null,
+        recruitmentPeriod: s.recruitmentPeriod,
+        recruitmentPeriodUnit: s.recruitmentPeriodUnit,
         treatmentDurationPerPatient: s.treatmentDurationPerPatient,
         treatmentDurationPerPatientUnit: s.treatmentDurationPerPatientUnit,
         treatmentAndFollowUpDurationPerPatient: s.treatmentAndFollowUpDurationPerPatient,
@@ -300,7 +309,9 @@ export class UpsertStudyComponent implements OnInit {
         // submissions: null,
         // Note: unknown why this array needs to be wrapped in another array
         studyCountries: [s.studyCountries]
-      }))
+      }));
+
+      this.summaryRemainingChars = this.summaryMaxChars - s.summary?.length;
     });
     return formArray;
   }
@@ -321,16 +332,29 @@ export class UpsertStudyComponent implements OnInit {
 
   allFormsValid() {
     this.submitted = true;
-    return this.studyForm.valid && !this.studyCountryComponents.some(b => !b.formValid());
+
+    if (!this.studyForm.valid) {
+      this.toastr.error("Please correct the errors in the studies form");
+    }
+
+    return this.studyForm.valid && !this.studyCountryComponents.some(b => !b.isFormValid());
   }
 
   updatePayload(payload, projectId, i) {
+    // Order
+    if (!this.isStudyPage) {
+      payload.order = i;
+    } else if (!payload.id) {  // Add, else no need to change the order
+      let maxOrder = -1;
+      if (payload.project?.studies?.length > 0) {
+        maxOrder = payload.project.studies[payload.project.studies.length-1].order;
+      }
+      payload.order = maxOrder + 1;
+    }
+
     payload.project = projectId;
-    payload.order = i;
     payload.firstPatientIn = dateToString(payload.firstPatientIn);
     payload.lastPatientOut = dateToString(payload.lastPatientOut);
-    payload.recruitmentStart = dateToString(payload.recruitmentStart);
-    payload.recruitmentEnd = dateToString(payload.recruitmentEnd);
     
     if (payload.cEuco?.id) {
       payload.cEuco = payload.cEuco.id;
@@ -354,8 +378,8 @@ export class UpsertStudyComponent implements OnInit {
       payload.medicalFields = [];
     }
   
-    if (payload.pi?.id) {
-      payload.pi = payload.pi.id;
+    if (payload.coordinatingInvestigator?.id) {
+      payload.coordinatingInvestigator = payload.coordinatingInvestigator.id;
     }
 
     if (payload.populations?.length > 0) {
@@ -367,11 +391,22 @@ export class UpsertStudyComponent implements OnInit {
     } else {
       payload.populations = [];
     }
-        
-    if (payload.regulatoryFramework?.id) {
-      payload.regulatoryFramework = payload.regulatoryFramework.id;
+    
+    // Removing potentially hidden values from the regulatory framework details field if regulatory framework is not CTR/COMBINED
+    if (!this.hasRegulatoryFrameworkDetails[i]) {
+      payload.regulatoryFrameworkDetails = [];
     }
 
+    if (payload.regulatoryFrameworkDetails?.length > 0) {
+      for (let i = 0; i < payload.regulatoryFrameworkDetails.length; i++) {
+        if (payload.regulatoryFrameworkDetails[i]?.id) {
+          payload.regulatoryFrameworkDetails[i] = payload.regulatoryFrameworkDetails[i].id;
+        }
+      }
+    } else {
+      payload.regulatoryFrameworkDetails = [];
+    }
+    
     if (payload.services?.length > 0) {
       for (let i = 0; i < payload.services.length; i++) {
         if (payload.services[i]?.id) {
@@ -478,19 +513,23 @@ export class UpsertStudyComponent implements OnInit {
   }
 
   onSaveStudy() {
-    const projectId = this.studyForm.value?.studies[0]?.project?.id;
-    if (projectId) {
-      this.onSave(projectId).subscribe((success) => {
-        if (success) {
-          this.toastr.success("Data saved successfully");
-          this.router.navigate([`/studies/${this.id}/view`]);
-        }
-      });
-    } else {
-      this.toastr.error("Couldn't get project ID from study");
-    }
+    this.spinner.show();
 
-    this.spinner.hide();
+    if (this.allFormsValid()) {
+      const projectId = this.studyForm.value?.studies[0]?.project?.id;
+      if (projectId) {
+        this.onSave(projectId).subscribe((success) => {
+          this.spinner.hide();
+          if (success) {
+            this.toastr.success("Data saved successfully");
+            this.router.navigate([`/studies/${this.id}/view`]);
+          }
+        });
+      } else {
+        this.spinner.hide();
+        this.toastr.error("Couldn't get project ID from study");
+      }
+    }
   }
   
   back(): void {
@@ -510,10 +549,24 @@ export class UpsertStudyComponent implements OnInit {
   }
   
   onChangeRegulatoryFramework(i) {
-    if (this.studyForm.value?.studies[i].regulatoryFramework?.toLowerCase() == "other" ) {
+    const regFramework = this.studyForm.value?.studies[i].regulatoryFramework?.toLowerCase();
+    if (regFramework?.localeCompare("other") == 0) {
       this.isObservational[i] = true;
     } else {
       this.isObservational[i] = false;
+    }
+
+    if (regFramework?.localeCompare("ctr") == 0 || regFramework?.localeCompare("combined") == 0) {
+      if (regFramework?.localeCompare("combined") == 0) { // Filtering out 1 value for "combined"
+        if (this.regulatoryFrameworkDetails) {
+          this.filteredRegulatoryFrameworkDetails = this.regulatoryFrameworkDetails.filter(r => r?.value?.toLowerCase()?.localeCompare("low interventional trial") != 0);
+        }
+      } else {
+        this.filteredRegulatoryFrameworkDetails = this.regulatoryFrameworkDetails;
+      }
+      this.hasRegulatoryFrameworkDetails[i] = true;
+    } else {
+      this.hasRegulatoryFrameworkDetails[i] = false;
     }
   }
   
@@ -596,21 +649,37 @@ export class UpsertStudyComponent implements OnInit {
     }
   }
 
+  getTagBorderColor(text) {
+    return getTagBorderColor(text);
+  }
+
+  getTagBgColor(text) {
+    return getTagBgColor(text);
+  }
+
   dateToString(date) {
     return dateToString(date);
   }
 
-  getTagTextColor(text) {
-    return colorHash(text)?.hex;
+  getCountrySitesString(sc) {
+    let count = 0;
+    for (const sctu of sc.studyCtus) {
+      if (sctu.centres) {
+        count += sctu.centres.length;
+      }
+    }
+    return count + " site" + (count == 1 ? '' : 's');
   }
 
-  getTagBgColor(text) {
-    const h = colorHash(text);
-    return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
+  getCountryFlag(country) {
+    if (country?.iso2) {
+      return getFlagEmoji(country.iso2);
+    }
+    return '';
   }
-  
-  getTotalNumberOfSites() {
-    return "Coming soon!";
+
+  changeRemainingChars($event) {
+    this.summaryRemainingChars = this.summaryMaxChars - $event.target.value?.length;
   }
 
   print() {
