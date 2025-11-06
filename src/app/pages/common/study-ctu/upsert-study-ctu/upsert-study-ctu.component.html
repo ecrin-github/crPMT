@@ -1,71 +1,157 @@
-<mat-expansion-panel [expanded]="false">
-    <mat-expansion-panel-header>
-        <span [title]="studyCountry?.country?.name" class="view-sub-sub-title">{{displayCountryFlag()}} CTUs</span>
-    </mat-expansion-panel-header>
-    <form [formGroup]="form" ngNativeValidate>
-        <ng-template [ngIf]="getStudyCTUsForm().length <= 0 && isView">
-            <div class="row">
-                <div class="col-12 mb-3 mt-3 text-center justify-content-center">
-                    <p>No CTUs yet</p>
-                </div>
-            </div>
-        </ng-template>
-    
-        <ng-template [ngIf]="getStudyCTUsForm().length > 0">
-            <div formArrayName="studyCTUs">
-                <div class="row" *ngFor="let sctu of getStudyCTUsForm().controls; let i = index;"
+<form [formGroup]="form" ngNativeValidate>
+    <div formArrayName="studyCTUs">
+        <!-- <ng-container *ngIf="!isView; else studyCTUView"> -->
+            <div class="row" *ngFor="let sctu of getStudyCTUsForm().controls; let i = index;"
                     [formGroupName]="i">
-                    <div class="col-12 ctuPanel" [id]="'featpanel'+i">
-                        <hr *ngIf="i > 0">
-                        <div class="row form-group">
+                <div class="col-12 ctuPanel" [id]="'featpanel'+i">
+                    <hr *ngIf="i > 0">
+                    <ng-container *ngIf="!isSctuPage; else cardWrapper">
+                        <mat-expansion-panel [expanded]="!sctu.value.id ? true : false">
+                            <mat-expansion-panel-header>
+                                <span class="view-sub-sub-title">CTU {{i+1}} - {{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}</span>
+                                <div class="p-0 m-0 d-flex align-items-center justify-content-center">
+                                    <i class="fa fa-trash ms-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="deleteStudyCTU($event, i)">
+                                    </i>
+                                </div>
+                            </mat-expansion-panel-header>
+                            <hr class="mt-0" *ngIf="!isSctuPage">
+                            <ng-container *ngTemplateOutlet="sctuView"></ng-container>
+                        </mat-expansion-panel>
+                    </ng-container>
+                    <ng-template #cardWrapper>
+                        <div class="card margin-side">
+                            <div class="card-header">
+                                <div id="navbar">
+                                    <div class="row upsert-navbar">
+                                        <div class="col-md-10 d-inline-flex">
+                                            <div class="view-title text-truncate">
+                                                <a [routerLink]="isView ? ['/projects', sctu.value.study?.project?.id, 'view'] : ['/projects', sctu.value.study?.project?.id, 'edit']">{{sctu.value.study?.project?.shortName}}</a>&nbsp;&nbsp;❯&nbsp;&nbsp;
+                                                <a [routerLink]="isView ? ['/studies', sctu.value.study?.id, 'view'] : ['/studies', sctu.value.study?.id, 'edit']">{{sctu.value.study?.shortTitle}}</a>&nbsp;&nbsp;❯&nbsp;&nbsp;
+                                                <a [routerLink]="isView ? ['/study-countries', sctu.value.studyCountry?.id, 'view'] : ['/study-countries', sctu.value.studyCountry?.id, 'edit']">{{sctu.value.studyCountry?.country?.name}}</a>&nbsp;&nbsp;❯&nbsp;&nbsp;{{sctu.value.ctu?.name}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 d-flex justify-content-end">
+                                            <ng-container *ngIf="isView">
+                                                <a [routerLink]="['/study-ctus', id, 'edit']" class="btn btn-primary me-2">
+                                                    <i class="fa fa-edit"></i>Edit
+                                                </a>
+                                                <!-- <button class="btn btn-primary me-1" (click)="print()">
+                                                    <i class="fa fa-print"></i> PDF
+                                                </button>
+                                                <button class="btn btn-primary me-1" (click)="jsonExport()">
+                                                    <i class="fa fa-code"></i> JSON
+                                                </button> -->
+                                                <button class="btn btn-warning" (click)="back()">Back</button>
+                                            </ng-container>
+                                            <ng-container *ngIf="!isView">
+                                                <button class="btn btn-success me-2" (click)="onSaveStudyCtu()">Save</button>
+                                                <button class="btn btn-warning" (click)="back()">Cancel</button>
+                                            </ng-container>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <div id="permanentNavbar"></div> -->
+                            <div class="card-body" id="formContainer">
+                                <div class="row section-title">
+                                    <div class="col-md-12 text-left">
+                                        <div class="text-value" class="view-sub-sub-title">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}</div>
+                                    </div>
+                                </div>
+                                <ng-container *ngTemplateOutlet="sctuView"></ng-container>
+                            </div>
+                        </div>
+                    </ng-template>
+                    <ng-template #sctuView>
+                        <div class="row form-group" *ngIf="!isView">
                             <div class="col-md-12">
-                                <div class="row" *ngIf="!isView">
+                                <div class="row">
                                     <div class="col-md-11">
-                                        <ng-select [items]="filteredCTUs" formControlName="ctu" [searchFn]="searchCTUs"
+                                        <ng-select [items]="ctus" formControlName="ctu" [searchFn]="searchCTUs"
                                             [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
-                                            notFoundText="No CTUs found" placeholder="Select CTU" (change)="onChangeCTU(i)"
+                                            notFoundText="No CTUs found" placeholder="Select CTU"
                                             appendTo="body" name="ctu" [ngClass]="{ 'is-invalid': submitted && getControls(i).ctu.errors?.required }">
                                             <ng-template ng-label-tmp let-item="item">{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</ng-template>
                                             <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                                 <div class="row m-0">
                                                     <div class="col-md-12 col-12 p-0 m-0">
-                                                        <div class="col-md-12">{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</div>
-                                                        <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.addressInfo}}</div>
+                                                        <div class="col-md-12">{{getCountryFlagFromIso2(item.country.iso2)}}&nbsp;&nbsp;{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</div>
+                                                        <!-- <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.addressInfo}}</div> -->
                                                     </div>
                                                 </div>
                                             </ng-template>
                                         </ng-select>
                                     </div>
-                                    <div class="col-md-1 d-flex justify-content-start align-items-center">
-                                        <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeStudyCTU(i)"></i>
-                                    </div>
                                 </div>
-                                <div class="view-sub-sub-title mb-4 text-center" *ngIf="isView">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}
-                                    <button [aria-expanded]="isView ? 'false' : 'true'" [aria-controls]="'ctuInfo'+studyCountry?.country?.iso2+i" class="ctuToggleButton"
+                                <!-- <div class="view-sub-sub-title text-center" *ngIf="isView">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}} -->
+                                    <!-- <button [aria-expanded]="isView ? 'false' : 'true'" [aria-controls]="'ctuInfo'+studyCountry?.country?.iso2+i" class="ctuToggleButton ms-2"
                                         [ngClass]="isView ? 'ctuToggleButtonClosed' : 'ctuToggleButtonOpened'" title="Display more CTU info"
-                                        [id]="'toggleButton'+studyCountry?.country?.iso2+i" (click)="toggleCTUInfo($event)">❯</button>
+                                        [id]="'toggleButton'+studyCountry?.country?.iso2+i" (click)="toggleCTUInfo($event)">❯</button> -->
+                                <!-- </div> -->
+                            </div>
+                            <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).ctu.errors?.required">
+                                <p>Please select the CTU</p>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-2">
+                                <div for="leadCtu" class="font-style">Lead CTU</div>
+                                <input type="checkbox" id="leadCtu" class="form-check-input checkbox" formControlName="leadCtu" *ngIf="!isView"/>
+                                <span class="text-value" *ngIf="isView">{{sctu.value.leadCtu ? 'Yes' : 'No'}}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <div for="contactPerson" class="font-style">Contact name</div>
+                                <span class="text-value">{{sctu.value.ctu?.contact?.fullName}}
+                                    <a [href]="'mailto:' + sctu.value.ctu?.contact?.email" *ngIf="sctu.value.ctu?.contact?.email">
+                                        <i class="fa-solid fa-envelope" style="color:#0688fa;"></i>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-7">
+                                <div for="services" class="font-style">List of services</div>
+                                <ng-select [items]="services" formControlName="services" [multiple]="true" [searchFn]="searchClassValues"
+                                    [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" 
+                                    [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No service found" 
+                                    placeholder="Start typing to add a new service" *ngIf="!isView" addTagText="Add" [addTag]="addService" appendTo="body">
+                                    <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                        <span class="ng-value-label">{{item.value}}</span>
+                                        <span class="ng-value-icon right" (click)="clear(item)">×</span>
+                                    </ng-template>
+                                    <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                        <div class="row m-0">
+                                            <div class="col-md-11 col-11 p-0 m-0">{{item.value}}</div>
+                                            <div class="col-md-1 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteService($event, item)">
+                                                </i>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </ng-select>
+                                <div *ngIf="isView" class="tags-container">
+                                    <span *ngFor="let service of sctu.value.services" class="tag" 
+                                        [ngStyle]="{ 'border-color': getTagBorderColor(service.value), 'background-color': getTagBgColor(service.value) }">{{service.value}}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).ctu.errors?.required">
-                            <p>Please select the CTU</p>
-                        </div>
-                        <div class="row form-group ctuInfo" [id]="'ctuInfo'+studyCountry?.country?.iso2+i"  *ngIf="sctu.value.ctu" [ngClass]="isView ? 'hideCTUInfo' : 'displayCTUInfo'">
-                            <div class="col-md-6">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div for="sasVerification" class="font-style text-capitalize">SAS verification</div>
-                                        <span class="text-value" [ngClass]="sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'sas-approved' : 'sas-not-approved') : ''">{{sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'Approved' : 'Not approved') : ''}}</span>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div for="contactPerson" class="font-style text-capitalize">Contact person</div>
-                                        <span class="text-value">{{sctu.value.ctu?.contact ? sctu.value.ctu?.contact?.fullName + ' (' + sctu.value.ctu?.contact?.email + ')' : ''}}</span>
-                                    </div>
-                                </div>
+                        <!-- <div class="row form-group ctuInfo" [id]="'ctuInfo'+studyCountry?.country?.iso2+i"  *ngIf="sctu.value.ctu" [ngClass]="isView ? 'hideCTUInfo' : 'displayCTUInfo'">
+                            <div class="col-md-2">
+                                <div for="sasVerification" class="font-style">SAS verification</div>
+                                <span class="text-value" [ngClass]="sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'sas-approved' : 'sas-not-approved') : ''">{{sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'Approved' : 'Not approved') : ''}}</span>
+                            </div>
+                            <div class="col-md-4">
+                                <div for="contactPerson" class="font-style">Contact person</div>
+                                <span class="text-value">{{sctu.value.ctu?.contact ? sctu.value.ctu?.contact?.fullName + ' (' + sctu.value.ctu?.contact?.email + ')' : ''}}</span>
                             </div>
                             <div class="col-md-6">
-                                <div for="addressInfo" class="font-style text-capitalize">Address</div>
+                                <div for="addressInfo" class="font-style">Address</div>
                                 <span class="text-value">{{cleanAddress(sctu.value.ctu?.addressInfo)}}</span>
+                            </div>
+                        </div> -->
+                        <div class="row mb-2">
+                            <div class="col-md-4">
+                                <div class="font-style underline">Centres</div>
                             </div>
                         </div>
                         <div class="row form-group">
@@ -73,17 +159,58 @@
                                 <app-upsert-centre #centres [centresData]="sctu.value.centres" [studyCTU]="sctu.value"></app-upsert-centre>
                             </div>
                         </div>
-                    </div>
+                        <hr>
+                        <div class="row section-title">
+                            <div class="col-md-12 text-left">
+                                <div class="text-value" class="view-sub-sub-title">Quality / Certification Information</div>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-3">
+                                <div for="sasVerification" class="font-style">ECRIN data centre certified</div>
+                                <span class="text-value">TODO</span>
+                            </div>
+                            <div class="col-md-3">
+                                <div for="sasVerification" class="font-style">SAS verification</div>
+                                <span class="text-value" [ngClass]="sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'sas-approved' : 'sas-not-approved') : ''">{{sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'Yes' : 'No') : ''}}</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row section-title">
+                            <div class="col-md-12 text-left">
+                                <div class="text-value" class="view-sub-sub-title">Agreements</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                Coming soon!
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row section-title">
+                            <div class="col-md-12 text-left">
+                                <div class="text-value" class="view-sub-sub-title">Finances & Budget</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                Coming soon!
+                            </div>
+                        </div>
+                    </ng-template>
                 </div>
             </div>
-        </ng-template>
-    </form>
-    <div class="row pb-4" *ngIf="!isView">
-        <div class="col-4 text-left justify-content-left">
-            <button class="btn btn-primary" (click)="addStudyCTU()" *ngIf="studyCountry?.country">
-                <i class="fa fa-plus"></i>New study CTU
-            </button>
-            <span *ngIf="!studyCountry?.country">Please select a country</span>
-        </div>
+        <!-- </ng-container>
+        <ng-template #studyCTUView>
+
+        </ng-template> -->
     </div>
-</mat-expansion-panel>
+</form>
+<div class="row mt-5 pb-4" *ngIf="!isView && !isSctuPage">
+    <div class="col-4 text-left justify-content-left">
+        <button class="btn btn-primary" (click)="addStudyCTU()" *ngIf="studyCountry?.country">
+            <i class="fa fa-plus"></i>New study CTU
+        </button>
+        <span *ngIf="!studyCountry?.country">Please select a country</span>
+    </div>
+</div>
