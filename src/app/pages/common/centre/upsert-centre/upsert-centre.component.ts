@@ -17,6 +17,9 @@ import { ListService } from 'src/app/_rms/services/entities/list/list.service';
 import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
 import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
 import { StudyCTUInterface } from 'src/app/_rms/interfaces/study/study-ctus.interface';
+import { HospitalInterface } from 'src/app/_rms/interfaces/context/hospital.interface';
+import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
+import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
 
 @Component({
   selector: 'app-upsert-centre',
@@ -26,7 +29,6 @@ import { StudyCTUInterface } from 'src/app/_rms/interfaces/study/study-ctus.inte
 export class UpsertCentreComponent implements OnInit {
   @Input() centresData: Array<CentreInterface>;
   @Input() studyCTU: StudyCTUInterface;
-  @Input() projectId: string;
 
   static intPatternValidatorFn: ValidatorFn = Validators.pattern("^[0-9]*$");
 
@@ -36,6 +38,9 @@ export class UpsertCentreComponent implements OnInit {
   isView: boolean = false;
   isAdd: boolean = false;
   persons: PersonInterface[] = [];
+  hospitals: HospitalInterface[] = [];
+  filteredHospitals: HospitalInterface[] = [];
+  hasSiteNumber: boolean[] = [];
 
   centres: CentreInterface[] = [];
 
@@ -58,6 +63,11 @@ export class UpsertCentreComponent implements OnInit {
     this.isView = this.router.url.includes('view');
     this.isAdd = this.router.url.includes('add');
 
+    this.contextService.hospitals.subscribe((hospitals) => {
+      this.hospitals = hospitals;
+      this.setFilteredHospitals();
+    });
+
     this.contextService.persons.subscribe((persons) => {
       this.persons = persons;
     });
@@ -76,21 +86,27 @@ export class UpsertCentreComponent implements OnInit {
   newCentre(): UntypedFormGroup {
     return this.fb.group({
       id: null,
+      hospital: [null, Validators.required],
+      siteNumberFlag: false,
       siteNumber: null,
-      patientsExpected: [null, [UpsertCentreComponent.intPatternValidatorFn]],
-      recruitmentGreenlight: null,
-      movExpectedNumber: [null, [UpsertCentreComponent.intPatternValidatorFn]],
-      town: null,
-      hospital: null,
-      firstPatientVisit: null,
-      studyCtu: null,
       pi: null,
       piNationalCoordinator: false,
+      patientsExpected: [null, [UpsertCentreComponent.intPatternValidatorFn]],
+      firstPatientVisit: null,
+      movExpectedNumber: [null, [UpsertCentreComponent.intPatternValidatorFn]],
+      studyCtu: null,
+      study: null,
+      ctu: null,
     });
   }
 
   patchForm() {
     this.form.setControl('centres', this.patchArray());
+
+    // Setting initial boolean variables to display or not certain fields
+    for (let i=0; i < this.g.length; i++) {
+      this.onChangeSiteNumber(i);
+    }
   }
 
   patchArray(): UntypedFormArray {
@@ -98,18 +114,17 @@ export class UpsertCentreComponent implements OnInit {
     this.centres.forEach((centre) => {
       formArray.push(this.fb.group({
         id: centre.id,
+        hospital: [centre.hospital, Validators.required],
+        siteNumberFlag: centre.siteNumberFlag,
         siteNumber: centre.siteNumber,
-        patientsExpected: [centre.patientsExpected, [UpsertCentreComponent.intPatternValidatorFn]],
-        recruitmentGreenlight: centre.recruitmentGreenlight ? stringToDate(centre.recruitmentGreenlight) : null,
-        movExpectedNumber: [centre.movExpectedNumber, [UpsertCentreComponent.intPatternValidatorFn]],
-        town: centre.town,
-        hospital: centre.hospital,
-        firstPatientVisit: centre.firstPatientVisit ? stringToDate(centre.firstPatientVisit) : null,
-        study: centre.study?.id,
-        studyCtu: centre.studyCtu?.id,
-        ctu: centre.ctu,
         pi: centre.pi,
         piNationalCoordinator: centre.piNationalCoordinator,
+        patientsExpected: [centre.patientsExpected, [UpsertCentreComponent.intPatternValidatorFn]],
+        firstPatientVisit: centre.firstPatientVisit ? stringToDate(centre.firstPatientVisit) : null,
+        movExpectedNumber: [centre.movExpectedNumber, [UpsertCentreComponent.intPatternValidatorFn]],
+        studyCtu: centre.studyCtu?.id,
+        study: centre.study?.id,
+        ctu: centre.ctu,
       }))
     });
     return formArray;
@@ -156,38 +171,8 @@ export class UpsertCentreComponent implements OnInit {
     }, error => {});
   }
 
-  // TODO: to common/util
   addPerson = (person) => {
-    const addPersonModal = this.modalService.open(PersonModalComponent, { size: 'lg', backdrop: 'static' });
-    addPersonModal.componentInstance.fullName = person;
-
-    return addPersonModal.result.then((result) => {
-      this.spinner.show();
-      if (result === null) {
-        return new Promise(null);
-      }
-
-      return this.contextService.addPerson(result).pipe(
-        mergeMap((p:any) => {
-          result.id = p.id;
-          return this.contextService.updatePersons();
-        }),
-        mergeMap(() => {
-          this.spinner.hide();
-          return of(result);
-        }),
-        catchError((err) => {
-          this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
-          this.spinner.hide();
-          return of(null);
-        })
-      ).toPromise();
-    })
-    .catch((err) => {
-      this.spinner.hide();
-      this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
-      return null;
-    });
+    return this.contextService.addPersonDropdown(person);
   }
 
   deletePerson($event, pToRemove) {
@@ -200,19 +185,55 @@ export class UpsertCentreComponent implements OnInit {
     }
   }
 
-  searchPersons(term: string, item) {
-    term = term.toLocaleLowerCase();
-    return item.fullName?.toLocaleLowerCase().indexOf(term) > -1 || item.email?.toLocaleLowerCase().indexOf(term) > -1;
+  searchPersons = (term: string, item) => {
+    return this.contextService.searchPersons(term, item);
+  }
+  
+  // Necessary to write them as arrow functions
+  addHospital = (hospitalName) => {
+    return this.contextService.addHospitalDropdown(hospitalName, this.studyCTU?.studyCountry?.country);
   }
 
-  formValid() {
+  deleteHospital($event, oToRemove) {
+    $event.stopPropagation(); // Clicks the option otherwise
+
+    if (oToRemove.id == -1) { // Created locally by user
+      this.hospitals = this.hospitals.filter(o => !(o.id == oToRemove.id && o.name == oToRemove.name));
+    } else {  // Already existing
+      this.contextService.deleteHospitalDropdown(oToRemove, !this.isAdd);
+    }
+  }
+
+  searchHospitals = (term: string, item) => {
+    return this.contextService.searchHospitals(term, item);
+  }
+
+  setFilteredHospitals() {
+    if (this.hospitals) {
+      this.filteredHospitals = this.hospitals.filter(h => h.country?.iso2?.localeCompare(this.studyCTU?.studyCountry?.country?.iso2) == 0);
+    }
+  }
+
+  onChangeSiteNumber(i) {
+    if (this.form.get("centres")['controls'][i].value?.siteNumberFlag) {
+      this.hasSiteNumber[i] = true;
+    } else {
+      this.hasSiteNumber[i] = false;
+    }
+  }
+
+  isFormValid() {
     this.submitted = true;
     
-    // Manually checking CTU field (shouldn't be empty)
+    // Manually checking hospital field (shouldn't be empty)
     for (const i in this.form.get("centres")['controls']) {
-      if (this.form.get("centres")['controls'][i].value.ctu == null) {
-        this.form.get("centres")['controls'][i].controls.ctu.setErrors({'required': true});
+      if (this.form.get("centres")['controls'][i].value.hospital == null) {
+        this.form.get("centres")['controls'][i].controls.hospital.setErrors({'required': true});
       }
+    }
+
+    if (!this.form.valid) {
+      this.toastr.error("Please correct the errors in the centres form");
     }
 
     return this.form.valid;
@@ -227,6 +248,10 @@ export class UpsertCentreComponent implements OnInit {
     }
     if (payload.firstPatientVisit) {
       payload.firstPatientVisit = dateToString(payload.firstPatientVisit);
+    }
+
+    if (payload.hospital?.id) {
+      payload.hospital = payload.hospital.id;
     }
 
     if (payload.pi?.id) {

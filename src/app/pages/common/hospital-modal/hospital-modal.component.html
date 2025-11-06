@@ -1,0 +1,29 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">{{isAdd ? 'Add new hospital' : 'Edit hospital'}}</h5>
+    </div>
+    <div class="modal-body">
+        <div class="row form-group">
+            <div class="col-md-12">
+                <div for="name" class="font-style">Name<sup>*</sup></div>
+                <input type="text" id="name" class="form-control" [(ngModel)]="name"/>
+            </div>
+        </div>
+        <div class="row form-group">
+            <div class="col-md-12">
+                <div for="city" class="font-style">City</div>
+                <input type="text" id="city" class="form-control" [(ngModel)]="city"/>
+            </div>
+        </div>
+        <div class="row form-group">
+            <div class="col-md-12">
+                <div for="country" class="font-style">Country</div>
+                <span class="text-value">{{country?.name}}</span>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="onSave()">Save</button>
+        <button type="button" class="btn btn-danger" (click)="closeModal()">Cancel</button>
+    </div>
+</div>

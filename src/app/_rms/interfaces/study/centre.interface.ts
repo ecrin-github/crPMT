@@ -1,4 +1,5 @@
 import { CTUInterface } from "../context/ctu.interface";
+import { HospitalInterface } from "../context/hospital.interface";
 import { PersonInterface } from "../context/person.interface";
 import { StudyCountryInterface } from "./study-country.interface";
 import { StudyCTUInterface } from "./study-ctus.interface";
@@ -6,17 +7,15 @@ import { StudyMainDataInterface } from "./study.interface";
 
 export interface CentreInterface {
     id: number;
-
+    hospital: HospitalInterface;
+    siteNumberFlag: boolean;
     siteNumber: number;
+    pi: PersonInterface;
+    piNationalCoordinator: boolean;
     patientsExpected: number;
-    recruitmentGreenlight: string;
-    movExpectedNumber: number;
-    town: string;
-    hospital: string;
     firstPatientVisit: string;
+    movExpectedNumber: number;
     study: StudyMainDataInterface;
     studyCtu: StudyCTUInterface;
     ctu: CTUInterface;
-    pi: PersonInterface;
-    piNationalCoordinator: boolean;
 }
