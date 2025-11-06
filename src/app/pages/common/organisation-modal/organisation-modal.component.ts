@@ -43,8 +43,5 @@ export class OrganisationModalComponent implements OnInit {
   searchCountries = (term: string, item) => {
     return this.contextService.searchCountries(term, item);
   }
-  // searchCountries(term: string, item) {
-  //   this.contextService.searchCountries(term, item);
-  // }
 
 }

@@ -5,19 +5,19 @@
     <div class="modal-body">
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="name" class="font-style text-capitalize">Short Name</label>
+                <label for="name" class="font-style">Short Name</label>
                 <input type="text" id="name" class="form-control" [(ngModel)]="shortName"/>
             </div>
         </div>
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="name" class="font-style text-capitalize">Name<sup>*</sup></label>
+                <label for="name" class="font-style">Name<sup>*</sup></label>
                 <input type="text" id="name" class="form-control" [(ngModel)]="name"/>
             </div>
         </div>
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="country" class="font-style text-capitalize">Country</label>
+                <label for="country" class="font-style">Country</label>
                 <ng-select [items]="countries" bindLabel="name" bindValue="id" [(ngModel)]="countryId"
                     [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true"
                     notFoundText="No countries found" placeholder="Select country" appendTo="body" name="country">
