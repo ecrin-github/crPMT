@@ -124,7 +124,7 @@ export class PersonListComponent implements OnInit {
 
   deletePerson(id) {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-    deleteModal.componentInstance.type = 'person';
+    deleteModal.componentInstance.itemType = 'person';
     deleteModal.result.then((_delete: boolean) => {
       if (_delete) {
         this.spinner.show();
@@ -152,7 +152,7 @@ export class PersonListComponent implements OnInit {
   }
 
   filterSearch() {
-    // TODO: override to be able to search "true" for isEuco?
+    // TODO: override to be able to search "true" for isEuco? + country
     this.dataSource.filter = this.searchText;
   }
 
