@@ -5,25 +5,25 @@
     <div class="modal-body">
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="fullName" class="font-style text-capitalize">Full name<sup>*</sup></label>
+                <label for="fullName" class="font-style">Full name<sup>*</sup></label>
                 <input type="text" id="fullName" class="form-control" [(ngModel)]="fullName"/>
             </div>
         </div>
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="email" class="font-style text-capitalize">Email</label>
+                <label for="email" class="font-style">Email</label>
                 <input type="text" id="email" class="form-control" [(ngModel)]="email"/>
             </div>
         </div>
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="position" class="font-style text-capitalize">Position</label>
+                <label for="position" class="font-style">Position</label>
                 <input type="text" id="position" class="form-control" [(ngModel)]="position"/>
             </div>
         </div>
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="country" class="font-style text-capitalize">Country</label>
+                <label for="country" class="font-style">Country</label>
                 <ng-select [items]="countries" bindLabel="name" bindValue="id" [(ngModel)]="countryId"
                     [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true"
                     notFoundText="No countries found" placeholder="Select country" appendTo="body" name="country">
@@ -38,7 +38,7 @@
         </div>
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="isEuco" class="font-style text-capitalize">Is EuCo?</label>
+                <label for="isEuco" class="font-style">Is EuCo?</label>
                 <input type="checkbox" id="isEuco" class="form-control checkbox" [(ngModel)]="isEuco"/>
             </div>
         </div>

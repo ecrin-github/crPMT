@@ -3,23 +3,23 @@
         <div id="navbar">
             <div class="row upsert-navbar">
                 <div class="col-md-8 d-inline-flex">
-                    <div class="view-title d-flex align-items-center">Project: {{projectForm.value.shortName ? projectForm.value.shortName : projectForm.value.name ? projectForm.value.name : ''}}</div>
+                    <div class="view-title text-truncate">Project: {{projectForm.value.shortName ? projectForm.value.shortName : projectForm.value.name ? projectForm.value.name : ''}}</div>
                 </div>
-                <div class="col-md-4 text-right">
+                <div class="col-md-4 d-flex justify-content-end">
                     <ng-container *ngIf="isView">
-                        <a [routerLink]="['/projects', id, 'edit']" class="btn btn-primary mr-1">
+                        <a [routerLink]="['/projects', id, 'edit']" class="btn btn-primary me-2">
                             <i class="fa fa-edit"></i> Edit
                         </a>
-                        <!-- <button class="btn btn-primary mr-1" (click)="print()">
+                        <!-- <button class="btn btn-primary me-1" (click)="print()">
                             <i class="fa fa-print"></i> PDF
                         </button>
-                        <button class="btn btn-primary mr-1" (click)="jsonExport()">
+                        <button class="btn btn-primary me-1" (click)="jsonExport()">
                             <i class="fa fa-code"></i> JSON
                         </button> -->
                         <button class="btn btn-warning" (click)="back()">Back</button>
                     </ng-container>
                     <ng-container *ngIf="!isView">
-                        <button class="btn btn-success mr-5" (click)="onSave()">Save</button>
+                        <button class="btn btn-success me-2" (click)="onSave()">Save</button>
                         <button class="btn btn-warning" (click)="back()">Cancel</button>
                     </ng-container>
                 </div>
@@ -32,12 +32,12 @@
         <form [formGroup]="projectForm">
             <div class="row section-title">
                 <div class="col-md-12 text-left">
-                    <div class="text-value" class="view-sub-sub-title">General information</div>
+                    <div class="text-value" class="view-sub-sub-title">General Information</div>
                 </div>
             </div>
             <div class="row form-group">
-                <div class="col-md-2">
-                    <div for="shortName" class="font-style text-capitalize">Short name<sup *ngIf="!isView">*</sup></div>
+                <div class="col-md-4">
+                    <div for="shortName" class="font-style">Short name of EU Project<sup *ngIf="!isView">*</sup></div>
                     <input type="text" id="shortName" class="form-control" placeholder="e.g. INVENTS"
                         formControlName="shortName" *ngIf="!isView" />
                     <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && g.shortName.errors">
@@ -45,8 +45,8 @@
                     </div>
                     <div *ngIf="isView" class="text-value">{{projectData?.shortName ? projectData?.shortName : ''}}</div>
                 </div>
-                <div class="col-md-10">
-                    <div for="name" class="font-style text-capitalize">Name<sup *ngIf="!isView">*</sup></div>
+                <div class="col-md-8">
+                    <div for="name" class="font-style">Full Name of EU Project<sup *ngIf="!isView">*</sup></div>
                     <textarea cols="30" rows="2" class="form-control" placeholder="Full project name"
                         formControlName="name" *ngIf="!isView" id="name" [ngClass]="{ 'is-invalid': submitted && g.name.errors }"></textarea>
                     <div *ngIf="isView" class="text-value">{{projectData?.name}}</div>
@@ -54,7 +54,7 @@
             </div>
             <div class="row form-group">
                 <div class="col-md-2">
-                    <div for="startDate" class="font-style text-capitalize">Start date</div>
+                    <div for="startDate" class="font-style">Start date</div>
                     <div class="input-group" *ngIf="!isView">
                         <input class="form-control" placeholder="yyyy-mm-dd"
                             name="startDate" ngbDatepicker #startDate="ngbDatepicker"
@@ -70,7 +70,7 @@
                     <div *ngIf="isView" class="text-value">{{projectData?.startDate}}</div>
                 </div>
                 <div class="col-md-2">
-                    <div for="endDate" class="font-style text-capitalize">End date</div>
+                    <div for="endDate" class="font-style">End date</div>
                     <div class="input-group" *ngIf="!isView">
                         <input class="form-control" placeholder="yyyy-mm-dd"
                             name="endDate" ngbDatepicker #endDate="ngbDatepicker"
@@ -85,9 +85,11 @@
                     </div>
                     <div *ngIf="isView" class="text-value">{{projectData?.endDate}}</div>
                 </div>
-                <div class="col-md-6">
-                    <div for="coordinator" class="font-style text-capitalize">Coordinator (Consortium)</div>
-                    <ng-select [items]="organisations" formControlName="coordinator" [searchFn]="searchOrganisations" [compareWith]="compareIds"
+            </div>
+            <div class="row form-group">
+                <div class="col-md-4">
+                    <div for="coordinatingInstitution" class="font-style">Name of the Coordinating Institution</div>
+                    <ng-select [items]="organisations" formControlName="coordinatingInstitution" [searchFn]="searchOrganisations" [compareWith]="compareIds"
                     [virtualScroll]="false" class="form-control ng-form-control" [clearSearchOnAdd]="true"
                     notFoundText="No organisation found" placeholder="Start typing to add a new organisation" *ngIf="!isView" 
                     addTagText="Add" [addTag]="addOrganisation" appendTo="body">
@@ -108,10 +110,36 @@
                             </div>
                         </ng-template>
                     </ng-select>
-                    <div *ngIf="isView" class="text-value">{{projectData?.coordinator ? (projectData.coordinator.name + 
-                            (projectData.coordinator.shortName ? ' (' + projectData.coordinator.shortName + ')' : '') +
-                            (projectData.coordinator.country?.name ? ', ' + projectData.coordinator.country.name : '')) : ''}}
+                    <div *ngIf="isView" class="text-value">{{projectData?.coordinatingInstitution ? (projectData.coordinatingInstitution.name + 
+                            (projectData.coordinatingInstitution.shortName ? ' (' + projectData.coordinatingInstitution.shortName + ')' : '') +
+                            (projectData.coordinatingInstitution.country?.name ? ', ' + projectData.coordinatingInstitution.country.name : '')) : ''}}
                     </div>
+                </div>
+                <div class="col-md-4">
+                    <div for="pi" class="font-style">Name of the EU Project Coordinator</div>
+                    <ng-select [items]="persons" formControlName="coordinator" [searchFn]="searchPersons" [compareWith]="compareIds"
+                        [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" 
+                        placeholder="Start typing to add a new person" *ngIf="!isView" [clearSearchOnAdd]="true"
+                        addTagText="Add" [addTag]="addPerson" appendTo="body">
+                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                            <span class="ng-value-label">{{item.fullName}}</span>
+                        </ng-template>
+                        <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                            <div class="row m-0">
+                                <div class="col-md-11 col-11 p-0 m-0">
+                                    <div class="col-md-12">{{item.fullName}}</div>
+                                    <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.email}}</div>
+                                </div>
+                                <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                    <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                        <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deletePerson($event, item)">
+                                        </i>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </ng-select>
+                    <div class="text-value" *ngIf="isView">{{projectData?.coordinator?.fullName}}{{projectData?.coordinator?.country ? ' (' + projectData.coordinator.country?.name + ')' : ''}}</div>
                 </div>
             </div>
             <hr>
@@ -122,7 +150,7 @@
             </div>
             <div class="row form-group">
                 <div class="col-md-4">
-                    <div for="fundingSources" class="font-style text-capitalize">Funding source(s)</div>
+                    <div for="fundingSources" class="font-style">Funding source(s)</div>
                     <ng-select [items]="fundingSources" formControlName="fundingSources" [multiple]="true" (change)="onChangeFundingSources()"
                         [searchFn]="searchFundingSources" [compareWith]="compareIds" [clearSearchOnAdd]="true"
                         [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" 
@@ -142,10 +170,13 @@
                             </div>
                         </ng-template>
                     </ng-select>
-                    <div class="text-value" *ngIf="isView">{{displayFundingSources(projectData?.fundingSources)}}</div>
+                    <div *ngIf="isView" class="tags-container">
+                        <span *ngFor="let fs of projectData?.fundingSources" class="tag" 
+                            [ngStyle]="{ 'border-color': getTagBorderColor(fs.value), 'background-color': getTagBgColor(fs.value) }">{{fs.value}}</span>
+                    </div>
                 </div>
                 <div class="col-md-2" *ngIf="hasPublicFunding">
-                    <div for="gaNumber" class="font-style text-capitalize">GA number</div>
+                    <div for="gaNumber" class="font-style">GA number</div>
                     <input type="text" id="gaNumber" class="form-control" placeholder="e.g. 101136365"
                         formControlName="gaNumber" *ngIf="!isView"/>
                     <div *ngIf="isView" class="text-value">{{projectData?.gaNumber ? projectData?.gaNumber : ''}}</div>
@@ -154,7 +185,7 @@
             <hr>
             <div class="row section-title-field">
                 <div class="col-md-12 text-left">
-                    <div class="text-value" class="view-sub-sub-title">Clinical studies</div>
+                    <div class="text-value" class="view-sub-sub-title">Clinical Studies</div>
                 </div>
             </div>
             <ng-container *ngIf="!isView; else viewStudies">
@@ -183,12 +214,12 @@
             <hr>
             <div class="row section-title">
                 <div class="col-md-12 text-left">
-                    <div class="text-value" class="view-sub-sub-title">Publication information</div>
+                    <div class="text-value" class="view-sub-sub-title">Publication Information</div>
                 </div>
             </div>
             <div class="row form-group">
                 <div class="col-md-12">
-                    <div for="publicSummary" class="font-style text-capitalize">Public summary (including ECRIN role)</div>
+                    <div for="publicSummary" class="font-style">Public summary (including ECRIN role)</div>
                     <textarea cols="30" rows="3" class="form-control" placeholder="Project's public summary (including ECRIN role)"
                         formControlName="publicSummary" *ngIf="!isView" id="publicSummary"></textarea>
                     <div *ngIf="isView" class="text-value">{{projectData?.publicSummary}}</div>
@@ -196,7 +227,7 @@
             </div>
             <div class="row form-group">
                 <div class="col-md-6">
-                    <div for="url" class="font-style text-capitalize">Project website</div>
+                    <div for="url" class="font-style">Project website</div>
                     <input type="text" id="url" class="form-control" placeholder="Link the the project's website"
                         formControlName="url" *ngIf="!isView" />
                     <a href="{{getHttpLink(projectData?.url)}}" target="_blank">
@@ -206,7 +237,7 @@
             </div>
             <div class="row form-group">
                 <div class="col-md-6">
-                    <div for="url" class="font-style text-capitalize">Publications</div>
+                    <div for="url" class="font-style">Publications involving ECRIN</div>
                     <div>Coming soon!</div>
                 </div>
             </div>

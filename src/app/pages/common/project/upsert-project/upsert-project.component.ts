@@ -13,7 +13,7 @@ import { ProjectService } from 'src/app/_rms/services/entities/project/project.s
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
 import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
-import { colorHash, dateToString, stringToDate } from 'src/assets/js/util';
+import { colorHash, dateToString, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
 import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.component';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { ListService } from 'src/app/_rms/services/entities/list/list.service';
@@ -64,6 +64,7 @@ export class UpsertProjectComponent implements OnInit {
       name: '',
       shortName: ['', Validators.required],
       coordinator: null,
+      coordinatingInstitution: null,
       startDate: null,
       endDate: null,
       fundingSources: [],
@@ -83,7 +84,7 @@ export class UpsertProjectComponent implements OnInit {
 
     this.id = this.activatedRoute.snapshot.params.id;
     
-    this.scrollService.handleScroll([`/projects/${this.id}/view`, `/projects/${this.id}/edit`, `/projects/add`]);
+    // this.scrollService.handleScroll([`/projects/${this.id}/view`, `/projects/${this.id}/edit`, `/projects/add`]);
 
     this.isEdit = this.router.url.includes('edit');
     this.isView = this.router.url.includes('view');
@@ -160,6 +161,7 @@ export class UpsertProjectComponent implements OnInit {
       name: this.projectData.name,
       shortName: this.projectData.shortName,
       coordinator: this.projectData.coordinator,
+      coordinatingInstitution: this.projectData.coordinatingInstitution,
       startDate: this.projectData.startDate ? stringToDate(this.projectData.startDate) : null,
       endDate: this.projectData.endDate ? stringToDate(this.projectData.endDate) : null,
       fundingSources: this.projectData.fundingSources,
@@ -177,6 +179,11 @@ export class UpsertProjectComponent implements OnInit {
 
   allFormsValid() {
     this.submitted = true;
+
+    if (!this.projectForm.valid) {
+      this.toastr.error("Please correct the errors in the project form");
+    }
+
     return this.projectForm.valid && this.studyComponent.allFormsValid();
   }
 
@@ -186,6 +193,10 @@ export class UpsertProjectComponent implements OnInit {
 
     if (payload.coordinator?.id) {
       payload.coordinator = payload.coordinator.id;
+    }
+
+    if (payload.coordinatingInstitution?.id) {
+      payload.coordinatingInstitution = payload.coordinatingInstitution.id;
     }
 
     if (payload.fundingSources?.length > 0) {
@@ -378,26 +389,34 @@ export class UpsertProjectComponent implements OnInit {
   }
 
   // Necessary to write them as arrow functions
-  searchPersons = (term: string, item) => {
-    this.contextService.searchPersons(term, item);
-  }
-
   addPerson = (person) => {
     return this.contextService.addPersonDropdown(person);
   }
-
+  
   deletePerson($event, pToRemove) {
     $event.stopPropagation(); // Clicks the option otherwise
-
+    
     if (pToRemove.id == -1) {  // Created locally by user
       this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.fullName));
     } else {  // Already existing
       this.contextService.deletePersonDropdown(pToRemove, !this.isAdd);
     }
   }
+  
+  searchPersons = (term: string, item) => {
+    return this.contextService.searchPersons(term, item);
+  }
 
   searchCountries(term: string, item) {
-    this.contextService.searchCountries(term, item);
+    return this.contextService.searchCountries(term, item);
+  }
+
+  getTagBorderColor(text) {
+    return getTagBorderColor(text);
+  }
+
+  getTagBgColor(text) {
+    return getTagBgColor(text);
   }
 
   getHttpLink(link: string) {

@@ -130,3 +130,13 @@ export function colorHash(str) {
 		,hex: hex
 	};
 }
+
+export function getTagBorderColor(str) {
+	const h = colorHash(str);
+    return `rgb(${h.r} ${h.g} ${h.b} / 0.05)`;
+}
+
+export function getTagBgColor(str) {
+	const h = colorHash(str);
+    return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
+}

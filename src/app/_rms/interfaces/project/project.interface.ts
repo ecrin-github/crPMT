@@ -1,5 +1,6 @@
 import { ClassValueInterface } from "../context/class-value.interface";
 import { OrganisationInterface } from "../context/organisation.interface";
+import { PersonInterface } from "../context/person.interface";
 import { StudyDataInterface } from "../study/study.interface";
 
 export interface ProjectInterface {
@@ -7,7 +8,8 @@ export interface ProjectInterface {
     // General information
     name: string;
     shortName: string;
-    coordinator: OrganisationInterface;
+    coordinator: PersonInterface;
+    coordinatingInstitution: OrganisationInterface;
     startDate: string;
     endDate: string;
     // Project funding
@@ -15,11 +17,9 @@ export interface ProjectInterface {
     gaNumber: string;
     // Clinical study information
     studies: StudyDataInterface[];
-    // Timelines according to Consortium
-    reportingPeriods: string;
+    // TODO
+    reportingPeriods: [];
     // Publication information
     publicSummary: string;
     url: string;
-    // TODO: publications
-    totalPatientsExpected: string;
 }
