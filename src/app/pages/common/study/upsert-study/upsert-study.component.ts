@@ -187,9 +187,9 @@ export class UpsertStudyComponent implements OnInit {
 
   newStudy(): UntypedFormGroup {
     return this.fb.group({
-      id: '',
-      shortTitle: '',
-      title: '',
+      id: null,
+      shortTitle: null,
+      title: null,
       sponsorOrganisation: null,
       coordinatingInvestigator: null,
       sponsorCountry: null,
@@ -200,24 +200,22 @@ export class UpsertStudyComponent implements OnInit {
       regulatoryFrameworkDetails: [],
       complexTrialDesign: false,
       complexTrialType: null,
-      trialRegistrationNumber: '',
-      summary: '',
+      trialRegistrationNumber: null,
+      summary: null,
       cEuco: null,
       coordinatingCountry: null,
       totalPatientsExpected: null,
       services: [],
       recruitmentPeriod: null,
       recruitmentPeriodUnit: null,
-      treatmentDurationPerPatient: '',
-      treatmentDurationPerPatientUnit: '',
-      treatmentAndFollowUpDurationPerPatient: '',
-      treatmentAndFollowUpDurationPerPatientUnit: '',
+      treatmentDurationPerPatient: null,
+      treatmentDurationPerPatientUnit: null,
+      treatmentAndFollowUpDurationPerPatient: null,
+      treatmentAndFollowUpDurationPerPatientUnit: null,
       firstPatientIn: null,
       lastPatientOut: null,
-      status: '',
+      status: null,
       project: null,
-      trialId: '',
-      // submissions: null,
       studyCountries: [],
     });
   }
@@ -305,8 +303,6 @@ export class UpsertStudyComponent implements OnInit {
         lastPatientOut: s.lastPatientOut ? stringToDate(s.lastPatientOut) : null,
         status: s.status,
         project: s.project,
-        trialId: s.trialId, // TODO: remove?
-        // submissions: null,
         // Note: unknown why this array needs to be wrapped in another array
         studyCountries: [s.studyCountries]
       }));
