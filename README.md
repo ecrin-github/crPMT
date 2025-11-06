@@ -5,6 +5,9 @@ Versioning convention:  [major releases].[new features/major fixes/].[minor fixe
 
 # Changelog
 
+## [0.5.1dev] - 2025-11-06
+- Fixed a visual bug where when adding a study, certain dropdown fields looked like they already had a blank value selected
+
 ## [0.5.0dev] - 2025-11-06
 ### Global
 - Changed many field/section names
