@@ -15,6 +15,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { PersonModalComponent } from 'src/app/pages/common/person-modal/person-modal.component';
 import { OrganisationModalComponent } from 'src/app/pages/common/organisation-modal/organisation-modal.component';
 import { ClassValueInterface } from '../../interfaces/context/class-value.interface';
+import { HospitalModalComponent } from 'src/app/pages/common/hospital-modal/hospital-modal.component';
+import { HospitalInterface } from '../../interfaces/context/hospital.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +29,8 @@ export class ContextService {
         new BehaviorSubject<CountryInterface[]>(null);
   public ctus: BehaviorSubject<CTUInterface[]> =
         new BehaviorSubject<CTUInterface[]>(null);
+  public hospitals: BehaviorSubject<HospitalInterface[]> =
+        new BehaviorSubject<HospitalInterface[]>(null);
   public fundingSources: BehaviorSubject<ClassValueInterface[]> =
         new BehaviorSubject<ClassValueInterface[]>(null);
   public medicalFields: BehaviorSubject<ClassValueInterface[]> =
@@ -36,6 +40,8 @@ export class ContextService {
   public persons: BehaviorSubject<PersonInterface[]> =
         new BehaviorSubject<PersonInterface[]>(null);
   public populations: BehaviorSubject<ClassValueInterface[]> =
+        new BehaviorSubject<ClassValueInterface[]>(null);
+  public regulatoryFrameworkDetails: BehaviorSubject<ClassValueInterface[]> =
         new BehaviorSubject<ClassValueInterface[]>(null);
   public services: BehaviorSubject<ClassValueInterface[]> =
         new BehaviorSubject<ClassValueInterface[]>(null);
@@ -53,11 +59,13 @@ export class ContextService {
     queryFuncs.push(this.getComplexTrialTypes());
     queryFuncs.push(this.getCountries());
     queryFuncs.push(this.getCTUs());
+    queryFuncs.push(this.getHospitals());
     queryFuncs.push(this.getFundingSources());
     queryFuncs.push(this.getMedicalFields());
     queryFuncs.push(this.getOrganisations());
     queryFuncs.push(this.getPersons());
     queryFuncs.push(this.getPopulations());
+    queryFuncs.push(this.getRegulatoryFrameworkDetails());
     queryFuncs.push(this.getServices());
 
     let obsArr: Array<Observable<any>> = [];
@@ -67,11 +75,13 @@ export class ContextService {
 
     combineLatest(obsArr).subscribe(res => {
       this.setServices(res.pop());
+      this.setRegulatoryFrameworkDetails(res.pop());
       this.setPopulations(res.pop());
       this.setPersons(res.pop());
       this.setOrganisations(res.pop());
       this.setMedicalFields(res.pop());
       this.setFundingSources(res.pop());
+      this.setHospitals(res.pop());
       this.setCTUs(res.pop());
       this.setCountries(res.pop());
       this.setComplexTrialTypes(res.pop());
@@ -201,6 +211,128 @@ export class ContextService {
   
   setCTUs(ctus) {
     this.ctus.next(ctus);
+  }
+
+  /* Hospitals */
+  getHospitals() {
+    return this.http.get(`${environment.baseUrlApi}/context/hospitals`);
+  }
+
+  setHospitals(hospitals) {
+    this.sortHospitals(hospitals);
+    this.hospitals.next(hospitals);
+  }
+  
+  updateHospitals() {
+    return this.getHospitals().pipe(
+      map((hospitals) => {
+        this.setHospitals(hospitals);
+      })
+    );
+  }
+
+  sortHospitals(hospitals) {
+    const { compare } = Intl.Collator('en-GB');
+    hospitals.sort((a, b) => { return compare(a.name, b.name); });
+  }
+  
+  addHospital(payload) {
+    return this.http.post(`${environment.baseUrlApi}/context/hospitals`, payload);
+  }
+
+  editHospital(id, payload) {
+    return this.http.put(`${environment.baseUrlApi}/context/hospitals/${id}`, payload);
+  }
+
+  deleteHospital(id) {
+    return this.http.delete(`${environment.baseUrlApi}/context/hospitals/${id}`, {observe: "response", responseType: 'json'});
+  }
+
+  searchHospitals(term, item) {
+    term = term.toLocaleLowerCase();
+    return item.name?.toLocaleLowerCase().indexOf(term) > -1 
+      || item.city?.toLocaleLowerCase().indexOf(term) > -1 
+      || item.country?.name?.toLocaleLowerCase().indexOf(term) > -1;
+  }
+
+  /**
+   * TODO
+   * @param hospitalName 
+   * @returns 
+   */
+  addHospitalDropdown(hospitalName, country) {
+    const addOrgModal = this.modalService.open(HospitalModalComponent, { size: 'lg', backdrop: 'static' });
+    addOrgModal.componentInstance.name = hospitalName;
+    addOrgModal.componentInstance.country = country;
+
+    return addOrgModal.result.then((result) => {
+      if (result === null) {
+        this.spinner.hide();
+        return new Promise(null);
+      }
+      
+      this.spinner.show();
+      return this.addHospital(result).pipe(
+        mergeMap((o:any) => {
+          result.id = o.id;
+          return this.updateHospitals();
+        }),
+        mergeMap(() => {
+          this.spinner.hide();
+          return of(result);
+        }),
+        catchError((err) => {
+          this.toastr.error(err, "Error adding hospital", { timeOut: 20000, extendedTimeOut: 20000 });
+          return of(null);
+        })
+      ).toPromise();
+    })
+    .catch((err) => {
+      this.toastr.error(err, "Error adding hospital", { timeOut: 20000, extendedTimeOut: 20000 });
+      this.spinner.hide();
+      return null;
+    });
+  }
+
+  /**
+   * 
+   * @param hospitalToRemove TODO
+   * @param currProjectId 
+   */
+  deleteHospitalDropdown(hospitalToRemove, filter) {
+    this.spinner.show();
+    // Checking if other projects have this hospital
+    this.listService.getReferenceCountByClass("hospital", hospitalToRemove.id).subscribe((res: any) => {
+      let refCount = res.totalCount;
+      // Allowing deletion if hospital has already been added and is only referenced once by the calling class
+      if (filter) { // !isAdd
+        refCount -= 1;
+      }
+
+      if (refCount > 0) {
+        this.toastr.error(`Failed to delete this hospital as it is used in ${refCount} other objects (projects, studies, etc.)`);
+        this.spinner.hide();
+      } else {
+        // Delete hospital from the DB, then locally if succeeded
+        this.deleteHospital(hospitalToRemove.id).subscribe((res: any) => {
+          if (res.status !== 204) {
+            this.toastr.error('Error when deleting hospital', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
+          } else {
+            // Updating hospitals list
+            this.updateHospitals().subscribe(() => {
+              this.spinner.hide();
+            });
+          }
+          this.spinner.hide();
+        }, error => {
+          this.toastr.error(error);
+          this.spinner.hide();
+        });
+      }
+    }, error => {
+      this.toastr.error(error);
+      this.spinner.hide();
+    });
   }
 
   /* Funding sources */
@@ -508,6 +640,15 @@ export class ContextService {
   setPopulations(populations) {
     this.sortClassValues(populations);
     this.populations.next(populations);
+  }
+
+  getRegulatoryFrameworkDetails() {
+    return this.http.get(`${environment.baseUrlApi}/context/regulatory-framework-details`);
+  }
+
+  setRegulatoryFrameworkDetails(regulatoryFrameworkDetails) {
+    this.sortClassValues(regulatoryFrameworkDetails);
+    this.regulatoryFrameworkDetails.next(regulatoryFrameworkDetails);
   }
 
   /* Services */

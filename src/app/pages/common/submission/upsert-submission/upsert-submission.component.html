@@ -1,0 +1,154 @@
+<form [formGroup]="form" ngNativeValidate>
+    <div formArrayName="submissions">
+        <ng-container *ngIf="!isView; else submissionView">
+            <div class="row" *ngFor="let submission of getSubmissionsForm().controls; let i = index;"
+                [formGroupName]="i">
+                <div class="col" [id]="'featpanel'+i">
+                    <hr *ngIf="i > 0">
+                    <div class="row form-group">
+                        <div class="col-md-3">
+                            <div for="authority" class="font-style">Authority</div>
+                            <input type="text" id="authority" class="form-control" formControlName="authority" *ngIf="!isView"/>
+                            <span class="text-value" *ngIf="isView">{{submission.value.authority}}</span>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div for="submissionDate" class="font-style">Submission date</div>
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd"
+                                        name="submissionDate" ngbDatepicker #submissionDate="ngbDatepicker"
+                                        formControlName="submissionDate" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary"
+                                            (click)="submissionDate.toggle()" type="button">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                        </div>
+                                    </div>
+                                    <span class="text-value" *ngIf="isView">{{dateToString(submission.value.submissionDate)}}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <div for="approvalDate" class="font-style">Approval date</div>
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd"
+                                        name="approvalDate" ngbDatepicker #approvalDate="ngbDatepicker"
+                                        formControlName="approvalDate" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary"
+                                            (click)="approvalDate.toggle()" type="button">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                        </div>
+                                    </div>
+                                    <span class="text-value" *ngIf="isView">{{dateToString(submission.value.approvalDate)}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-1 d-flex justify-content-center align-items-center">
+                            <div class="row">
+                                <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="deleteSubmission(i)"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-3">
+                            <div for="protocolApprovalDate" class="font-style">Date of approved protocol</div>
+                            <div class="input-group" *ngIf="!isView">
+                                <input class="form-control" placeholder="yyyy-mm-dd"
+                                name="protocolApprovalDate" ngbDatepicker #protocolApprovalDate="ngbDatepicker"
+                                formControlName="protocolApprovalDate" container='body'>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary"
+                                    (click)="protocolApprovalDate.toggle()" type="button">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                                </div>
+                            </div>
+                            <span class="text-value" *ngIf="isView">{{dateToString(submission.value.protocolApprovalDate)}}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <div for="protocolApprovedVersion" class="font-style">Version of approved protocol</div>
+                            <input type="text" id="protocolApprovedVersion" class="form-control" formControlName="protocolApprovedVersion" *ngIf="!isView"/>
+                            <span class="text-value" *ngIf="isView">{{submission.value.protocolApprovedVersion}}</span>
+                        </div>
+                    </div>
+                    <div class="row form-group" *ngIf="this.isAmendments">
+                        <div class="col-md-12">
+                            <div for="amendmentReason" class="font-style">Amendment reason<sup *ngIf="!isView">*</sup></div>
+                            <textarea cols="30" rows="2" class="form-control" placeholder="Amendment reason"
+                                formControlName="amendmentReason" *ngIf="!isView" id="amendmentReason" [ngClass]="{ 'is-invalid': submitted && getControls(i).amendmentReason.errors }">
+                            </textarea>
+                            <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).amendmentReason.errors">
+                                <p *ngIf="submitted && getControls(i).amendmentReason.errors.required">Please enter the reason for the amendment</p>
+                            </div>
+                            <div *ngIf="isView" class="text-value">{{submission.value.amendmentReason}}</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div for="comment" class="font-style">Comment</div>
+                            <textarea cols="30" rows="3" class="form-control" 
+                            [placeholder]="this.isAmendments ? 'Amendment comment' : this.isOthers ? 'Notification comment' : 'Submission comment'"
+                                formControlName="comment" *ngIf="!isView" id="comment" [ngClass]="{ 'is-invalid': submitted && getControls(i).comment.errors }">
+                            </textarea>
+                            <div *ngIf="isView" class="text-value">{{submission.value.comment}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+        <ng-template #submissionView>
+            <div class="row row-cols-2 g-4">
+                <div class="col" *ngFor="let submission of getSubmissionsForm().controls; let i = index;" [formGroupName]="i">
+                    <div class="card-pad card-border h-100" [ngClass]="[submission.value.approvalDate ? 'card-approved' : submission.value.submissionDate ? 'card-submitted' : 'card-neutral']">
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <span class="text-value strong-value">{{submission.value.authority}}</span>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <div for="submissionDate" class="font-style">Submission date</div>
+                                <span class="text-value">{{dateToString(submission.value.submissionDate)}}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <div for="approvalDate" class="font-style">Approval date</div>
+                                <span class="text-value">{{dateToString(submission.value.approvalDate)}}</span>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <div for="protocolApprovalDate" class="font-style">Date of approved protocol</div>
+                                <span class="text-value">{{dateToString(submission.value.protocolApprovalDate)}}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <div for="protocolApprovedVersion" class="font-style">Version of approved protocol</div>
+                                <span class="text-value">{{submission.value.protocolApprovedVersion}}</span>
+                            </div>
+                        </div>
+                        <div class="row form-group" *ngIf="this.isAmendments">
+                            <div class="col-md-12">
+                                <div for="amendmentReason" class="font-style">Amendment reason</div>
+                                <div class="text-value">{{submission.value.amendmentReason}}</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div for="comment" class="font-style" *ngIf="submission.value.comment">Comment</div>
+                                <div class="text-value">{{submission.value.comment}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
+    </div>
+</form>
+<div class="row mt-5 pb-4" *ngIf="!isView">
+    <div class="col-4 d-flex align-items-center justify-content-left">
+        <button class="btn btn-primary" (click)="addSubmission()">
+            <i class="fa fa-plus"></i>{{this.isAmendments ? 'New amendment' : this.isOthers ? 'New other notification' : 'New submission'}}
+        </button>
+    </div>
+</div>

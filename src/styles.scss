@@ -707,12 +707,24 @@ mat-footer-cell:first-of-type {
 
 .text-value {
   font-size: 1.175rem;
-  font-weight: 100;
+  font-weight: 400;
   white-space: pre-wrap;
   line-height: 1.25;
 }
 
-.study-title {
+.text-value-small {
+  font-size: 1.08rem;
+  font-weight: 400;
+  white-space: pre-wrap;
+  line-height: 1.25;
+}
+
+.li-text-1 {
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+
+.title-border {
   border-style: double;
   padding: 0.3rem;
   border-width: 0.33rem;
@@ -737,7 +749,7 @@ mat-footer-cell:first-of-type {
 }
 
 .section-title {
-  margin-bottom: 1.75rem !important;
+  margin-bottom: 1.25rem !important;
 }
 
 .section-title-field {
@@ -795,7 +807,8 @@ mat-footer-cell:first-of-type {
 }
 
 .checkbox {
-  width: calc(1.5em + 1.3rem + 2px);  // Same formula as .form-control height
+  width: calc(1.5em + 1.3rem + 2px);  // Same formula as Bootstrap 4 .form-control height
+  height: calc(1.5em + 1.3rem + 2px);  // Same formula as Bootstrap 4 .form-control height
 }
 
 .btn-invisible {
@@ -871,10 +884,11 @@ mat-footer-cell:first-of-type {
 }
 
 .tag {
-  border-width: 0.2rem;
+  border-width: 0.15rem;
   border-style: solid;
-  border-radius: 0.4rem;
-  padding: 0.2rem;
+  border-radius: 1.5rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 1rem !important;
 }
 
 .mat-expansion-panel-header-instance {
@@ -888,6 +902,38 @@ mat-footer-cell:first-of-type {
 
 .margin-side {
   margin: 0 5rem !important;
+}
+
+.card-pad {  // Equalize padding with left and right paddings with col
+  padding: 1rem;
+}
+
+.cancel-row-margins {
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+}
+
+.strong-value {
+  font-weight: 500 !important;
+  font-size: 1.3rem !important;
+  text-decoration: underline;
+}
+
+.card-border {
+  // border: solid #3154927a;
+  border-radius: 0.4rem;
+}
+
+.card-neutral {
+  background-color: rgba(170, 170, 170, 0.16);
+}
+
+.card-submitted {
+  background-color: rgba(255, 252, 54, 0.25);
+}
+
+.card-approved {
+  background-color: rgba(0, 255, 16, 0.12);
 }
 
 // ng-select validation

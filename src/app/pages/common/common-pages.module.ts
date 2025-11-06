@@ -59,6 +59,9 @@ import { StudyListComponent } from './study/study-list/study-list.component';
 import { PersonModalComponent } from './person-modal/person-modal.component';
 import { PersonListComponent } from './person/person-list/person-list.component';
 import { OrganisationModalComponent } from './organisation-modal/organisation-modal.component';
+import { UpsertNotificationComponent } from './notification/upsert-notification/upsert-notification.component';
+import { UpsertSubmissionComponent } from './submission/upsert-submission/upsert-submission.component';
+import { HospitalModalComponent } from './hospital-modal/hospital-modal.component';
 
 
 @NgModule({
@@ -109,7 +112,10 @@ import { OrganisationModalComponent } from './organisation-modal/organisation-mo
         StudyListComponent,
         PersonModalComponent,
         PersonListComponent,
-        OrganisationModalComponent
+        OrganisationModalComponent,
+        UpsertNotificationComponent,
+        UpsertSubmissionComponent,
+        HospitalModalComponent
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [
@@ -173,6 +179,26 @@ import { OrganisationModalComponent } from './organisation-modal/organisation-mo
                 data: { 
                     shouldReuse: false,
                     key: 'upsertstudycountrycomponentview'
+                }
+            },
+            // Study CTUs details pages
+            {
+                path: 'study-ctus/:id/edit',
+                pathMatch: 'full',
+                component: UpsertStudyCtuComponent,
+                data: { 
+                    shouldReuse: false,
+                    key: 'upsertstudyctucomponentedit'
+                },
+                canActivate: [RoleGuard]
+            },
+            {
+                path: 'study-ctus/:id/view',
+                pathMatch: 'full',
+                component: UpsertStudyCtuComponent,
+                data: { 
+                    shouldReuse: false,
+                    key: 'upsertstudyctucomponentview'
                 }
             },
         ]),

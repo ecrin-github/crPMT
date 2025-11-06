@@ -1,0 +1,103 @@
+<form [formGroup]="form" ngNativeValidate>
+    <div formArrayName="notifications">
+        <ng-container *ngIf="!isView; else notificationView">
+        <div class="row" *ngFor="let notification of getNotificationsForm().controls; let i = index;"
+            [formGroupName]="i">
+                <div class="col" [id]="'featpanel'+i">
+                    <hr *ngIf="i > 0">
+                    <div class="row form-group">
+                        <div class="col-md-3">
+                            <div for="authority" class="font-style">Authority</div>
+                            <input type="text" id="authority" class="form-control" formControlName="authority" *ngIf="!isView"/>
+                            <span class="text-value" *ngIf="isView">{{notification.value.authority}}</span>
+                        </div>
+                        <div class="col-md-3">
+                            <div for="notificationDate" class="font-style">Notification date</div>
+                            <div class="input-group" *ngIf="!isView">
+                                <input class="form-control" placeholder="yyyy-mm-dd"
+                                name="notificationDate" ngbDatepicker #notificationDate="ngbDatepicker"
+                                formControlName="notificationDate" container='body'>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary"
+                                    (click)="notificationDate.toggle()" type="button">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                                </div>
+                            </div>
+                            <span class="text-value" *ngIf="isView">{{dateToString(notification.value.notificationDate)}}</span>
+                        </div>
+                        <div class="col-md-1 d-flex justify-content-center align-items-center">
+                            <div class="row">
+                                <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="deleteNotification(i)"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div for="comment" class="font-style">Comment</div>
+                            <textarea cols="30" rows="3" class="form-control" placeholder="Notification comment"
+                                formControlName="comment" *ngIf="!isView" id="comment" [ngClass]="{ 'is-invalid': submitted && getControls(i).comment.errors }">
+                            </textarea>
+                            <div *ngIf="isView" class="text-value">{{notification.value.comment}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+        <ng-template #notificationView>
+            <div class="row row-cols-3 g-4">
+                <div class="col" *ngFor="let notification of getNotificationsForm().controls; let i = index;"
+                    [formGroupName]="i">
+                    <div class="card-pad card-border h-100" [ngClass]="[notification.value.notificationDate ? 'card-approved' : 'card-neutral']">
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <span class="text-value strong-value">{{notification.value.authority}}</span>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <div for="notificationDate" class="font-style">Notification date</div>
+                                <span class="text-value">{{dateToString(notification.value.notificationDate)}}</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div for="comment" class="font-style" *ngIf="notification.value.comment">Comment</div>
+                                <div class="text-value">{{notification.value.comment}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="row cancel-row-margins">
+                <div class="col-4 col-pad card-border" *ngFor="let notification of getNotificationsForm().controls; let i = index;" [formGroupName]="i"
+                    [ngClass]="[i%2 == 0 ? 'me-3': '', i > 1 ? 'mt-3' : '', notification.value.notificationDate ? 'card-approved' : 'card-neutral']">
+                    <div class="row form-group">
+                        <div class="col-md-12">
+                            <span class="text-value strong-value">{{notification.value.authority}}</span>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-6">
+                            <div for="notificationDate" class="font-style">Notification date</div>
+                            <span class="text-value">{{dateToString(notification.value.notificationDate)}}</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div for="comment" class="font-style">Comment</div>
+                            <div class="text-value">{{notification.value.comment}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div> -->
+        </ng-template>
+    </div>
+</form>
+<div class="row mt-5 pb-4" *ngIf="!isView">
+    <div class="col-4 d-flex align-items-center justify-content-left">
+        <button class="btn btn-primary" (click)="addNotification()">
+            <i class="fa fa-plus"></i>New notification
+        </button>
+    </div>
+</div>
