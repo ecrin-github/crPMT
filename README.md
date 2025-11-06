@@ -5,8 +5,38 @@ Versioning convention:  [major releases].[new features/major fixes/].[minor fixe
 
 # Changelog
 
+## [0.5.0dev] - 2025-11-06
+### Global
+- Changed many field/section names
+- Improved links to previous level in view pages titles (added breadcrumbs)
+- Visual improvements in all view pages
+- Panels (e.g. studies in projects) are now expanded by default when adding a new item
+### Project
+- Added Name of the EU Project Coordinator field
+### Study
+- Added second dropdown field for Regulatory Framework if CTR or COMBINED is selected in the first dropdown
+- Added total number of patients expected field (was displayed but not functional)
+- Added Study Summary character limit (with remaining characters displayed)
+- Replaced recruitment start and end fields with recruitment period, with number and unit fields
+- Added total number of sites per country display view page
+- Removed site count per CTU in study countries display, added count at study country level instead, added centres display and study CTUs are now links
+### Study country
+- Added initial regulatory submissions, amendments, other types of notification, and end of trial notifications
+- Added display of CTUs and their services and sites
+### Study CTU
+- Added Lead CTU, contact name and SAS verification (moved from removed "toggle CTU info display"), list of services fields, as well as proper sections
+### Centre
+- Changed hospital field to a dropdown with addable items
+- Changed site number field to a checkbox + text field if checkbox is checked
+- Added expected number of patients field
+- Removed recruitment greenlight field
+### Other (technical) changes
+- Fix item type display when deleting an item from a list page
+- Upgrade from Bootstrap 4 to 5
+- Code cleaning
+
 ## [0.4.1dev] - 2025-08-26
-- Modify some field names in project and study pages to match the specifications
+- Modified some field names in project and study pages to match the specifications
 
 ## [0.4.0dev] - 2025-08-26
 - Added all EuCos to the list of selectable persons of various fields, they are also associated to a country and have "EuCo" status
