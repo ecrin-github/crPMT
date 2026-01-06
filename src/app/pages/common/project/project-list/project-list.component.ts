@@ -108,13 +108,6 @@ export class ProjectListComponent implements OnInit {
     });
   }
 
-  @HostListener('window:storage', ['$event'])
-  refreshList(event) {
-    console.log('event triggered', event)
-    this.getProjectList();
-    localStorage.removeItem('updateProjectList');
-  }
-
   deleteRecord(id) {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
     deleteModal.componentInstance.itemType = 'project';

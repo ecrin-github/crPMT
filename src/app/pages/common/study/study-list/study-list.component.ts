@@ -114,13 +114,6 @@ export class StudyListComponent implements OnInit {
     });
   }
 
-  @HostListener('window:storage', ['$event'])
-  refreshList(event) {
-    console.log('event triggered', event)
-    this.getStudyList();
-    localStorage.removeItem('updateStudyList');
-  }
-
   deleteRecord(id) {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
     deleteModal.componentInstance.itemType = 'study';

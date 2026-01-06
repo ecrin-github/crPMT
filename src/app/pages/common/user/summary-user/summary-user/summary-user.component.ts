@@ -124,13 +124,6 @@ export class SummaryUserComponent implements OnInit, OnDestroy {
     })
   }
 
-  @HostListener('window: storage', ['$event'])
-  refreshList(event) {
-    console.log('event triggered', event);
-    this.getPeople();
-    localStorage.removeItem('updateUserList');
-  }
-
   onInputChange(e) {
     this.searchDebounce.next(e.target.value);
   }
