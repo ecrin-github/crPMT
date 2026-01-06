@@ -67,13 +67,6 @@ export class StudyListComponent implements OnInit {
               private router: Router) { }
 
   ngOnInit(): void {
-    this.orgId = this.statesService.currentAuthOrgId;
-    this.role = this.statesService.currentAuthRole;
-    this.isOrgIdValid = this.statesService.isOrgIdValid();
-    this.isManager = this.statesService.isManager();
-    if (!this.isBrowsing) {
-      this.permissionService.loadPermissions([this.role]);
-    }
     this.notDashboard = this.router.url.includes('studies') ? true : false;
     this.getStudyList();
     this.setupSearchDeBouncer();

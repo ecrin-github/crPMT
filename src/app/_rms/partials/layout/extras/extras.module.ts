@@ -6,7 +6,6 @@ import { InlineSVGModule } from 'ng-inline-svg';
 import { PerfectScrollbarModule } from 'ngx-perfect-scrollbar';
 import { PERFECT_SCROLLBAR_CONFIG } from 'ngx-perfect-scrollbar';
 import { PerfectScrollbarConfigInterface } from 'ngx-perfect-scrollbar';
-import { UserOffcanvasComponent } from './offcanvas/user-offcanvas/user-offcanvas.component';
 import { PipesModule } from '../../../../_rms';
 import { ScrollTopComponent } from './scroll-top/scroll-top.component';
 
@@ -18,7 +17,6 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
 @NgModule({
   declarations: [
     QuickPanelOffcanvasComponent,
-    UserOffcanvasComponent,
     ScrollTopComponent,
   ],
   imports: [CommonModule, InlineSVGModule, PerfectScrollbarModule, PipesModule, RouterModule],
@@ -30,7 +28,6 @@ const DEFAULT_PERFECT_SCROLLBAR_CONFIG: PerfectScrollbarConfigInterface = {
   ],
   exports: [
     QuickPanelOffcanvasComponent,
-    UserOffcanvasComponent,
     ScrollTopComponent,
   ],
 })

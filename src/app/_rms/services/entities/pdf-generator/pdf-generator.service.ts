@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { UpsertObjectComponent } from 'src/app/pages/common/object/upsert/upsert-object/upsert-object.component';
 
 
 @Injectable({
@@ -695,7 +694,7 @@ export class PdfGeneratorService {
   objectPdfGenerator(objectData) {
     const doc = new jsPDF();
 
-    const isShowTopicType = UpsertObjectComponent.isShowTopicType(objectData.objectType?.name ? objectData.objectType.name: this.defaultMissingValueText);
+    const isShowTopicType = true;
     const offsetX = 16;
     const offsetY = 25;
     const offsetT1 = 10;

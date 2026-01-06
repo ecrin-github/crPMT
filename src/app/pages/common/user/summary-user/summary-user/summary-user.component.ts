@@ -57,8 +57,6 @@ export class SummaryUserComponent implements OnInit, OnDestroy {
               private router: Router) { }
 
   ngOnInit(): void {
-    this.role = this.statesService.currentAuthRole;
-    this.orgId = this.statesService.currentAuthOrgId;
     this.permissionService.loadPermissions([this.role]);
     this.notDashboard = this.router.url.includes('people') ? true : false;
     this.getPeople();

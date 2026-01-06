@@ -61,8 +61,6 @@ export class ProjectListComponent implements OnInit {
               private router: Router) { }
 
   ngOnInit(): void {
-    this.role = this.statesService.currentAuthRole;
-  this.permissionService.loadPermissions([this.role]);
     this.notDashboard = this.router.url.includes('projects') ? true : false;
     this.getProjectList();
     this.setupSearchDeBouncer();

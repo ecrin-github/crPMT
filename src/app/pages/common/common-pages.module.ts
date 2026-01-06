@@ -24,23 +24,8 @@ import {ObjectsContextComponent} from './context-page/objects-context/objects-co
 // import {ViewObjectComponent} from './object/view/view-object.component';
 // import {EditDtpComponent} from './dtp/edit/edit-dtp.component';
 // import {EditDupComponent} from './dup/edit/edit-dup.component';
-import { SummaryDtpComponent } from './dtp/summary-dtp/summary-dtp.component';
-import { UpsertDtpComponent } from './dtp/upsert-dtp/upsert-dtp.component';
-import { SummaryDupComponent } from './dup/summary-dup/summary-dup.component';
-import { UpsertDupComponent } from './dup/upsert-dup/upsert-dup.component';
-import { SummaryObjectComponent } from './object/summary-object/summary-object.component';
-import { UpsertObjectComponent } from './object/upsert/upsert-object/upsert-object.component';
 import { ProjectListComponent } from './project/project-list/project-list.component';
 import { UpsertStudyComponent } from './study/upsert-study/upsert-study.component';
-import { ObjectInstanceComponent } from './object/upsert/object-instance/object-instance.component';
-import { ObjectTitleComponent } from './object/upsert/object-title/object-title.component';
-import { ObjectDateComponent } from './object/upsert/object-date/object-date.component';
-import { ObjectContributorComponent } from './object/upsert/object-contributor/object-contributor.component';
-import { ObjectTopicComponent } from './object/upsert/object-topic/object-topic.component';
-import { ObjectIdentifierComponent } from './object/upsert/object-identifier/object-identifier.component';
-import { ObjectDescriptionComponent } from './object/upsert/object-description/object-description.component';
-import { ObjectRightComponent } from './object/upsert/object-right/object-right.component';
-import { ObjectRelationshipComponent } from './object/upsert/object-relationship/object-relationship.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CommonModalComponent } from './common-modal/common-modal.component';
 import { ConfirmationWindowComponent } from './confirmation-window/confirmation-window.component';
@@ -82,23 +67,8 @@ import { HospitalModalComponent } from './hospital-modal/hospital-modal.componen
 
         // EditObjectComponent,
         // ViewObjectComponent,
-        SummaryDtpComponent,
-        UpsertDtpComponent,
-        SummaryDupComponent,
-        UpsertDupComponent,
-        SummaryObjectComponent,
-        UpsertObjectComponent,
         ProjectListComponent,
         UpsertStudyComponent,
-        ObjectInstanceComponent,
-        ObjectTitleComponent,
-        ObjectDateComponent,
-        ObjectContributorComponent,
-        ObjectTopicComponent,
-        ObjectIdentifierComponent,
-        ObjectDescriptionComponent,
-        ObjectRightComponent,
-        ObjectRelationshipComponent,
         CommonModalComponent,
         ConfirmationWindowComponent,
         ConfirmationWindow1Component,
@@ -216,6 +186,6 @@ import { HospitalModalComponent } from './hospital-modal/hospital-modal.componen
         NgxPermissionsModule.forChild()
     ],
     providers: [NgbActiveModal],
-    exports: [ SummaryDtpComponent, SummaryDupComponent, StudyListComponent, ProjectListComponent, SummaryObjectComponent, SummaryUserComponent]
+    exports: [ StudyListComponent, ProjectListComponent, SummaryUserComponent]
 })
 export class CommonPagesModule {}

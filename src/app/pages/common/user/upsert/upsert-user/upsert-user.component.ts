@@ -49,7 +49,6 @@ export class UpsertUserComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.role = this.statesService.currentAuthRole;
     this.getOrganization();
     this.isEdit = this.router.url.includes('edit') ? true : false;
     this.isView = this.router.url.includes('view') ? true : false;

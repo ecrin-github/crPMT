@@ -15,7 +15,8 @@ export class ManagerGuard implements CanActivate {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    return this.statesService.isManager();
+    return false;
+    // return this.statesService.isManager();
     
     /*return this.authService.isAuthenticUser().pipe(
       timeout(10000),

@@ -31,8 +31,6 @@ export class AsideInternalComponent implements OnInit {
               private router: Router) { }
 
   ngOnInit(): void {
-    const orgId = this.statesService.currentAuthOrgId;
-    this.isManager = this.statesService.isManager();
     this.isBrowsing = this.router.url.includes('browsing') ? true : false;
 
     // load view settings
