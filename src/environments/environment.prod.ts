@@ -1,23 +1,17 @@
 import { appVersion } from './version';
 
-// Note: constants relating to LS AAI must be the same as the constants in the BE
 const baseUrl = 'https://api-crpmt.ecrin.org';  // No trailing slash
 export const environment = {
   production: true,
-  // LS AAI V2
-  authority: 'https://login.aai.lifescience-ri.eu/oidc',  // No trailing slash
-  clientId: '78dbf43b-bcb7-4a6a-8023-ca930d5ed0e2',  // Prod
-  userInfoUrl: 'https://login.aai.lifescience-ri.eu/oidc/userinfo',
-  // LS AAI V1
-  // authority: 'https://proxy.aai.lifescience-ri.eu/',
-  // clientId: 'APP-FDD7EABC-450A-426B-BDFA-3CBD87B7C56A',
-  // userInfoUrl: 'https://proxy.aai.lifescience-ri.eu/OIDC/userinfo',
+  // Microsoft Entra
+  authority: 'https://login.microsoftonline.com/7d591275-8f7c-4476-bb14-1f96f2587607/v2.0',
+  clientId: 'ecb6ece9-220c-420d-97bd-46093b270627',
+  apiClientId: '3fe07317-fa56-4811-81fa-ca458a9d376e',
   appVersion: appVersion,
-  appTitle: 'crDSR: Data Sharing Repository',
+  appTitle: 'crPMT: clinOps Project Management Tool',
   baseUrl: baseUrl,
   baseUrlApi: baseUrl + '/api',  // No trailing slash
-  wsBaseUrl: 'wss://api-dsr.ecrin.org/',
+  wsBaseUrl: 'wss://api-crpmtdev.ecrin.org/',
   apiUrl: 'api',
-  tsdUploadPath: 'prod',
   apiVersion: 'v1'
 };

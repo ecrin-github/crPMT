@@ -30,17 +30,11 @@ export class AuthService {
   ) { }
 
   isAuthenticUser() {
-    /* TODO: checkAuth only checks that the locally stored tokens are valid when logged in, doesn't query LS AAI again
-       there should be a separate use case for handling logging out (and choosing to stay logged in on logout page)*/
     return this.oidcSecurityService.checkAuth().pipe(
       timeout(20000),
       mergeMap(async ({isAuthenticated, userData, accessToken, idToken}) => {
         this.isAuthenticated = isAuthenticated;
         if (isAuthenticated) {
-          // Note: userData in checkAuth result is obtained from localStorage (and therefore can be tampered with), so we have to query LS AAI again
-          // Note 2: querying LS AAI even if statesService.currentUser is set for added security (preventing client-side memory tampering)
-          await this.getUser();
-          // this.webSocketService.startConnection();
         } else {
           this.logout();
         }
@@ -53,37 +47,12 @@ export class AuthService {
     );
   }
 
-  getUser() {
-    /* Get user from LS and get role and organisation from our DB. Setting user and permissions as well. */
-    this.statesService.isLoadingSubject = true;
-    return this.userService.getUser()
-      .pipe(
-        timeout(10000),
-        mergeMap((userDataClean: LsAaiUserInterface) => {
-          return this.userService.getUserRoleInfo(userDataClean);
-        }),
-        map((user: UserInterface) => {
-          this.statesService.currentUser = user;
-          this.permissionService.loadPermissions([this.statesService.currentAuthRole]);
-        }),
-        catchError(err => {
-          this.logout(err);
-          return of(false);
-        })
-      ).toPromise();
-  }
-
   urlHandler(url) {
     window.location.href = url;
   }
 
   logout(err?) {
     if (this.isAuthenticated) {
-      // To use when logging out is handled better (see comment in isAuthenticUser())
-      // this.oidcSecurityService.logoff('', {urlHandler: this.urlHandler}).subscribe((res2) => {
-        // localStorage.clear();
-      // });
-      // this.webSocketService.close();
       this.oidcSecurityService.logoff().subscribe();
     } else {
       localStorage.clear();

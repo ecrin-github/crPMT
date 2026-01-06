@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
+import { MsalService, MsalBroadcastService, MsalGuardConfiguration, MSAL_GUARD_CONFIG } from '@azure/msal-angular';
 import { environment } from 'src/environments/environment';
+import { RedirectRequest } from '@azure/msal-browser';
+import { MSALGuardConfigFactory } from 'src/app/app.module';
 
 @Component({
   selector: 'app-auth',
@@ -13,21 +16,36 @@ export class AuthComponent implements OnInit {
   today: Date = new Date();
   showFooter: boolean = true;
   appVersion: string;
+  msalGuardConfig: MsalGuardConfiguration;
 
-  constructor( private router: Router, public oidcSecurityService: OidcSecurityService) { }
+  constructor(
+    private router: Router, 
+    private msalService: MsalService) { }
 
   ngOnInit(): void {
     this.appVersion = environment.appVersion;
     this.showFooter = this.router.url.includes('contactUs') ? false : true;
+    this.msalGuardConfig = MSALGuardConfigFactory();
   }
+
   ngAfterViewInit(): void {
     if (environment.production) {
       document.getElementById('matomo-opt-out-icon').style.bottom = "12vh";
     }
   }
+
   login() {
-    this.oidcSecurityService.authorize();
+    if (this.msalGuardConfig.authRequest) {
+      this.msalService.loginRedirect({ ...this.msalGuardConfig.authRequest } as RedirectRequest);
+    } else {
+      this.msalService.loginRedirect();
+    }
   }
+  
+  logout() {
+    this.msalService.logoutRedirect();
+  }
+
   goToContact() {
     this.router.navigate([])
       .then(result => { window.open('/contactUs', '_self'); });
