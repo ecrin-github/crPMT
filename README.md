@@ -5,6 +5,10 @@ Versioning convention:  [major releases].[new features/major fixes/].[minor fixe
 
 # Changelog
 
+## [0.6.0dev] - 2026-01-06
+- Replaced LS AAI login system with Microsoft Entra
+- Code cleaning (removal of files unused from the crDSR)
+
 ## [0.5.1dev] - 2025-11-06
 - Fixed a visual bug where when adding a study, certain dropdown fields looked like they already had a blank value selected
 
@@ -27,14 +31,14 @@ Versioning convention:  [major releases].[new features/major fixes/].[minor fixe
 - Added initial regulatory submissions, amendments, other types of notification, and end of trial notifications
 - Added display of CTUs and their services and sites
 ### Study CTU
-- Added Lead CTU, contact name and SAS verification (moved from removed "toggle CTU info display"), list of services fields, as well as proper sections
+- Added Lead CTU, contact name and SAS verification (moved from removed "togglable" CTU info display), list of services fields, as well as proper sections
 ### Centre
 - Changed hospital field to a dropdown with addable items
 - Changed site number field to a checkbox + text field if checkbox is checked
 - Added expected number of patients field
 - Removed recruitment greenlight field
 ### Other (technical) changes
-- Fix item type display when deleting an item from a list page
+- Fixed item type display when deleting an item from a list page
 - Upgrade from Bootstrap 4 to 5
 - Code cleaning
 
