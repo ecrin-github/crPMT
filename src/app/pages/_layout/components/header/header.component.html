@@ -26,19 +26,6 @@
         </div>
         <!--end::Header Logo-->
       </ng-container>
-
-        <!--begin::Header Menu-->
-        <!-- Don't change id => 'kt_header_menu' -->
-        <!--<ng-container *ngIf="headerMenuSelfStatic">-->
-        <!-- STATIC MENU -->
-        <!--<app-header-menu
-          #ktHeaderMenu
-          id="kt_header_menu"
-          class="header-menu header-menu-mobile"
-          [ngClass]="headerMenuCSSClasses"
-        ></!->
-      </ng-container>-->
-        <!--end::Header Menu-->
     </div>
     <!--end::Header Menu Wrapper-->
   </ng-container>
@@ -47,6 +34,17 @@
     <div></div>
   </ng-container>
 
-  <app-topbar class="topbar" *ngIf="!isBrowsing"></app-topbar>
+  <div class="d-flex align-items-center">
+    <div class="dropdown">
+      <button class="btn dropdown-toggle name-button" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        {{user?.name}}
+      </button>
+      <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <!-- <a class="dropdown-item" [routerLink]="['user-profile']">Profile</a> -->
+        <div class="dropdown-item">{{user?.email}}</div>
+        <button class="dropdown-item" (click)="logout()">Sign out</button>
+      </div>
+    </div>
+  </div>
 </div>
 <!--end::Container-->

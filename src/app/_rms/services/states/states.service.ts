@@ -1,7 +1,13 @@
-import {States} from '../../states/states';
-import {DefaultStates} from '../../states/default-states';
 import {UserInterface} from '../../interfaces/user/user.interface';
 import {Injectable} from '@angular/core';
+import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
+import { 
+    EventMessage, 
+    EventType, 
+    AuthenticationResult 
+  } from '@azure/msal-browser';
+import { filter } from 'rxjs/operators';
+import { BehaviorSubject } from 'rxjs';
 
 
 @Injectable({
@@ -9,103 +15,58 @@ import {Injectable} from '@angular/core';
 })
 export class StatesService {
 
+    public currentUser: BehaviorSubject<UserInterface> =
+        new BehaviorSubject<UserInterface>(undefined);
+    
+    // public currentAuthRole: BehaviorSubject<string> =
+    //     new BehaviorSubject<string>(this.defaultStates.defaultAuthRole);
+
     constructor(
-        private states: States,
-        private defaultStates: DefaultStates
+        private msalService: MsalService, 
+        private msalBroadcast: MsalBroadcastService
     ) {
+        // TODO: should be triggered less often
+        this.msalBroadcast.msalSubject$.subscribe(() => {
+            this.updateUserInfo();
+        });
     }
 
-    // Is loading subject services
-    get isLoadingSubject(): boolean {
-        return this.states.isLoadingSubject.value;
-    }
+    private updateUserInfo() {
+        const account = this.msalService.instance.getAllAccounts()[0];
+        if (account) {
+            const userInfo: UserInterface = {
+                id: (account.idTokenClaims?.['oid'] as string),
+                name: account.name,
+                email: (account.idTokenClaims?.['email'] as string),
+                isSuperuser: false
+            };
+            this.currentUser.next(userInfo);
+        }
+      }
 
-    set isLoadingSubject(value: boolean) {
-        this.states.isLoadingSubject.next(value);
-    }
+    // set currentUser(value: UserInterface) {
+    //     this.states.currentUser.next(value);
+    //     this.states.currentAuthRole.next(value.isSuperuser ? 'Manager' : 'User');
+    // }
 
-    setDefaultIsLoadingSubject() {
-        this.states.isLoadingSubject.next(this.defaultStates.isLoadingSubject);
-    }
+    // setDefaultCurrentUser() {
+    //     this.states.currentUser.next(undefined);
+    // }
 
+    // isManager(): boolean {
+    //     return this.currentAuthRole === 'Manager';
+    // }
 
-    // Internal user state services
-    get isInternalUser(): boolean {
-        return this.states.isInternalUser.value;
-    }
+    // // Current authorized user role state services
+    // get currentAuthRole(): string {
+    //     return this.states.currentAuthRole.value;
+    // }
 
-    set isInternalUser(value: boolean) {
-        this.states.isInternalUser.next(value);
-    }
+    // set currentAuthRole(value: string) {
+    //     this.states.currentAuthRole.next(value);
+    // }
 
-    setDefaultInternalUser() {
-        this.states.isInternalUser.next(this.defaultStates.defaultIsInternalUser);
-    }
-
-
-    // External user state services
-    get isExternalUser(): boolean {
-        return this.states.isExternalUser.value;
-    }
-
-    set isExternalUser(value: boolean) {
-        this.states.isExternalUser.next(value);
-    }
-
-    setDefaultExternalUser() {
-        this.states.isExternalUser.next(this.defaultStates.defaultIsExternalUser);
-    }
-
-
-    // Current user state services
-    get currentUser(): UserInterface {
-        return this.states.currentUser.value;
-    }
-
-    set currentUser(value: UserInterface) {
-        this.states.currentUser.next(value);
-        this.states.currentAuthRole.next(value.isSuperuser ? 'Manager' : 'User');
-    }
-
-    setDefaultCurrentUser() {
-        this.states.currentUser.next(undefined);
-    }
-
-    // Current authorized OrgId state services
-    get currentAuthOrgId(): string {
-        return this.states.currentAuthOrgId.value;
-    }
-
-    set currentAuthOrgId(value: string) {
-        this.states.currentAuthOrgId.next(value);
-    }
-
-    setDefaultCurrentAuthOrgId() {
-        this.states.currentAuthOrgId.next(undefined);
-    }
-
-    isOrgIdValid(): boolean {
-        return this.states.currentAuthOrgId.value !== 'null' 
-            && this.states.currentAuthOrgId.value !== 'undefined' 
-            && this.states.currentAuthOrgId.value !== null
-            && this.states.currentAuthOrgId.value !== undefined
-            && this.states.currentAuthOrgId.value !== '';
-    }
-
-    isManager(): boolean {
-        return this.currentAuthRole === 'Manager';
-    }
-
-    // Current authorized user role state services
-    get currentAuthRole(): string {
-        return this.states.currentAuthRole.value;
-    }
-
-    set currentAuthRole(value: string) {
-        this.states.currentAuthRole.next(value);
-    }
-
-    setDefaultCurrentAuthRole() {
-        this.states.currentAuthRole.next(undefined);
-    }
+    // setDefaultCurrentAuthRole() {
+    //     this.states.currentAuthRole.next(undefined);
+    // }
 }

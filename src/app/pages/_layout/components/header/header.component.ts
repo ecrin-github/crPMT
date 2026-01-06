@@ -20,6 +20,9 @@ import KTLayoutHeaderMenu from '../../../../../assets/js/layout/base/header-menu
 import { KTUtil } from '../../../../../assets/js/components/util';
 import { Subscription, Observable, BehaviorSubject } from 'rxjs';
 import {environment} from '../../../../../environments/environment';
+import { UserInterface } from 'src/app/_rms/interfaces/user/user.interface';
+import { StatesService } from 'src/app/_rms/services/states/states.service';
+import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-header',
@@ -36,9 +39,9 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   headerMenuCSSClasses: string;
   headerMenuHTMLAttributes: any = {};
   routerLoaderTimout: any;
-  isBrowsing: boolean = false;
   appTitle: string;
   appVersion: string;
+  user: UserInterface;
 
   @ViewChild('ktHeaderMenu', { static: true }) ktHeaderMenu: ElementRef;
   loader$: Observable<number>;
@@ -48,7 +51,11 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   );
   private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
 
-  constructor(private layout: LayoutService, private router: Router) {
+  constructor(
+    private authService: MsalService,
+    private layout: LayoutService, 
+    private statesService: StatesService,
+    private router: Router) {
     this.loader$ = this.loaderSubject;
     // page progress bar percentage
     const routerSubscription = this.router.events.subscribe((event) => {
@@ -77,7 +84,6 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.isBrowsing = this.router.url.includes('browsing') ? true : false
     this.headerContainerCSSClasses = this.layout.getStringCSSClasses(
       'header_container'
     );
@@ -94,6 +100,8 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
     this.headerMenuHTMLAttributes = this.layout.getHTMLAttributes(
       'header_menu'
     );
+
+    this.statesService.currentUser.subscribe((user) => this.user = user);
   }
 
   private getLogoURL(): string {
@@ -127,6 +135,10 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
       // Init Header Menu
       KTLayoutHeaderMenu.init('kt_header_menu', 'kt_header_menu_wrapper');
     });
+  }
+
+  logout() {
+    this.authService.logoutRedirect();
   }
 
   ngOnDestroy() {

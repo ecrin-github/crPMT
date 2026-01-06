@@ -936,6 +936,14 @@ mat-footer-cell:first-of-type {
   background-color: rgba(0, 255, 16, 0.12);
 }
 
+.name-button {
+  background-color: #96b4ff80;
+}
+
+.name-button:hover {
+  background-color: #96b4ff40;
+}
+
 // ng-select validation
 ng-select.required.ng-invalid.ng-touched {
   .ng-select-container{
