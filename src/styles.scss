@@ -761,6 +761,13 @@ mat-footer-cell:first-of-type {
   padding-bottom: 5px !important;
 }
 
+.more-less-link {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+
+
 // Fix for placeholder position for ng-select with multiple selectable elements
 .ng-select.custom {
   .ng-select-container {
@@ -905,7 +912,7 @@ mat-footer-cell:first-of-type {
 }
 
 .card-pad {  // Equalize padding with left and right paddings with col
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 .cancel-row-margins {
@@ -916,24 +923,36 @@ mat-footer-cell:first-of-type {
 .strong-value {
   font-weight: 500 !important;
   font-size: 1.3rem !important;
-  text-decoration: underline;
 }
 
 .card-border {
-  // border: solid #3154927a;
   border-radius: 0.4rem;
+  border-width: 0.1rem;
+  border-style: solid;
 }
 
 .card-neutral {
   background-color: rgba(170, 170, 170, 0.16);
+  border-color: rgba(170, 170, 170, 0.60);
 }
 
 .card-submitted {
-  background-color: rgba(255, 252, 54, 0.25);
+  background-color: rgba(255, 252, 54, 0.16);
+  // background-color: #FEFAF2;
+  border-color: #CFB88F87;
 }
 
 .card-approved {
-  background-color: rgba(0, 255, 16, 0.12);
+  background-color: rgba(7, 255, 34, 0.09);
+  border-color: #3C7A484D;
+}
+
+.hr-submission {
+  margin: 0.9rem 0 !important;
+}
+
+.hr-m2 {
+  margin: 2rem 0 !important;
 }
 
 .name-button {

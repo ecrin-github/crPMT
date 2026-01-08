@@ -4,7 +4,7 @@
         <div class="row" *ngFor="let notification of getNotificationsForm().controls; let i = index;"
             [formGroupName]="i">
                 <div class="col" [id]="'featpanel'+i">
-                    <hr *ngIf="i > 0">
+                    <hr *ngIf="i > 0" class="hr-m2">
                     <div class="row form-group">
                         <div class="col-md-3">
                             <div for="authority" class="font-style">Authority</div>
@@ -38,7 +38,6 @@
                             <textarea cols="30" rows="3" class="form-control" placeholder="Notification comment"
                                 formControlName="comment" *ngIf="!isView" id="comment" [ngClass]="{ 'is-invalid': submitted && getControls(i).comment.errors }">
                             </textarea>
-                            <div *ngIf="isView" class="text-value">{{notification.value.comment}}</div>
                         </div>
                     </div>
                 </div>
@@ -49,11 +48,12 @@
                 <div class="col" *ngFor="let notification of getNotificationsForm().controls; let i = index;"
                     [formGroupName]="i">
                     <div class="card-pad card-border h-100" [ngClass]="[notification.value.notificationDate ? 'card-approved' : 'card-neutral']">
-                        <div class="row form-group">
+                        <div class="row">
                             <div class="col-md-12">
                                 <span class="text-value strong-value">{{notification.value.authority}}</span>
                             </div>
                         </div>
+                        <hr class="hr-submission">
                         <div class="row form-group">
                             <div class="col-md-6">
                                 <div for="notificationDate" class="font-style">Notification date</div>
@@ -63,7 +63,9 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div for="comment" class="font-style" *ngIf="notification.value.comment">Comment</div>
-                                <div class="text-value">{{notification.value.comment}}</div>
+                                <div class="text-value" #commentDiv>{{displayComment(i, notification.value.comment)}}
+                                    <a (click)="setTruncate(i)" *ngIf="notification.value?.comment?.length > maxCharsBeforeTruncate" class="more-less-link">{{truncate[i] ? 'more' : 'less'}}</a>
+                                </div>
                             </div>
                         </div>
                     </div>

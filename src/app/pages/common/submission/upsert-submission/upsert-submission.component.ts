@@ -29,7 +29,9 @@ export class UpsertSubmissionComponent implements OnInit {
   isEdit: boolean = false;
   isView: boolean = false;
   isAdd: boolean = false;
+  maxCharsBeforeTruncate: number = 100;
 
+  truncate: boolean[] = [];
   submissions: SubmissionInterface[] = [];
 
   constructor(
@@ -84,6 +86,10 @@ export class UpsertSubmissionComponent implements OnInit {
       this.addSubmission();
       this.getSubmissionsForm().at(0).patchValue({authority: "Ethics Committee"});
       this.getSubmissionsForm().at(1).patchValue({authority: "National Competent Authority"});
+    }
+
+    for (let i=0; i < this.g.length; i++) {
+      this.setInitialTruncate(i);
     }
   }
 
@@ -146,6 +152,29 @@ export class UpsertSubmissionComponent implements OnInit {
         }
       }
     }, error => {});
+  }
+
+  setInitialTruncate(i) {
+    if (this.form.value?.submissions[i]?.comment?.length > this.maxCharsBeforeTruncate) {
+      this.truncate[i] = true;
+    } else {
+      this.truncate[i] = false;
+    }
+  }
+  
+  setTruncate(i) {
+    if (!this.truncate[i]) {
+      this.truncate[i] = true;
+    } else {
+      this.truncate[i] = false;
+    }
+  }
+
+  displayText(i, text) {
+    if (this.truncate[i]) {
+      return text.slice(0, this.maxCharsBeforeTruncate) + "...";
+    }
+    return text;
   }
 
   // TODO?

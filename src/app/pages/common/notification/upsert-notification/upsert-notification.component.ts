@@ -27,7 +27,9 @@ export class UpsertNotificationComponent implements OnInit {
   isEdit: boolean = false;
   isView: boolean = false;
   isAdd: boolean = false;
+  maxCharsBeforeTruncate: number = 60;
 
+  truncate: boolean[] = [];
   notifications: NotificationInterface[] = [];
 
   constructor(
@@ -76,6 +78,10 @@ export class UpsertNotificationComponent implements OnInit {
       this.addNotification();
       this.getNotificationsForm().at(0).patchValue({authority: "Ethics Committee"});
       this.getNotificationsForm().at(1).patchValue({authority: "National Competent Authority"});
+    }
+
+    for (let i=0; i < this.g.length; i++) {
+      this.setInitialTruncate(i);
     }
   }
 
@@ -132,6 +138,29 @@ export class UpsertNotificationComponent implements OnInit {
         }
       }
     }, error => {});
+  }
+
+  setInitialTruncate(i) {
+    if (this.form.value?.notifications[i]?.comment?.length > this.maxCharsBeforeTruncate) {
+      this.truncate[i] = true;
+    } else {
+      this.truncate[i] = false;
+    }
+  }
+  
+  setTruncate(i) {
+    if (!this.truncate[i]) {
+      this.truncate[i] = true;
+    } else {
+      this.truncate[i] = false;
+    }
+  }
+
+  displayComment(i, comment) {
+    if (this.truncate[i]) {
+      return comment.slice(0, this.maxCharsBeforeTruncate) + "...";
+    }
+    return comment;
   }
 
   // TODO?
