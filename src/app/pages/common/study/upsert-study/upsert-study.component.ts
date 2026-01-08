@@ -24,6 +24,7 @@ import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interfac
 import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
 import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
 import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
+import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
 
 @Component({
   selector: 'app-upsert-study',
@@ -40,6 +41,7 @@ export class UpsertStudyComponent implements OnInit {
   // Context
   complexTrialTypes: ClassValueInterface[] = [];
   countries: CountryInterface[] = [];
+  ctus: CTUInterface[] = [];
   eucos: PersonInterface[] = [];
   medicalFields: ClassValueInterface[] = [];
   organisations: OrganisationInterface[] = [];
@@ -57,6 +59,7 @@ export class UpsertStudyComponent implements OnInit {
   isEdit: boolean = false;
   isStudyPage: boolean = false;
   isView: boolean = false;
+  isAgreementSigned: boolean[] = [];
   isComplexTrial: boolean[] = [];
   isObservational: boolean[] = [];
   hasRegulatoryFrameworkDetails: boolean[] = [];
@@ -66,7 +69,7 @@ export class UpsertStudyComponent implements OnInit {
   submitted: boolean = false;
   studyForm: UntypedFormGroup;
   summaryMaxChars: number = 1300;
-  summaryRemainingChars: number = this.summaryMaxChars;
+  summaryRemainingChars: number[] = [];
   studies = [];
 
   constructor(private statesService: StatesService,
@@ -146,6 +149,9 @@ export class UpsertStudyComponent implements OnInit {
     this.contextService.countries.subscribe((countries) => {
       this.countries = countries;
     });
+    this.contextService.ctus.subscribe((ctus) => {
+      this.ctus = ctus;
+    });
     this.contextService.medicalFields.subscribe((medicalFields) => {
       this.medicalFields = medicalFields;
     });
@@ -191,6 +197,9 @@ export class UpsertStudyComponent implements OnInit {
       shortTitle: null,
       title: null,
       sponsorOrganisation: null,
+      leadCtu: null,
+      agreementSigned: false,
+      agreementSignedDate: null,
       coordinatingInvestigator: null,
       sponsorCountry: null,
       medicalFields: [],
@@ -272,12 +281,15 @@ export class UpsertStudyComponent implements OnInit {
 
   getFormArray() {
     const formArray = new UntypedFormArray([]);
-    this.studies.forEach(s => {
+    this.studies.forEach((s, index) => {
       formArray.push(this.fb.group({
         id: s.id,
         shortTitle: s.shortTitle,
         title: s.title,
         sponsorOrganisation: s.sponsorOrganisation,
+        leadCtu: s.leadCtu,
+        agreementSigned: s.agreementSigned,
+        agreementSignedDate: s.agreementSignedDate ? stringToDate(s.agreementSignedDate) : null,
         coordinatingInvestigator: s.coordinatingInvestigator,
         sponsorCountry: s.sponsorCountry,
         medicalFields: [s.medicalFields],
@@ -307,7 +319,7 @@ export class UpsertStudyComponent implements OnInit {
         studyCountries: [s.studyCountries]
       }));
 
-      this.summaryRemainingChars = this.summaryMaxChars - s.summary?.length;
+      this.summaryRemainingChars[index] = this.summaryMaxChars - s.summary?.length;
     });
     return formArray;
   }
@@ -317,6 +329,7 @@ export class UpsertStudyComponent implements OnInit {
 
     // Setting initial boolean variables to display or not certain fields
     for (let i=0; i < this.g.length; i++) {
+      this.onChangeAgreementSigned(i);
       this.onChangeComplexTrialDesign(i);
       this.onChangeRegulatoryFramework(i);
     }
@@ -349,6 +362,7 @@ export class UpsertStudyComponent implements OnInit {
     }
 
     payload.project = projectId;
+    payload.agreementSignedDate = dateToString(payload.agreementSignedDate);
     payload.firstPatientIn = dateToString(payload.firstPatientIn);
     payload.lastPatientOut = dateToString(payload.lastPatientOut);
     
@@ -362,6 +376,10 @@ export class UpsertStudyComponent implements OnInit {
     
     if (payload.coordinatingCountry?.id) {
       payload.coordinatingCountry = payload.coordinatingCountry.id;
+    }
+    
+    if (payload.leadCtu?.id) {
+      payload.leadCtu = payload.leadCtu.id;
     }
     
     if (payload.medicalFields?.length > 0) {
@@ -536,6 +554,14 @@ export class UpsertStudyComponent implements OnInit {
     return fv1?.id == fv2?.id;
   }
 
+  onChangeAgreementSigned(i) {
+    if (this.studyForm.value?.studies[i].agreementSigned) {
+      this.isAgreementSigned[i] = true;
+    } else {
+      this.isAgreementSigned[i] = false;
+    }
+  }
+
   onChangeComplexTrialDesign(i) {
     if (this.studyForm.value?.studies[i].complexTrialDesign) {
       this.isComplexTrial[i] = true;
@@ -570,6 +596,10 @@ export class UpsertStudyComponent implements OnInit {
     return this.contextService.searchClassValues(term, item);
   }
 
+  searchCTUs = (term: string, item) => {
+    return this.contextService.searchCTUs(term, item);
+  }
+
   addComplexTrialType = (type) => {
     return this.contextService.addComplexTrialTypeDropdown(type);
   }
@@ -586,6 +616,20 @@ export class UpsertStudyComponent implements OnInit {
 
   searchCountries = (term: string, item) => {
     return this.contextService.searchCountries(term, item);
+  }
+
+  addCTU = (ctuName) => {
+    return this.contextService.addCTUDropdown(ctuName);
+  }
+
+  deleteCTU($event, ctuToRemove) {
+    $event.stopPropagation();
+
+    if (ctuToRemove.id == -1) { // Created locally by user
+      this.ctus = this.ctus.filter(o => !(o.id == ctuToRemove.id && o.name == ctuToRemove.name));
+    } else {  // Already existing
+      this.contextService.deleteCTUDropdown(ctuToRemove, !this.isAdd);
+    }
   }
 
   // Necessary to write them as arrow functions
@@ -667,15 +711,12 @@ export class UpsertStudyComponent implements OnInit {
     return count + " site" + (count == 1 ? '' : 's');
   }
 
-  getCountryFlag(country) {
-    if (country?.iso2) {
-      return getFlagEmoji(country.iso2);
-    }
-    return '';
+  getCountryFlagFromIso2(iso2) {
+    return getFlagEmoji(iso2);
   }
 
-  changeRemainingChars($event) {
-    this.summaryRemainingChars = this.summaryMaxChars - $event.target.value?.length;
+  changeRemainingChars($event, i) {
+    this.summaryRemainingChars[i] = this.summaryMaxChars - $event.target.value?.length;
   }
 
   print() {

@@ -47,6 +47,7 @@ import { OrganisationModalComponent } from './organisation-modal/organisation-mo
 import { UpsertNotificationComponent } from './notification/upsert-notification/upsert-notification.component';
 import { UpsertSubmissionComponent } from './submission/upsert-submission/upsert-submission.component';
 import { HospitalModalComponent } from './hospital-modal/hospital-modal.component';
+import { CtuModalComponent } from './ctu-modal/ctu-modal.component';
 
 
 @NgModule({
@@ -85,7 +86,8 @@ import { HospitalModalComponent } from './hospital-modal/hospital-modal.componen
         OrganisationModalComponent,
         UpsertNotificationComponent,
         UpsertSubmissionComponent,
-        HospitalModalComponent
+        HospitalModalComponent,
+        CtuModalComponent
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [

@@ -127,6 +127,21 @@
                             <div class="text-value" *ngIf="isView">{{study.value.sponsorOrganisation?.name}}</div>
                         </div>
                         <div class="col-md-4">
+                            <div for="sponsorCountry" class="font-style">Sponsor Country</div>
+                            <ng-select [items]="countries" formControlName="sponsorCountry" [searchFn]="searchCountries"
+                                [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
+                                notFoundText="No countries found" placeholder="Select sponsor country" *ngIf="!isView" 
+                                appendTo="body" name="sponsorCountry">
+                                <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-12 col-12 p-0 m-0">{{item.name}}</div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div class="text-value" *ngIf="isView">{{getCountryFlagFromIso2(study.value.sponsorCountry?.iso2)}} {{study.value.sponsorCountry?.name}}</div>
+                        </div>
+                        <div class="col-md-4">
                             <div for="coordinatingInvestigator" class="font-style">Coordinating Investigator</div>
                             <ng-select [items]="persons" formControlName="coordinatingInvestigator" [searchFn]="searchPersons" [compareWith]="compareIds"
                                 [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" 
@@ -152,20 +167,66 @@
                             </ng-select>
                             <div class="text-value" *ngIf="isView">{{study.value.coordinatingInvestigator?.fullName}}{{study.value.coordinatingInvestigator?.country ? ' (' + study.value.coordinatingInvestigator.country.name + ')' : ''}}</div>
                         </div>
+                    </div>
+                    <div class="row form-group mt-8">
                         <div class="col-md-4">
-                            <div for="sponsorCountry" class="font-style">Sponsor Country</div>
-                            <ng-select [items]="countries" formControlName="sponsorCountry" [searchFn]="searchCountries"
-                                [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
-                                notFoundText="No countries found" placeholder="Select sponsor country" *ngIf="!isView" 
-                                appendTo="body" name="sponsorCountry">
-                                <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
-                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
-                                    <div class="row m-0">
-                                        <div class="col-md-12 col-12 p-0 m-0">{{item.name}}</div>
+                            <div for="agreementSigned" class="font-style">Agreement (Sponsor - ECRIN)</div>
+                            <div class="row" *ngIf="!isView">
+                                <div class="col-md-4 pe-0 d-flex align-items-center">
+                                    <div class="text-value me-2">Signed:</div>
+                                    <input *ngIf="!isView" type="checkbox" id="agreementSigned" class="form-check-input checkbox" 
+                                    (change)="onChangeAgreementSigned(i)" formControlName="agreementSigned"/>
+                                </div>
+                                <div class="col-md-8 ps-0" *ngIf="isAgreementSigned[i]">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd"
+                                            name="agreementSignedDate" ngbDatepicker #agreementSignedDate="ngbDatepicker"
+                                            [ngClass]="{ 'is-invalid': submitted && getControls(i).agreementSignedDate.errors }"
+                                            formControlName="agreementSignedDate" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary"
+                                                (click)="agreementSignedDate.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isView" class="text-value">{{study.value.agreementSigned ? ('Signed ' + dateToString(study.value.agreementSignedDate)) : 'Not signed'}}</div>
+                        </div>
+                        <div class="col-md-8">
+                            <div for="leadCtu" class="font-style">Lead CTU (Clinical Study)</div>
+                            <div class="row">
+                                <ng-container *ngIf="!isView; else displayLeadCTU">
+                                    <div class="col-md-6">
+                                        <ng-select [items]="ctus" formControlName="leadCtu" [searchFn]="searchCTUs"
+                                            [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
+                                            notFoundText="No CTUs found" placeholder="Start typing to add a new CTU"
+                                            addTagText="Add" [addTag]="addCTU"
+                                            appendTo="body" name="leadCtu" [ngClass]="{ 'is-invalid': submitted && getControls(i).leadCtu.errors?.required }">
+                                            <ng-template ng-label-tmp let-item="item">{{getCountryFlagFromIso2(item.country.iso2)}}&nbsp;&nbsp;{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</ng-template>
+                                            <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                                <div class="row m-0">
+                                                    <div class="col-md-11 col-11 p-0 m-0">
+                                                        <div class="col-md-12">{{getCountryFlagFromIso2(item.country.iso2)}}&nbsp;&nbsp;{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</div>
+                                                    </div>
+                                                    <div class="col-md-1 col-1 p-0 m-0 d-flex" *ngIf="item.manualAdd">
+                                                        <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                                            <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteCTU($event, item)">
+                                                            </i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </ng-template>
+                                        </ng-select>
+                                    </div>
+                                </ng-container>
+                                <ng-template #displayLeadCTU>
+                                    <div class="col-md-12">
+                                        <div *ngIf="isView" class="text-value">{{getCountryFlagFromIso2(study.value?.leadCtu?.country.iso2)}}&nbsp;{{study.value?.leadCtu?.shortName ? study.value?.leadCtu?.shortName + ' - ' : '' }}{{study.value?.leadCtu?.name}}</div>
                                     </div>
                                 </ng-template>
-                            </ng-select>
-                            <div class="text-value" *ngIf="isView">{{getCountryFlag(study.value.sponsorCountry)}} {{study.value.sponsorCountry?.name}}</div>
+                            </div>
                         </div>
                     </div>
                     <div class="row form-group mt-8">
@@ -302,10 +363,10 @@
                         <div class="col-md-12">
                             <div for="summary" class="font-style">Summary</div>
                             <textarea [maxlength]="summaryMaxChars" cols="30" rows="3" class="form-control" placeholder="Study summary"
-                                (keyup)="changeRemainingChars($event)"
+                                (keyup)="changeRemainingChars($event, i)"
                                 formControlName="summary" *ngIf="!isView" id="summary" [ngClass]="{ 'is-invalid': submitted && getControls(i).summary.errors }">
                             </textarea>
-                            <div class="float-right mt-1" *ngIf="!isView">{{summaryRemainingChars}}</div>
+                            <div class="float-right mt-1" *ngIf="!isView">{{summaryRemainingChars[i]}}</div>
                             <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).summary.errors">
                                 <p *ngIf="submitted && getControls(i).summary.errors.required">Please enter the study summary</p>
                             </div>
@@ -357,7 +418,7 @@
                                     </ng-select>
                                 </div>
                             </div>
-                            <div class="text-value" *ngIf="isView">{{getCountryFlag(study.value.coordinatingCountry)}} {{study.value.coordinatingCountry?.name}}</div>
+                            <div class="text-value" *ngIf="isView">{{getCountryFlagFromIso2(study.value.coordinatingCountry?.iso2)}} {{study.value.coordinatingCountry?.name}}</div>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -397,7 +458,7 @@
                                 <div class="font-style underline">Study Countries</div>
                                 <ul>
                                     <li *ngFor="let sc of study.value.studyCountries; let j = index" [ngClass]="j > 0 ? 'mt-5' : 'mt-2'">
-                                        <span class="text-value"><a [routerLink]="['/study-countries', sc.id, 'view']" class="li-text-1">{{getCountryFlag(sc.country)}} {{sc.country?.name}}</a> ({{getCountrySitesString(sc)}})</span>
+                                        <span class="text-value"><a [routerLink]="['/study-countries', sc.id, 'view']" class="li-text-1">{{getCountryFlagFromIso2(sc.country?.iso2)}} {{sc.country?.name}}</a> ({{getCountrySitesString(sc)}})</span>
                                         <ul>
                                             <li *ngFor="let sctu of sc.studyCtus; let k = index" class="text-value" [ngClass]="k > 0 ? 'mt-4' : 'mt-1'">
                                                 <span class="text-value"><a [routerLink]="['/study-ctus', sctu.id, 'view']" class="text-value">{{sctu.ctu.name}}</a></span>

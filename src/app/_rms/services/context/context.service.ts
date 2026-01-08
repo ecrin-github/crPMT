@@ -17,6 +17,7 @@ import { OrganisationModalComponent } from 'src/app/pages/common/organisation-mo
 import { ClassValueInterface } from '../../interfaces/context/class-value.interface';
 import { HospitalModalComponent } from 'src/app/pages/common/hospital-modal/hospital-modal.component';
 import { HospitalInterface } from '../../interfaces/context/hospital.interface';
+import { CtuModalComponent } from 'src/app/pages/common/ctu-modal/ctu-modal.component';
 
 @Injectable({
   providedIn: 'root'
@@ -213,6 +214,103 @@ export class ContextService {
     this.ctus.next(ctus);
   }
 
+  addCTU(payload) {
+    return this.http.post(`${environment.baseUrlApi}/context/ctus`, payload);
+  }
+
+  deleteCTU(id) {
+    return this.http.delete(`${environment.baseUrlApi}/context/ctus/${id}`, {observe: "response", responseType: 'json'});
+  }
+
+  updateCTUs() {
+    return this.getCTUs().pipe(
+      map((ctus) => {
+        this.setCTUs(ctus);
+      })
+    );
+  }
+
+  searchCTUs(term: string, item) {
+    term = term.toLocaleLowerCase();
+    return item.name?.toLocaleLowerCase().indexOf(term) > -1 
+        || item.shortName?.toLocaleLowerCase().indexOf(term) > -1 
+        || item.addressInfo?.toLocaleLowerCase().indexOf(term) > -1;
+  }
+
+  addCTUDropdown(ctuName) {
+    const addCTU = this.modalService.open(CtuModalComponent, { size: 'lg', backdrop: 'static' });
+    addCTU.componentInstance.name = ctuName;
+
+    return addCTU.result.then((result) => {
+      if (result === null) {
+        this.spinner.hide();
+        return new Promise(null);
+      }
+      
+      this.spinner.show();
+      return this.addCTU(result).pipe(
+        mergeMap((o:any) => {
+          result.id = o.id;
+          return this.updateCTUs();
+        }),
+        mergeMap(() => {
+          this.spinner.hide();
+          return of(result);
+        }),
+        catchError((err) => {
+          this.toastr.error(err, "Error adding CTU", { timeOut: 20000, extendedTimeOut: 20000 });
+          return of(null);
+        })
+      ).toPromise();
+    })
+    .catch((err) => {
+      this.toastr.error(err, "Error adding CTU", { timeOut: 20000, extendedTimeOut: 20000 });
+      this.spinner.hide();
+      return null;
+    });
+  }
+
+  /**
+   * 
+   * @param ctuToRemove TODO
+   * @param currProjectId 
+   */
+  deleteCTUDropdown(ctuToRemove, filter) {
+    this.spinner.show();
+    // Checking if other projects have this CTU
+    this.listService.getReferenceCountByClass("ctu", ctuToRemove.id).subscribe((res: any) => {
+      let refCount = res.totalCount;
+      // Allowing deletion if CTU has already been added and is only referenced once by the calling class
+      if (filter) { // !isAdd
+        refCount -= 1;
+      }
+
+      if (refCount > 0) {
+        this.toastr.error(`Failed to delete this CTU as it is used in ${refCount} other objects (projects, studies, etc.)`);
+        this.spinner.hide();
+      } else {
+        // Delete CTU from the DB, then locally if succeeded
+        this.deleteCTU(ctuToRemove.id).subscribe((res: any) => {
+          if (res.status !== 204) {
+            this.toastr.error('Error when deleting CTU', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
+          } else {
+            // Updating CTUs list
+            this.updateCTUs().subscribe(() => {
+              this.spinner.hide();
+            });
+          }
+          this.spinner.hide();
+        }, error => {
+          this.toastr.error(error);
+          this.spinner.hide();
+        });
+      }
+    }, error => {
+      this.toastr.error(error);
+      this.spinner.hide();
+    });
+  }
+
   /* Hospitals */
   getHospitals() {
     return this.http.get(`${environment.baseUrlApi}/context/hospitals`);
@@ -395,6 +493,7 @@ export class ContextService {
     });
   }
 
+  /* Medical Fields() */
   getMedicalFields() {
     return this.http.get(`${environment.baseUrlApi}/context/medical-fields`);
   }

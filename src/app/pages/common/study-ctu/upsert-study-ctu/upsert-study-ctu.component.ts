@@ -547,10 +547,7 @@ export class UpsertStudyCtuComponent implements OnInit {
   }
 
   searchCTUs(term: string, item) {
-    term = term.toLocaleLowerCase();
-    return item.name?.toLocaleLowerCase().indexOf(term) > -1 
-        || item.shortName?.toLocaleLowerCase().indexOf(term) > -1 
-        || item.addressInfo?.toLocaleLowerCase().indexOf(term) > -1;
+    return this.contextService.searchCTUs(term, item);
   }
   
   back(): void {

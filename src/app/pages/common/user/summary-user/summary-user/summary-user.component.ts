@@ -114,7 +114,7 @@ export class SummaryUserComponent implements OnInit, OnDestroy {
   }
 
   deleteRecord(id) {
-    const  deleteModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+    const deleteModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
     deleteModal.componentInstance.type = 'people';
     deleteModal.componentInstance.peopleId = id;
     deleteModal.result.then((data: any) => {
