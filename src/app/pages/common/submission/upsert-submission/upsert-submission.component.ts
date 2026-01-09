@@ -1,18 +1,14 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
+import { Observable, combineLatest, of } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 import { SubmissionInterface } from 'src/app/_rms/interfaces/study/submission.interface';
-import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { SubmissionService } from 'src/app/_rms/services/entities/submission/submission.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { Observable, combineLatest, of } from 'rxjs';
-import { catchError, mergeMap } from 'rxjs/operators';
-import { Router } from '@angular/router';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
-import { SubmissionService } from 'src/app/_rms/services/entities/submission/submission.service';
-import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';
 
 @Component({
   selector: 'app-upsert-submission',
@@ -38,8 +34,6 @@ export class UpsertSubmissionComponent implements OnInit {
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private router: Router,
-    private spinner: NgxSpinnerService,
-    private studyCountryService: StudyCountryService,
     private submissionService: SubmissionService,
     private toastr: ToastrService) {
       this.form = this.fb.group({
@@ -216,7 +210,7 @@ export class UpsertSubmissionComponent implements OnInit {
     for (const [i, item] of payload.submissions.entries()) {
       this.updatePayload(item, scId, i);
       if (!item.id) { // Add
-        saveObs$.push(this.studyCountryService.addSubmissionFromStudyCountry(scId, item).pipe(
+        saveObs$.push(this.submissionService.addSubmissionFromStudyCountry(scId, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 201) {
               return of(true);

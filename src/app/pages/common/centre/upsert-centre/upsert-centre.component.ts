@@ -1,25 +1,18 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
+import { Observable, combineLatest, of } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+import { HospitalInterface } from 'src/app/_rms/interfaces/context/hospital.interface';
+import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
 import { CentreInterface } from 'src/app/_rms/interfaces/study/centre.interface';
+import { StudyCTUInterface } from 'src/app/_rms/interfaces/study/study-ctus.interface';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { CentreService } from 'src/app/_rms/services/entities/centre/centre.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { Observable, combineLatest, of } from 'rxjs';
-import { catchError, mergeMap } from 'rxjs/operators';
-import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
-import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
-import { Router } from '@angular/router';
-import { PersonModalComponent } from '../../person-modal/person-modal.component';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
-import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
-import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
-import { StudyCTUInterface } from 'src/app/_rms/interfaces/study/study-ctus.interface';
-import { HospitalInterface } from 'src/app/_rms/interfaces/context/hospital.interface';
-import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
-import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
 
 @Component({
   selector: 'app-upsert-centre',
@@ -48,10 +41,8 @@ export class UpsertCentreComponent implements OnInit {
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private router: Router,
-    private spinner: NgxSpinnerService,
-    private listService: ListService,
     private contextService: ContextService,
-    private studyService: StudyService,
+    private centreService: CentreService,
     private toastr: ToastrService) {
       this.form = this.fb.group({
         centres: this.fb.array([])
@@ -156,7 +147,7 @@ export class UpsertCentreComponent implements OnInit {
         if (!cId) { // Study CTU has been locally added only
           this.getCentresForm().removeAt(i);
         } else {  // Existing study CTU
-          this.studyService.deleteCentreFromStudyCTU(this.studyCTU.id, cId).subscribe((res: any) => {
+          this.centreService.deleteCentre(cId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getCentresForm().removeAt(i);
               this.toastr.success('Study CTU deleted successfully');
@@ -270,7 +261,7 @@ export class UpsertCentreComponent implements OnInit {
     for (const [i, item] of payload.centres.entries()) {
       this.updatePayload(item, sctuId, studyId, i);
       if (!item.id) { // Add
-        saveObs$.push(this.studyService.addCentreFromStudyCTU(sctuId, item).pipe(
+        saveObs$.push(this.centreService.addCentreFromStudyCTU(sctuId, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 201) {
               return of(true);
@@ -279,7 +270,7 @@ export class UpsertCentreComponent implements OnInit {
           })
         ));
       } else {  // Edit
-        saveObs$.push(this.studyService.editCentreFromStudyCTU(sctuId, item.id, item).pipe(
+        saveObs$.push(this.centreService.editCentre(item.id, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 200) {
               return of(true);

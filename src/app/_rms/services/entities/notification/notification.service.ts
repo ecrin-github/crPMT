@@ -11,6 +11,10 @@ export class NotificationService {
 
   constructor(private http: HttpClient) { }
 
+    /* Notification CRUD */
+    addNotificationFromStudyCountry(scId, payload) {
+      return this.http.post(`${base}/core/study-countries/${scId}/notifications`, payload);
+    }
     getNotification(id) {
       return this.http.get(`${base}/core/notifications/${id}`);
     }

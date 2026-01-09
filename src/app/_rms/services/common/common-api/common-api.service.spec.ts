@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { ProcessLookupService } from './process-lookup.service';
+import { CommonApiService } from './common-api.service';
 
-describe('ProcessLookupService', () => {
-  let service: ProcessLookupService;
+describe('CommonApiService', () => {
+  let service: CommonApiService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(ProcessLookupService);
+    service = TestBed.inject(CommonApiService);
   });
 
   it('should be created', () => {

@@ -4,11 +4,10 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { StudyCTUInterface } from 'src/app/_rms/interfaces/study/study-ctus.interface';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
-import { colorHash, dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
+import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { Observable, combineLatest, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
-import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
 import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
 import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,6 +16,7 @@ import { BackService } from 'src/app/_rms/services/back/back.service';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { StudyCtuService } from 'src/app/_rms/services/entities/study-ctu/study-ctu.service';
 import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
+import { CentreService } from 'src/app/_rms/services/entities/centre/centre.service';
 
 @Component({
   selector: 'app-upsert-study-ctu',
@@ -51,7 +51,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     private contextService: ContextService,
     private spinner: NgxSpinnerService, 
     private studyCTUService: StudyCtuService,
-    private studyService: StudyService,
+    private centreService: CentreService,
     private toastr: ToastrService) {
       this.form = this.fb.group({
         studyCTUs: this.fb.array([])
@@ -325,7 +325,7 @@ export class UpsertStudyCtuComponent implements OnInit {
         if (!sctuId) { // Study CTU has been locally added only
           this.getStudyCTUsForm().removeAt(i);
         } else {  // Existing study CTU
-          this.studyService.deleteStudyCTUFromStudyCountry(this.studyCountry.id, sctuId).subscribe((res: any) => {
+          this.studyCTUService.deleteStudyCTU(sctuId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getStudyCTUsForm().removeAt(i);
 
@@ -406,7 +406,7 @@ export class UpsertStudyCtuComponent implements OnInit {
         this.updatePayload(item, scId, studyId, i);
         if (!item.id) {  // Add
   
-          saveObs$.push(this.studyService.addStudyCTUFromStudy(studyId, item).pipe(
+          saveObs$.push(this.studyCTUService.addStudyCTUFromStudy(studyId, item).pipe(
             mergeMap((res: any) => {
               if (res.statusCode === 201) {
                 return this.centreComponents.get(i).onSave(res.id, studyId).pipe(
@@ -442,7 +442,7 @@ export class UpsertStudyCtuComponent implements OnInit {
   
           // TODO: don't do editObs if sctuObs$ false?
           
-          const scObs$ = this.studyService.editStudyCTUFromStudy(studyId, item.id, item).pipe(
+          const scObs$ = this.studyCTUService.editStudyCTU(item.id, item).pipe(
             mergeMap((res: any) => {
               if (res.statusCode === 200) {
                 // this.reuseService.notifyComponents();
@@ -462,7 +462,7 @@ export class UpsertStudyCtuComponent implements OnInit {
       }
   
       sctuIds.forEach((scId) => {
-        saveObs$.push(this.studyService.deleteStudyCTUFromStudy(studyId, scId).pipe(
+        saveObs$.push(this.studyCTUService.deleteStudyCTU(scId).pipe(
           mergeMap((res: any) => {
             if (res.status === 204) {
               return of(true);
@@ -482,39 +482,6 @@ export class UpsertStudyCtuComponent implements OnInit {
       }
   
       return combineLatest(saveObs$);
-
-
-    // this.submitted = true;
-    // let saveObs$: Array<Observable<boolean>> = [];
-
-    // JSON.parse(JSON.stringify(this.form.value.studyCTUs)).forEach(item => {
-    //   this.updatePayload(item, scId, studyId);
-    //   if (!item.id) { // Add
-    //     saveObs$.push(this.studyService.addStudyCTUFromStudyCountry(scId, item).pipe(
-    //       mergeMap((res: any) => {
-    //         if (res.statusCode === 201) {
-    //           return of(true);
-    //         }
-    //         return of(false);
-    //       })
-    //     ));
-    //   } else {  // Edit
-    //     saveObs$.push(this.studyService.editStudyCTUFromStudyCountry(scId, item.id, item).pipe(
-    //       mergeMap((res: any) => {
-    //         if (res.statusCode === 200) {
-    //           return of(true);
-    //         }
-    //         return of(false);
-    //       })
-    //     ));
-    //   }
-    // });
-
-    // if (saveObs$.length == 0) {
-    //   saveObs$.push(of(true));
-    // }
-
-    // return combineLatest(saveObs$);
   }
 
   onSaveStudyCtu() {

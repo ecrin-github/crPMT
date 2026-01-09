@@ -1,23 +1,22 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
 import { catchError, map, mergeMap } from 'rxjs/operators';
+import { CtuModalComponent } from 'src/app/pages/common/ctu-modal/ctu-modal.component';
+import { HospitalModalComponent } from 'src/app/pages/common/hospital-modal/hospital-modal.component';
+import { OrganisationModalComponent } from 'src/app/pages/common/organisation-modal/organisation-modal.component';
+import { PersonModalComponent } from 'src/app/pages/common/person-modal/person-modal.component';
 import { environment } from 'src/environments/environment';
+import { ClassValueInterface } from '../../interfaces/context/class-value.interface';
 import { CountryInterface } from '../../interfaces/context/country.interface';
 import { CTUInterface } from '../../interfaces/context/ctu.interface';
-import { PersonInterface } from '../../interfaces/context/person.interface';
-import { OrganisationInterface } from '../../interfaces/context/organisation.interface';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { ProjectInterface } from '../../interfaces/project/project.interface';
-import { ListService } from '../entities/list/list.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { PersonModalComponent } from 'src/app/pages/common/person-modal/person-modal.component';
-import { OrganisationModalComponent } from 'src/app/pages/common/organisation-modal/organisation-modal.component';
-import { ClassValueInterface } from '../../interfaces/context/class-value.interface';
-import { HospitalModalComponent } from 'src/app/pages/common/hospital-modal/hospital-modal.component';
 import { HospitalInterface } from '../../interfaces/context/hospital.interface';
-import { CtuModalComponent } from 'src/app/pages/common/ctu-modal/ctu-modal.component';
+import { OrganisationInterface } from '../../interfaces/context/organisation.interface';
+import { PersonInterface } from '../../interfaces/context/person.interface';
+import { CommonApiService } from '../common/common-api/common-api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -48,10 +47,10 @@ export class ContextService {
         new BehaviorSubject<ClassValueInterface[]>(null);
 
   constructor(
+    private commonApiService: CommonApiService,
     private http: HttpClient,
     private spinner: NgxSpinnerService,
     private modalService: NgbModal,
-    private listService: ListService,
     private toastr: ToastrService) {
     // Note: be careful if you add new observables because of the way their result is retrieved later (combineLatest + pop)
     // The code is built like this because in the version of RxJS used here combineLatest does not handle dictionaries
@@ -153,7 +152,7 @@ export class ContextService {
   deleteComplexTrialTypeDropdown(cttToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this complex trial type
-    this.listService.getReferenceCountByClass("complextrialtype", cttToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("complextrialtype", cttToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if complex trial type has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -278,7 +277,7 @@ export class ContextService {
   deleteCTUDropdown(ctuToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this CTU
-    this.listService.getReferenceCountByClass("ctu", ctuToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("ctu", ctuToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if CTU has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -400,7 +399,7 @@ export class ContextService {
   deleteHospitalDropdown(hospitalToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this hospital
-    this.listService.getReferenceCountByClass("hospital", hospitalToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("hospital", hospitalToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if hospital has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -461,7 +460,7 @@ export class ContextService {
   deleteFundingSourceDropdown(fsToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this funding source
-    this.listService.getReferenceCountByClass("fundingsource", fsToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("fundingsource", fsToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if funding source has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -589,7 +588,7 @@ export class ContextService {
   deleteOrganisationDropdown(orgToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this organisation
-    this.listService.getReferenceCountByClass("organisation", orgToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("organisation", orgToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if organisation has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -699,7 +698,7 @@ export class ContextService {
   deletePersonDropdown(pToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this person
-    this.listService.getReferenceCountByClass("person", pToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("person", pToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if person has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -800,7 +799,7 @@ export class ContextService {
   deleteServiceDropdown(sToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this service
-    this.listService.getReferenceCountByClass("service", sToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("service", sToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if service has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd

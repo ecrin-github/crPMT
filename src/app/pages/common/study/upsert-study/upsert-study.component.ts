@@ -1,30 +1,26 @@
-import { Component, HostListener, Input, OnInit, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { combineLatest, Observable, of } from 'rxjs';
-import { catchError, finalize, map, mergeMap, reduce, switchMap, take } from 'rxjs/operators';
-import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
-import { BackService } from 'src/app/_rms/services/back/back.service';
-import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
-import { PdfGeneratorService } from 'src/app/_rms/services/entities/pdf-generator/pdf-generator.service';
-import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
-import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
-import { StatesService } from 'src/app/_rms/services/states/states.service';
-import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
-import { StudyInterface } from 'src/app/_rms/interfaces/study/study.interface';
-import { colorHash, dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
-import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
-import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ContextService } from 'src/app/_rms/services/context/context.service';
-import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
-import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
-import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
+import { Observable, combineLatest, of } from 'rxjs';
+import { catchError, mergeMap } from 'rxjs/operators';
 import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
+import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
 import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
+import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
+import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
+import { StudyInterface } from 'src/app/_rms/interfaces/study/study.interface';
+import { BackService } from 'src/app/_rms/services/back/back.service';
+import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
+import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
+import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
+import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
+import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
+import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
+import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 
 @Component({
   selector: 'app-upsert-study',
@@ -72,13 +68,11 @@ export class UpsertStudyComponent implements OnInit {
   summaryRemainingChars: number[] = [];
   studies = [];
 
-  constructor(private statesService: StatesService,
-              private fb: UntypedFormBuilder, 
-              private router: Router, 
+  constructor(private fb: UntypedFormBuilder, 
+              private router: Router,
+              private projectService: ProjectService, 
               private studyService: StudyService, 
               private contextService: ContextService,
-              private reuseService: ReuseService,
-              private listService: ListService,
               private modalService: NgbModal,
               private scrollService: ScrollService,
               private activatedRoute: ActivatedRoute,
@@ -121,7 +115,7 @@ export class UpsertStudyComponent implements OnInit {
       queryFuncs.push(this.getStudyById(this.id));
     }
     if (this.isStudyPage && !this.isView) {
-      queryFuncs.push(this.listService.getProjectList());
+      queryFuncs.push(this.projectService.getProjectList());
     }
 
     let obsArr: Array<Observable<any>> = [];

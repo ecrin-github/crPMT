@@ -3,24 +3,20 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { combineLatest, Observable, of, Subscription } from 'rxjs';
-import { catchError, finalize, map, mergeMap } from 'rxjs/operators';
+import { Observable, combineLatest, of } from 'rxjs';
+import { catchError, map, mergeMap } from 'rxjs/operators';
+import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
 import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
+import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
+import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
+import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
-import { PdfGeneratorService } from 'src/app/_rms/services/entities/pdf-generator/pdf-generator.service';
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
 import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
-import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
-import { colorHash, dateToString, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
+import { dateToString, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
 import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.component';
-import { ContextService } from 'src/app/_rms/services/context/context.service';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
-import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { PersonModalComponent } from '../../person-modal/person-modal.component';
-import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
 
 @Component({
   selector: 'app-upsert-project',
@@ -51,10 +47,7 @@ export class UpsertProjectComponent implements OnInit {
               private fb: UntypedFormBuilder, 
               private router: Router, 
               private projectService: ProjectService, 
-              private listService: ListService,
               private reuseService: ReuseService,
-              private modalService: NgbModal,
-              private scrollService: ScrollService,
               private activatedRoute: ActivatedRoute,
               private spinner: NgxSpinnerService, 
               private toastr: ToastrService, 

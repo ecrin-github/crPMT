@@ -1,22 +1,21 @@
 import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { combineLatest, Observable, of, Subscription } from 'rxjs';
-import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor } from 'src/assets/js/util';
-import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
-import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
-import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Observable, Subscription, combineLatest, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
-import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
-import { UpsertStudyCtuComponent } from '../../study-ctu/upsert-study-ctu/upsert-study-ctu.component';
-import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';
+import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
-import { UpsertSubmissionComponent } from '../../submission/upsert-submission/upsert-submission.component';
+import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';
+import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor } from 'src/assets/js/util';
+import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { UpsertNotificationComponent } from '../../notification/upsert-notification/upsert-notification.component';
+import { UpsertStudyCtuComponent } from '../../study-ctu/upsert-study-ctu/upsert-study-ctu.component';
+import { UpsertSubmissionComponent } from '../../submission/upsert-submission/upsert-submission.component';
 
 @Component({
   selector: 'app-upsert-study-country',
@@ -50,10 +49,9 @@ export class UpsertStudyCountryComponent implements OnInit {
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private router: Router,
-    private studyService: StudyService, 
     private studyCountryService: StudyCountryService,
     private activatedRoute: ActivatedRoute,
-    private spinner: NgxSpinnerService, 
+    private spinner: NgxSpinnerService,
     private contextService: ContextService,
     private backService: BackService,
     private toastr: ToastrService) {
@@ -67,7 +65,7 @@ export class UpsertStudyCountryComponent implements OnInit {
       this.id = this.activatedRoute.snapshot.params.id;
       this.isSCPage = true;
     }
-    
+
     if (this.isSCPage) {
       setTimeout(() => {
         this.spinner.show();
@@ -172,7 +170,7 @@ export class UpsertStudyCountryComponent implements OnInit {
           }
         }
       }
-      
+
       formArray.push(this.fb.group(fbData));
     });
     return formArray;
@@ -197,7 +195,7 @@ export class UpsertStudyCountryComponent implements OnInit {
       const study = this.g[i].value.study;
       const country = this.g[i].value.country;
       this.g[i].reset();
-      this.getStudyCountriesForm().at(i).patchValue({study: study, country: country});
+      this.getStudyCountriesForm().at(i).patchValue({ study: study, country: country });
     }
   }
 
@@ -215,7 +213,7 @@ export class UpsertStudyCountryComponent implements OnInit {
   deleteStudyCountry($event, i: number) {
     $event.stopPropagation(); // Expands the panel otherwise
 
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+    const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
     removeModal.componentInstance.itemType = "study country";
 
     removeModal.result.then((remove) => {
@@ -236,16 +234,16 @@ export class UpsertStudyCountryComponent implements OnInit {
           })
         }
       }
-    }, error => {});
+    }, error => { });
   }
 
   isFormValid() {
     this.submitted = true;
-    
+
     // Manually checking country field (shouldn't be empty)
     for (const i in this.form.get("studyCountries")['controls']) {
       if (this.form.get("studyCountries")['controls'][i].value.country == null) {
-        this.form.get("studyCountries")['controls'][i].controls.country.setErrors({'required': true});
+        this.form.get("studyCountries")['controls'][i].controls.country.setErrors({ 'required': true });
       }
     }
 
@@ -279,7 +277,7 @@ export class UpsertStudyCountryComponent implements OnInit {
 
     // Used to check for study countries that have been "soft deleted" from the interface, 
     // as in by switching country for an existing study country rather than deleting the study country and making a new one
-    const scIds: Array<Number> = this.studyCountries.map((item: StudyCountryInterface) => {return item.id;});
+    const scIds: Array<Number> = this.studyCountries.map((item: StudyCountryInterface) => { return item.id; });
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
@@ -287,7 +285,7 @@ export class UpsertStudyCountryComponent implements OnInit {
       this.updatePayload(item, studyId, i);
       if (!item.id) {  // Add
 
-        saveObs$.push(this.studyService.addStudyCountry(studyId, item).pipe(
+        saveObs$.push(this.studyCountryService.addStudyCountry(studyId, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 201) {
               const sctuObs$ = this.studyCTUComponents.get(i).onSave(res.id, item.study).pipe(
@@ -413,7 +411,7 @@ export class UpsertStudyCountryComponent implements OnInit {
         saveObs$.push(otherNotificationsObs$);
         saveObs$.push(submissionsObs$);
 
-        const scObs$ = this.studyService.editStudyCountry(studyId, item.id, item).pipe(
+        const scObs$ = this.studyCountryService.editStudyCountry(item.id, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 200) {
               // this.reuseService.notifyComponents();
@@ -433,7 +431,7 @@ export class UpsertStudyCountryComponent implements OnInit {
     }
 
     scIds.forEach((scId) => {
-      saveObs$.push(this.studyService.deleteStudyCountry(this.studyId, scId).pipe(
+      saveObs$.push(this.studyCountryService.deleteStudyCountry(scId).pipe(
         mergeMap((res: any) => {
           if (res.status === 204) {
             return of(true);
@@ -519,10 +517,10 @@ export class UpsertStudyCountryComponent implements OnInit {
 
   scrollToElement(): void {
     setTimeout(() => {
-      const yOffset = -200; 
-      const element = document.getElementById('featpanel'+this.len);
+      const yOffset = -200;
+      const element = document.getElementById('featpanel' + this.len);
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({top: y, behavior: 'smooth'});
+      window.scrollTo({ top: y, behavior: 'smooth' });
     });
   }
 

@@ -5,7 +5,6 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
 import { Subject, combineLatest, fromEvent } from 'rxjs';
 import { NgxPermissionsService } from 'ngx-permissions';
 import { NavigationEnd, Router } from '@angular/router';
@@ -52,7 +51,6 @@ export class ProjectListComponent implements OnInit {
   constructor(private statesService: StatesService,
               private reuseService: ReuseService,
               private scrollService: ScrollService, 
-              private listService: ListService, 
               private projectService: ProjectService,
               private spinner: NgxSpinnerService, 
               private toastr: ToastrService, 
@@ -90,7 +88,7 @@ export class ProjectListComponent implements OnInit {
 
   getProjectList() {
     this.spinner.show();
-    this.listService.getProjectList().subscribe((res: any) => {
+    this.projectService.getProjectList().subscribe((res: any) => {
       if (res) {
         this.getSortedProjects(res);
         this.dataSource = new MatTableDataSource<ProjectListEntryInterface>(res);

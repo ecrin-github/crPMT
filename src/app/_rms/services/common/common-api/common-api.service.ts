@@ -2,16 +2,16 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 
-const base = environment.baseUrl;
+const base = environment.baseUrlApi;
 
 @Injectable({
   providedIn: 'root'
 })
-export class DashboardService {
+export class CommonApiService {
 
   constructor(private http: HttpClient) { }
-  
-  getStatistics() {
-    return this.http.get(`${base}/app/statistics`);
+
+  getReferenceCountByClass(id, className) {
+    return this.http.get(`${base}/core/reference-count-by-class/${className}/${id}`);
   }
 }

@@ -11,6 +11,22 @@ export class StudyCtuService {
 
   constructor(private http: HttpClient) { }
 
+  /* Study CTU lists */
+  getStudyCTUs(sid) {
+    return this.http.get(`${base}/core/studies/${sid}/study-ctus`);
+  }
+  getStudyCountryStudyCTUs(scid) {
+    return this.http.get(`${base}/core/study-countries/${scid}/study-ctus`);
+  }
+  
+  /* CRUD */
+  addStudyCTUFromStudy(sid, payload) {
+    return this.http.post(`${base}/core/studies/${sid}/study-ctus`, payload);
+  }
+  addStudyCTUFromStudyCountry(scid, payload) {
+    return this.http.post(`${base}/core/study-countries/${scid}/study-ctus`, payload);
+  }
+
   getStudyCTU(id) {
     return this.http.get(`${base}/core/study-ctus/${id}`);
   }

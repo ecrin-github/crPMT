@@ -10,7 +10,6 @@ import { Observable, combineLatest, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
 import { NotificationService } from 'src/app/_rms/services/entities/notification/notification.service';
 import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';
 
@@ -196,7 +195,7 @@ export class UpsertNotificationComponent implements OnInit {
     for (const [i, item] of payload.notifications.entries()) {
       this.updatePayload(item, scId, i);
       if (!item.id) { // Add
-        saveObs$.push(this.studyCountryService.addNotificationFromStudyCountry(scId, item).pipe(
+        saveObs$.push(this.notificationService.addNotificationFromStudyCountry(scId, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 201) {
               return of(true);

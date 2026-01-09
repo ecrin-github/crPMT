@@ -6,19 +6,19 @@ import { AuthRoutingModule } from './auth-routing.module';
 import { LoginComponent } from './login/login.component';
 import { LogoutComponent } from './logout/logout.component';
 import { AuthComponent } from './auth.component';
-import {TranslationModule} from '../i18n/translation.module';
-import { ContactUsComponent } from './contact-us/contact-us.component';
+// import {TranslationModule} from '../i18n/translation.module';
+// import { UserGuideComponent } from './user-guide/user-guide.component';
 
 @NgModule({
   declarations: [
     LoginComponent,
     LogoutComponent,
     AuthComponent,
-    ContactUsComponent,
+    // UserGuideComponent,
   ],
   imports: [
     CommonModule,
-    TranslationModule,
+    // TranslationModule,
     AuthRoutingModule,
     FormsModule,
     ReactiveFormsModule,
