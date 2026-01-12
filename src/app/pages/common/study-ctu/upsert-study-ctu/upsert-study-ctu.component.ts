@@ -316,15 +316,16 @@ export class UpsertStudyCtuComponent implements OnInit {
 
   deleteStudyCTU($event, i: number) {
     $event.stopPropagation(); // Expands the panel otherwise
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-    removeModal.componentInstance.itemType = "study CTU";
 
-    removeModal.result.then((remove) => {
-      if (remove) {
-        const sctuId = this.getStudyCTUsForm().value[i].id;
-        if (!sctuId) { // Study CTU has been locally added only
-          this.getStudyCTUsForm().removeAt(i);
-        } else {  // Existing study CTU
+    const sctuId = this.getStudyCTUsForm().value[i].id;
+    if (!sctuId) { // Study CTU has been locally added only
+      this.getStudyCTUsForm().removeAt(i);
+    } else {  // Existing study CTU
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      removeModal.componentInstance.itemType = "study CTU";
+
+      removeModal.result.then((remove) => {
+        if (remove) {
           this.studyCTUService.deleteStudyCTU(sctuId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getStudyCTUsForm().removeAt(i);
@@ -336,11 +337,11 @@ export class UpsertStudyCtuComponent implements OnInit {
               this.toastr.error('Error when deleting study CTU', res.statusText);
             }
           }, error => {
-            this.toastr.error(error.error.title);
-          })
+            this.toastr.error(error);
+          });
         }
-      }
-    }, error => {});
+      }, error => {this.toastr.error(error)});
+    }
   }
 
   isFormValid() {

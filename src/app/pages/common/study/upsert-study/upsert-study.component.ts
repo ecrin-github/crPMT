@@ -242,15 +242,15 @@ export class UpsertStudyComponent implements OnInit {
   deleteStudy($event, i: number) {
     $event.stopPropagation(); // Expands the panel otherwise
 
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-    removeModal.componentInstance.itemType = "study";
+    const studyId = this.getStudiesForm().value[i].id;
+    if (!studyId) { // Study has been locally added only
+      this.getStudiesForm().removeAt(i);
+    } else {  // Existing study
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      removeModal.componentInstance.itemType = "study";
 
-    removeModal.result.then((remove) => {
-      if (remove) {
-        const studyId = this.getStudiesForm().value[i].id;
-        if (!studyId) { // Study has been locally added only
-          this.getStudiesForm().removeAt(i);
-        } else {  // Existing study
+      removeModal.result.then((remove) => {
+        if (remove) {
           this.studyService.deleteStudyById(studyId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getStudiesForm().removeAt(i);
@@ -259,11 +259,11 @@ export class UpsertStudyComponent implements OnInit {
               this.toastr.error('Error when deleting study', res.statusText);
             }
           }, error => {
-            this.toastr.error(error.error.title);
-          })
+            this.toastr.error(error);
+          });
         }
-      }
-    }, error => {});
+      }, error => {this.toastr.error(error)});
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {

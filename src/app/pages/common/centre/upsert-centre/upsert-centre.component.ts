@@ -138,15 +138,15 @@ export class UpsertCentreComponent implements OnInit {
   }
 
   removeCentre(i: number) {
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-    removeModal.componentInstance.itemType = "centre";
+    const cId = this.getCentresForm().value[i].id;
+    if (!cId) { // Study CTU has been locally added only
+      this.getCentresForm().removeAt(i);
+    } else {  // Existing study CTU
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      removeModal.componentInstance.itemType = "centre";
 
-    removeModal.result.then((remove) => {
-      if (remove) {
-        const cId = this.getCentresForm().value[i].id;
-        if (!cId) { // Study CTU has been locally added only
-          this.getCentresForm().removeAt(i);
-        } else {  // Existing study CTU
+      removeModal.result.then((remove) => {
+        if (remove) {
           this.centreService.deleteCentre(cId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getCentresForm().removeAt(i);
@@ -155,11 +155,11 @@ export class UpsertCentreComponent implements OnInit {
               this.toastr.error('Error when deleting study CTU', res.statusText);
             }
           }, error => {
-            this.toastr.error(error.error.title);
-          })
+            this.toastr.error(error);
+          });
         }
-      }
-    }, error => {});
+      }, error => {this.toastr.error(error)});
+    }
   }
 
   addPerson = (person) => {

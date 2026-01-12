@@ -124,15 +124,15 @@ export class UpsertSubmissionComponent implements OnInit {
   }
 
   deleteSubmission(i: number) {
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-    removeModal.componentInstance.itemType = "submission";
+    const sId = this.getSubmissionsForm().value[i].id;
+    if (!sId) { // Submission has been locally added only
+      this.getSubmissionsForm().removeAt(i);
+    } else {  // Existing submission
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      removeModal.componentInstance.itemType = "study CTU";
 
-    removeModal.result.then((remove) => {
-      if (remove) {
-        const sId = this.getSubmissionsForm().value[i].id;
-        if (!sId) { // Submission has been locally added only
-          this.getSubmissionsForm().removeAt(i);
-        } else {  // Existing submission
+      removeModal.result.then((remove) => {
+        if (remove) {
           this.submissionService.deleteSubmission(sId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getSubmissionsForm().removeAt(i);
@@ -141,11 +141,11 @@ export class UpsertSubmissionComponent implements OnInit {
               this.toastr.error('Error when deleting submission', res.statusText);
             }
           }, error => {
-            this.toastr.error(error.error.title);
-          })
+            this.toastr.error(error);
+          });
         }
-      }
-    }, error => {});
+      }, error => {this.toastr.error(error)});
+    }
   }
 
   setInitialTruncate(i) {

@@ -110,16 +110,16 @@ export class UpsertNotificationComponent implements OnInit {
   }
 
   deleteNotification(i: number) {
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-    removeModal.componentInstance.itemType = "notification";
+    const nId = this.getNotificationsForm().value[i].id;
+    if (!nId) { // Notification has been locally added only
+      this.getNotificationsForm().removeAt(i);
+    } else {  // Existing notification
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      removeModal.componentInstance.itemType = "notification";
 
-    removeModal.result.then((remove) => {
-      if (remove) {
-        const sId = this.getNotificationsForm().value[i].id;
-        if (!sId) { // Notification has been locally added only
-          this.getNotificationsForm().removeAt(i);
-        } else {  // Existing notification
-          this.notificationService.deleteNotification(sId).subscribe((res: any) => {
+      removeModal.result.then((remove) => {
+        if (remove) {
+          this.notificationService.deleteNotification(nId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getNotificationsForm().removeAt(i);
               this.toastr.success('Notification deleted successfully');
@@ -127,11 +127,11 @@ export class UpsertNotificationComponent implements OnInit {
               this.toastr.error('Error when deleting notification', res.statusText);
             }
           }, error => {
-            this.toastr.error(error.error.title);
-          })
+            this.toastr.error(error);
+          });
         }
-      }
-    }, error => {});
+      }, error => {this.toastr.error(error)});
+    }
   }
 
   setInitialTruncate(i) {

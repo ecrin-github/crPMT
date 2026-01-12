@@ -213,15 +213,15 @@ export class UpsertStudyCountryComponent implements OnInit {
   deleteStudyCountry($event, i: number) {
     $event.stopPropagation(); // Expands the panel otherwise
 
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-    removeModal.componentInstance.itemType = "study country";
+    const scId = this.getStudyCountriesForm().value[i].id;
+    if (!scId) { // Study country has been locally added only
+      this.getStudyCountriesForm().removeAt(i);
+    } else {  // Existing study
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      removeModal.componentInstance.itemType = "study country";
 
-    removeModal.result.then((remove) => {
-      if (remove) {
-        const scId = this.getStudyCountriesForm().value[i].id;
-        if (!scId) { // Study country has been locally added only
-          this.getStudyCountriesForm().removeAt(i);
-        } else {  // Existing study
+      removeModal.result.then((remove) => {
+        if (remove) {
           this.studyCountryService.deleteStudyCountry(scId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getStudyCountriesForm().removeAt(i);
@@ -230,11 +230,11 @@ export class UpsertStudyCountryComponent implements OnInit {
               this.toastr.error('Error when deleting study country', res.statusText);
             }
           }, error => {
-            this.toastr.error(error.error.title);
-          })
+            this.toastr.error(error);
+          });
         }
-      }
-    }, error => { });
+      }, error => {this.toastr.error(error)});
+    }
   }
 
   isFormValid() {
