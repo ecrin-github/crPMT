@@ -8,7 +8,7 @@ import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { StudyListEntryInterface } from 'src/app/_rms/interfaces/study/study-listentry.interface';
+import { StudyListEntryInterface } from 'src/app/_rms/interfaces/core/study-listentry.interface';
 import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
 import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';

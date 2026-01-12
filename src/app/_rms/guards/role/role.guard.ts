@@ -4,7 +4,7 @@ import {
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
 } from '@angular/router';
-import { StudyInterface } from 'src/app/_rms/interfaces/study/study.interface';
+import { StudyInterface } from 'src/app/_rms/interfaces/core/study.interface';
 import { StatesService } from '../../services/states/states.service';
 import { Observable, of } from 'rxjs';
 import { catchError, switchMap, timeout } from 'rxjs/operators';

@@ -8,7 +8,7 @@ import { catchError, map, mergeMap } from 'rxjs/operators';
 import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
 import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
 import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
-import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
+import { ProjectInterface } from 'src/app/_rms/interfaces/core/project.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';

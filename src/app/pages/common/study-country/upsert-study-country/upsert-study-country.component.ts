@@ -7,7 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Observable, Subscription, combineLatest, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
-import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
+import { StudyCountryInterface } from 'src/app/_rms/interfaces/core/study-country.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';

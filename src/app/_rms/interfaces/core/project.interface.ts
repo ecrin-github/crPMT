@@ -1,7 +1,7 @@
 import { ClassValueInterface } from "../context/class-value.interface";
 import { OrganisationInterface } from "../context/organisation.interface";
 import { PersonInterface } from "../context/person.interface";
-import { StudyDataInterface } from "../study/study.interface";
+import { StudyDataInterface } from "./study.interface";
 
 export interface ProjectInterface {
     id: string;

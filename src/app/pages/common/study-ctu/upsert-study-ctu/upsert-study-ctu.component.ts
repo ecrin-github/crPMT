@@ -2,14 +2,14 @@ import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
-import { StudyCTUInterface } from 'src/app/_rms/interfaces/study/study-ctus.interface';
+import { StudyCTUInterface } from 'src/app/_rms/interfaces/core/study-ctus.interface';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { Observable, combineLatest, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
-import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
+import { StudyCountryInterface } from 'src/app/_rms/interfaces/core/study-country.interface';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UpsertCentreComponent } from '../../centre/upsert-centre/upsert-centre.component';
 import { BackService } from 'src/app/_rms/services/back/back.service';

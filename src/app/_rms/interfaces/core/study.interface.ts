@@ -1,4 +1,4 @@
-import { ProjectInterface } from "../project/project.interface";
+import { ProjectInterface } from "./project.interface";
 import { StudyCountryInterface } from "./study-country.interface";
 
 export interface StudyInterface {

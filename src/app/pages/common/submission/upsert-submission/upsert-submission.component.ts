@@ -5,7 +5,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, combineLatest, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
-import { SubmissionInterface } from 'src/app/_rms/interfaces/study/submission.interface';
+import { SubmissionInterface } from 'src/app/_rms/interfaces/core/submission.interface';
 import { SubmissionService } from 'src/app/_rms/services/entities/submission/submission.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';

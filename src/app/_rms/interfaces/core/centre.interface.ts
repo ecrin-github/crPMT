@@ -1,7 +1,6 @@
 import { CTUInterface } from "../context/ctu.interface";
 import { HospitalInterface } from "../context/hospital.interface";
 import { PersonInterface } from "../context/person.interface";
-import { StudyCountryInterface } from "./study-country.interface";
 import { StudyCTUInterface } from "./study-ctus.interface";
 import { StudyMainDataInterface } from "./study.interface";
 

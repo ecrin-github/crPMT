@@ -1,20 +1,20 @@
-import { Component, HostListener, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { NavigationEnd, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgxPermissionsService } from 'ngx-permissions';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { Subject, combineLatest, fromEvent } from 'rxjs';
-import { NgxPermissionsService } from 'ngx-permissions';
-import { NavigationEnd, Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
+import { ProjectListEntryInterface } from 'src/app/_rms/interfaces/core/project-listentry.interface';
+import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
+import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
 import { resolvePath } from 'src/assets/js/util';
-import { ProjectListEntryInterface } from 'src/app/_rms/interfaces/project/project-listentry.interface';
-import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
+import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 
 @Component({
   selector: 'app-project-list',

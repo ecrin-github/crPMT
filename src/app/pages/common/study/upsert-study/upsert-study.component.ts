@@ -11,7 +11,7 @@ import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interf
 import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
 import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
 import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
-import { StudyInterface } from 'src/app/_rms/interfaces/study/study.interface';
+import { StudyInterface } from 'src/app/_rms/interfaces/core/study.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';

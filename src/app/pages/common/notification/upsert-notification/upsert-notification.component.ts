@@ -1,17 +1,14 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
-import { NotificationInterface } from 'src/app/_rms/interfaces/study/notification.interface';
-import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { Observable, combineLatest, of } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+import { NotificationInterface } from 'src/app/_rms/interfaces/core/notification.interface';
+import { NotificationService } from 'src/app/_rms/services/entities/notification/notification.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { Observable, combineLatest, of } from 'rxjs';
-import { catchError, mergeMap } from 'rxjs/operators';
-import { Router } from '@angular/router';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { NotificationService } from 'src/app/_rms/services/entities/notification/notification.service';
-import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';
 
 @Component({
   selector: 'app-upsert-notification',
@@ -35,8 +32,6 @@ export class UpsertNotificationComponent implements OnInit {
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private router: Router,
-    private spinner: NgxSpinnerService,
-    private studyCountryService: StudyCountryService,
     private notificationService: NotificationService,
     private toastr: ToastrService) {
       this.form = this.fb.group({
