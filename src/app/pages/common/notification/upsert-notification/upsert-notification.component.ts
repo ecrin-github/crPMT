@@ -115,7 +115,7 @@ export class UpsertNotificationComponent implements OnInit {
       this.getNotificationsForm().removeAt(i);
     } else {  // Existing notification
       const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-      removeModal.componentInstance.itemType = "notification";
+      removeModal.componentInstance.setDefaultDeleteMessage("notification");
 
       removeModal.result.then((remove) => {
         if (remove) {

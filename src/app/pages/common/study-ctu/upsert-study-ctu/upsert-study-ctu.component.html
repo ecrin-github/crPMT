@@ -8,7 +8,7 @@
                     <ng-container *ngIf="!isSctuPage; else cardWrapper">
                         <mat-expansion-panel [expanded]="!sctu.value.id ? true : false">
                             <mat-expansion-panel-header>
-                                <span class="view-sub-sub-title">CTU {{i+1}} - {{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}</span>
+                                <span class="view-sub-title">CTU {{i+1}} - {{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}</span>
                                 <div class="p-0 m-0 d-flex align-items-center justify-content-center">
                                     <i class="fa fa-trash ms-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="deleteStudyCTU($event, i)">
                                     </i>
@@ -55,7 +55,7 @@
                             <div class="card-body" id="formContainer">
                                 <div class="row section-title">
                                     <div class="col-md-12 text-left">
-                                        <div class="text-value" class="view-sub-sub-title">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}</div>
+                                        <div class="text-value" class="view-sub-title">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}</div>
                                     </div>
                                 </div>
                                 <ng-container *ngTemplateOutlet="sctuView"></ng-container>
@@ -83,7 +83,7 @@
                                         </ng-select>
                                     </div>
                                 </div>
-                                <!-- <div class="view-sub-sub-title text-center" *ngIf="isView">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}} -->
+                                <!-- <div class="view-sub-title text-center" *ngIf="isView">{{sctu.value.ctu?.shortName ? sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}} -->
                                     <!-- <button [aria-expanded]="isView ? 'false' : 'true'" [aria-controls]="'ctuInfo'+studyCountry?.country?.iso2+i" class="ctuToggleButton ms-2"
                                         [ngClass]="isView ? 'ctuToggleButtonClosed' : 'ctuToggleButtonOpened'" title="Display more CTU info"
                                         [id]="'toggleButton'+studyCountry?.country?.iso2+i" (click)="toggleCTUInfo($event)">❯</button> -->
@@ -162,7 +162,7 @@
                         <hr>
                         <div class="row section-title">
                             <div class="col-md-12 text-left">
-                                <div class="text-value" class="view-sub-sub-title">Quality / Certification Information</div>
+                                <div class="text-value" class="view-sub-title">Quality / Certification Information</div>
                             </div>
                         </div>
                         <div class="row form-group">
@@ -178,7 +178,7 @@
                         <hr>
                         <div class="row section-title">
                             <div class="col-md-12 text-left">
-                                <div class="text-value" class="view-sub-sub-title">Agreements</div>
+                                <div class="text-value" class="view-sub-title">Agreements</div>
                             </div>
                         </div>
                         <div class="row">
@@ -189,7 +189,7 @@
                         <hr>
                         <div class="row section-title">
                             <div class="col-md-12 text-left">
-                                <div class="text-value" class="view-sub-sub-title">Finances & Budget</div>
+                                <div class="text-value" class="view-sub-title">Finances & Budget</div>
                             </div>
                         </div>
                         <div class="row">

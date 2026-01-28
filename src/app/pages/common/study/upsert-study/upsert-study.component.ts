@@ -247,7 +247,7 @@ export class UpsertStudyComponent implements OnInit {
       this.getStudiesForm().removeAt(i);
     } else {  // Existing study
       const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-      removeModal.componentInstance.itemType = "study";
+      removeModal.componentInstance.setDefaultDeleteMessage("study");
 
       removeModal.result.then((remove) => {
         if (remove) {
@@ -313,7 +313,12 @@ export class UpsertStudyComponent implements OnInit {
         studyCountries: [s.studyCountries]
       }));
 
-      this.summaryRemainingChars[index] = this.summaryMaxChars - s.summary?.length;
+      if (s.summary?.length) {
+        this.summaryRemainingChars[index] = this.summaryMaxChars - s.summary.length;
+      } else {
+
+        this.summaryRemainingChars[index] = this.summaryMaxChars;
+      }
     });
     return formArray;
   }
@@ -368,8 +373,8 @@ export class UpsertStudyComponent implements OnInit {
       payload.complexTrialType = payload.complexTrialType.id;
     }
     
-    if (payload.coordinatingCountry?.id) {
-      payload.coordinatingCountry = payload.coordinatingCountry.id;
+    if (payload.coordinatingCountry?.iso2) {
+      payload.coordinatingCountry = payload.coordinatingCountry.iso2;
     }
     
     if (payload.leadCtu?.id) {
@@ -425,8 +430,8 @@ export class UpsertStudyComponent implements OnInit {
       payload.services = [];
     }
         
-    if (payload.sponsorCountry?.id) {
-      payload.sponsorCountry = payload.sponsorCountry.id;
+    if (payload.sponsorCountry?.iso2) {
+      payload.sponsorCountry = payload.sponsorCountry.iso2;
     }
         
     if (payload.sponsorOrganisation?.id) {
@@ -546,6 +551,10 @@ export class UpsertStudyComponent implements OnInit {
 
   compareIds(fv1, fv2): boolean {
     return fv1?.id == fv2?.id;
+  }
+
+  compareCountries(c1, c2): boolean {
+    return c1?.iso2 == c2?.iso2;
   }
 
   onChangeAgreementSigned(i) {

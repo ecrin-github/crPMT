@@ -143,7 +143,7 @@ export class UpsertCentreComponent implements OnInit {
       this.getCentresForm().removeAt(i);
     } else {  // Existing study CTU
       const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-      removeModal.componentInstance.itemType = "centre";
+      removeModal.componentInstance.setDefaultDeleteMessage("centre");
 
       removeModal.result.then((remove) => {
         if (remove) {

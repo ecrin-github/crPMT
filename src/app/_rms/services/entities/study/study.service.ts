@@ -28,4 +28,9 @@ export class StudyService {
   deleteStudyById(id) {
     return this.http.delete(`${base}/core/studies/${id}`, {observe: "response", responseType: 'json'});
   }
+
+  /* Utilities */
+  changeUsesCtisForSafetyNotifications(id, usesCtisForSafetyNotifications: boolean) {
+    return this.http.put(`${base}/core/studies/${id}`, {id: id, usesCtisForSafetyNotifications: usesCtisForSafetyNotifications});
+  }
 }

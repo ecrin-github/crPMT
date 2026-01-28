@@ -95,6 +95,7 @@ export class PersonListComponent implements OnInit {
   }
 
   editPerson(person) {
+    console.log(JSON.stringify(person));
     const personModal = this.modalService.open(PersonModalComponent, { size: 'lg', backdrop: 'static' });
     personModal.componentInstance.isAdd = false;
     personModal.componentInstance.loadPerson(person);
@@ -119,7 +120,8 @@ export class PersonListComponent implements OnInit {
 
   deletePerson(id) {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-    deleteModal.componentInstance.itemType = 'person';
+    deleteModal.componentInstance.setDefaultDeleteMessage("person");
+
     deleteModal.result.then((_delete: boolean) => {
       if (_delete) {
         this.spinner.show();

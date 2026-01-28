@@ -6,7 +6,7 @@
                 <hr *ngIf="i > 0">
                 <mat-expansion-panel [expanded]="!centre.value.id ? true : false">
                     <mat-expansion-panel-header>
-                        <span class="view-sub-sub-title">Centre {{i+1}} - {{centre.value.hospital?.name}}</span>
+                        <span class="view-sub-title">Centre {{i+1}} - {{centre.value.hospital?.name}}</span>
                         <div class="p-0 m-0 d-flex align-items-center justify-content-center">
                             <i class="fa fa-trash sc-delete-icon ms-4" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeCentre(i)"></i>
                         </div>
@@ -17,13 +17,13 @@
                 <ng-template #centreForm>
                     <!-- <div class="row section-title">
                         <div class="col-8 text-left d-flex align-items-center">
-                            <div class="view-sub-sub-title title-border">Centre name here</div>
+                            <div class="view-sub-title title-border">Centre name here</div>
                             <i class="fa fa-trash sc-delete-icon ms-4" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeCentre(i)"></i>
                         </div>
                     </div> -->
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value view-sub-sub-title">General Information</div>
+                            <div class="text-value view-sub-title">General Information</div>
                         </div>
                     </div>
                     <div class="row form-group align-items-start">
@@ -108,7 +108,7 @@
                     <hr>
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Site specific Study information</div>
+                            <div class="text-value" class="view-sub-title">Site specific Study information</div>
                         </div>
                     </div>
                     <div class="row form-group align-items-start">
@@ -149,7 +149,7 @@
                     <hr>
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Monitoring Information</div>
+                            <div class="text-value" class="view-sub-title">Monitoring Information</div>
                         </div>
                     </div>
                     <div class="row form-group align-items-start">
@@ -171,7 +171,7 @@
                     <hr>
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Site Initiation Visit Information</div>
+                            <div class="text-value" class="view-sub-title">Site Initiation Visit Information</div>
                         </div>
                     </div>
                     <div>
@@ -180,7 +180,7 @@
                     <hr>
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Close-Out Visit Information</div>
+                            <div class="text-value" class="view-sub-title">Close-Out Visit Information</div>
                         </div>
                     </div>
                     <div>

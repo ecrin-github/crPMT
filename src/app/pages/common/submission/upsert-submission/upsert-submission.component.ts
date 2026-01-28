@@ -129,7 +129,7 @@ export class UpsertSubmissionComponent implements OnInit {
       this.getSubmissionsForm().removeAt(i);
     } else {  // Existing submission
       const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-      removeModal.componentInstance.itemType = "study CTU";
+      removeModal.componentInstance.setDefaultDeleteMessage("submission");
 
       removeModal.result.then((remove) => {
         if (remove) {

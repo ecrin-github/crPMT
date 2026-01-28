@@ -1,6 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
 @import url("https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700|Roboto:300,400,500,600,700");
-@import '~ngx-toastr/toastr';
 // Global vendors
 @import "~bootstrap/dist/css/bootstrap.css";
 // => Material
@@ -11,6 +10,7 @@
 @import "~perfect-scrollbar/css/perfect-scrollbar.css";
 @import "~@ng-select/ng-select/themes/default.theme.css";
 
+@import '~ngx-toastr/toastr';
 
 // Global fonts
 @import "~socicon/css/socicon.css";
@@ -737,12 +737,6 @@ mat-footer-cell:first-of-type {
 }
 
 .view-sub-title {
-  font-size: 1.7rem !important;
-  font-weight: 600 !important;
-  color: #315492 !important;
-}
-
-.view-sub-sub-title {
   font-size: 1.5rem !important;
   font-weight: 600 !important;
   color: #315492 !important;
@@ -766,7 +760,16 @@ mat-footer-cell:first-of-type {
   font-weight: 500;
 }
 
+.safety-notification-table-title {
+  font-weight: 500;
+  font-size: 1.15rem;
+}
 
+.table-container-view {
+  // background-color: rgba(0,0,145,0.05);
+  background-color: #0000ff0d;  // Not ECRIN color
+  padding: 0.5rem 0.8rem;
+}
 
 // Fix for placeholder position for ng-select with multiple selectable elements
 .ng-select.custom {
@@ -816,6 +819,10 @@ mat-footer-cell:first-of-type {
 .checkbox {
   width: calc(1.5em + 1.3rem + 2px);  // Same formula as Bootstrap 4 .form-control height
   height: calc(1.5em + 1.3rem + 2px);  // Same formula as Bootstrap 4 .form-control height
+}
+
+.checkbox-2 {
+  font-size: 2rem;
 }
 
 .btn-invisible {
@@ -912,7 +919,7 @@ mat-footer-cell:first-of-type {
 }
 
 .card-pad {  // Equalize padding with left and right paddings with col
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
 }
 
 .cancel-row-margins {
@@ -975,6 +982,14 @@ ng-select.required.ng-invalid.ng-untouched {
       border-color: #dc3545;
       box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
   }
+}
+
+// Fix for toast-container class conflict with Bootstrap
+.toast-container {
+  pointer-events: none;
+  position: fixed;
+  z-index: 999999;
+  /* any other toastr container styles you need */
 }
 
 #matomo-opt-out-icon {

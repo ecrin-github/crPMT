@@ -108,7 +108,8 @@ export class ProjectListComponent implements OnInit {
 
   deleteRecord(id) {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-    deleteModal.componentInstance.itemType = 'project';
+    deleteModal.componentInstance.setDefaultDeleteMessage("project");
+    
     deleteModal.result.then((data: any) => {
       if (data) {
         this.spinner.show();

@@ -99,7 +99,7 @@ export class UpsertStudyCtuComponent implements OnInit {
 
     this.contextService.ctus.subscribe((ctus) => {
       this.ctus = ctus;
-      if (this.ctus != null) {
+      if (this.ctus?.length > 0) {
         this.sortCTUs();
       }
     });
@@ -191,8 +191,6 @@ export class UpsertStudyCtuComponent implements OnInit {
           }
         }
       });
-    } else {
-      console.log("Could not get country ID to sort CTUs");
     }
   }
 
@@ -290,7 +288,7 @@ export class UpsertStudyCtuComponent implements OnInit {
   ngOnChanges(changes: SimpleChanges) {
     let patchForm = false;
     if (changes.studyCountry?.previousValue?.country?.iso2 != changes.studyCountry?.currentValue?.country?.iso2) {
-      if (this.ctus != null) {
+      if (this.ctus?.length > 0) {
         this.sortCTUs();
       }
       patchForm = true;
@@ -322,7 +320,7 @@ export class UpsertStudyCtuComponent implements OnInit {
       this.getStudyCTUsForm().removeAt(i);
     } else {  // Existing study CTU
       const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-      removeModal.componentInstance.itemType = "study CTU";
+      removeModal.componentInstance.setDefaultDeleteMessage("study CTU");
 
       removeModal.result.then((remove) => {
         if (remove) {
@@ -514,7 +512,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     return fv1?.id == fv2?.id;
   }
 
-  searchCTUs(term: string, item) {
+  searchCTUs = (term: string, item) => {
     return this.contextService.searchCTUs(term, item);
   }
   

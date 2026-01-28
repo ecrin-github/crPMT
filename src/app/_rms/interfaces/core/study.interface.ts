@@ -35,5 +35,7 @@ export interface StudyMainDataInterface {
     id: string | null;
     shortTitle: string | null;
     title: string | null;
-    trialId: string | null;
+    project: ProjectInterface;
+    studyCountries: StudyCountryInterface[];
+    usesCtisForSafetyNotifications: boolean;
 }

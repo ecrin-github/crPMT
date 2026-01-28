@@ -7,7 +7,7 @@
                 <ng-container *ngIf="!isSCPage; else cardWrapper">
                     <mat-expansion-panel [expanded]="!sc.value.id ? true : false">
                         <mat-expansion-panel-header>
-                            <span class="view-sub-sub-title">{{getCountryFlag(sc.value.country)}}&nbsp;{{sc.value.country?.name}}</span>
+                            <span class="view-sub-title">{{getCountryFlag(sc.value.country)}}&nbsp;{{sc.value.country?.name}}</span>
                             <div class="p-0 m-0 d-flex align-items-center justify-content-center">
                                 <i class="fa fa-trash ms-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView && !id" (click)="deleteStudyCountry($event, i)">
                                 </i>
@@ -59,14 +59,14 @@
                 <ng-template #scView>
                     <div class="row section-title-field">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Country<sup *ngIf="!isView">*</sup></div>
+                            <div class="text-value" class="view-sub-title">Country<sup *ngIf="!isView">*</sup></div>
                         </div>
                     </div>
                     <div class="row form-group">
                         <div class="col-md-3">
                             <ng-select [items]="countries" formControlName="country" [searchFn]="searchCountries"
-                                [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds" (change)="onChangeCountry(i)"
-                                notFoundText="No countries found" placeholder="Select country" *ngIf="!isView" 
+                                [multiple]="false" [virtualScroll]="true" [compareWith]="compareCountries" (change)="onChangeCountry(i)"
+                                notFoundText="No countries found" placeholder="Select country" *ngIf="!isView && !isSCPage"
                                 appendTo="body" name="country" [ngClass]="{ 'is-invalid': submitted && getControls(i).country.errors?.required }">
                                 <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
                                 <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
@@ -78,13 +78,13 @@
                             <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).country.errors?.required">
                                 <p>Please select the country</p>
                             </div>
-                            <span *ngIf="isView" class="text-value">{{getCountryFlag(sc.value.country)}}&nbsp;{{sc.value.country?.name}}</span>
+                            <span *ngIf="isView || isSCPage" class="text-value">{{getCountryFlag(sc.value.country)}}&nbsp;{{sc.value.country?.name}}</span>
                         </div>
                     </div>
-                    <hr>
+                    <hr class="hr-m2">
                     <div class="row section-title-field">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">List of CTUs and services (in country)</div>
+                            <div class="text-value" class="view-sub-title">List of CTUs and services (in country)</div>
                         </div>
                     </div>
                     <div class="row form-group" *ngIf="!isView; else viewStudyCTUs">
@@ -118,31 +118,120 @@
                             </div>
                         </div>
                     </ng-template>
-                    <hr>
+                    <hr class="hr-m2">
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Initial regulatory submission</div>
+                            <div class="text-value" class="view-sub-title">Initial regulatory submission</div>
                         </div>
                     </div>
                     <app-upsert-submission #regulatorySubmissions [submissionsData]="sc.value.submissions" [studyCountry]="sc.value"></app-upsert-submission>
-                    <hr>
+                    <hr class="hr-m2">
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Amendments</div>
+                            <div class="text-value" class="view-sub-title">Amendments</div>
                         </div>
                     </div>
                     <app-upsert-submission #amendments [isAmendments]="true" [submissionsData]="sc.value.amendments" [studyCountry]="sc.value"></app-upsert-submission>
-                    <hr>
+                    <hr class="hr-m2">
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Other types of notification</div>
+                            <div class="text-value" class="view-sub-title">Safety Notifications - Annual Progress Report</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- <ng-container *ngIf="studyUsesCtisForSafetyNotifications && isCtisCountry(sc.value.country) && !isCountryWhereCtisFlagChecked(sc.value.country) && !isView; else annualComponents">
+                            <div class="col-md-12">
+                                Reports are submitted through CTIS, please see Safety Notifications sections in&nbsp;&nbsp;{{getCountryFlag(countryWhereCtisFlagChecked)}}&nbsp;{{countryWhereCtisFlagChecked?.name}} to edit them for all CTIS countries.
+                            </div>
+                        </ng-container>
+                        <ng-template #annualComponents>
+                            <div class="col-md-6">
+                                <app-upsert-safety-notification #safetyNotificationsAnnualEC [safetyNotificationsData]="sc.value.safetyNotificationsAnnualEC" 
+                                    [typeCode]="contextService.SafetyNotificationTypeCodes.AnnualProgressReport" [form]="snForms[i]?.snAnnualEcForm"
+                                    [authorityCode]="contextService.AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            </div>
+                            <div class="col-md-6">
+                                <app-upsert-safety-notification #safetyNotificationsAnnualCA [safetyNotificationsData]="sc.value.safetyNotificationsAnnualCA" 
+                                    [typeCode]="contextService.SafetyNotificationTypeCodes.AnnualProgressReport" [form]="snForms[i]?.snAnnualCaForm"
+                                    [authorityCode]="contextService.AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            </div>
+                        </ng-template> -->
+                        <div class="col-md-6">
+                            <app-upsert-safety-notification #safetyNotificationsAnnualEC [form]="snForms[i]?.snAnnualEcForm"
+                                [typeCode]="contextService.SafetyNotificationTypeCodes.AnnualProgressReport"
+                                [authorityCode]="contextService.AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                        </div>
+                        <div class="col-md-6">
+                            <app-upsert-safety-notification #safetyNotificationsAnnualCA [form]="snForms[i]?.snAnnualCaForm" 
+                                [typeCode]="contextService.SafetyNotificationTypeCodes.AnnualProgressReport"
+                                [authorityCode]="contextService.AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                        </div>
+                    </div>
+                    <hr class="hr-m2">
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="text-value" class="view-sub-title">Safety Notifications - DSUR</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <!-- <ng-container *ngIf="studyUsesCtisForSafetyNotifications && isCtisCountry(sc.value.country) && !isCountryWhereCtisFlagChecked(sc.value.country) && !isView; else dsurComponents">
+                            <div class="col-md-12">
+                                Reports are submitted through CTIS, please see Safety Notifications sections in&nbsp;&nbsp;{{getCountryFlag(countryWhereCtisFlagChecked)}}&nbsp;{{countryWhereCtisFlagChecked?.name}} to edit them for all CTIS countries.
+                            </div>
+                        </ng-container>
+                        <ng-template #dsurComponents>
+                            <div class="col-md-6">
+                                <app-upsert-safety-notification #safetyNotificationsDsurEC [safetyNotificationsData]="sc.value.safetyNotificationsDsurEC" 
+                                    [typeCode]="contextService.SafetyNotificationTypeCodes.DSUR" [form]="snForms[i]?.snDsurEcForm"
+                                    [authorityCode]="contextService.AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            </div>
+                            <div class="col-md-6">
+                                <app-upsert-safety-notification #safetyNotificationsDsurCA [safetyNotificationsData]="sc.value.safetyNotificationsDsurCA" 
+                                    [typeCode]="contextService.SafetyNotificationTypeCodes.DSUR" [form]="snForms[i]?.snDsurCaForm"
+                                    [authorityCode]="contextService.AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            </div>
+                        </ng-template> -->
+                        <div class="col-md-6">
+                            <app-upsert-safety-notification #safetyNotificationsDsurEC [form]="snForms[i]?.snDsurEcForm"
+                                [typeCode]="contextService.SafetyNotificationTypeCodes.DSUR"
+                                [authorityCode]="contextService.AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                        </div>
+                        <div class="col-md-6">
+                            <app-upsert-safety-notification #safetyNotificationsDsurCA [form]="snForms[i]?.snDsurCaForm"
+                                [typeCode]="contextService.SafetyNotificationTypeCodes.DSUR"
+                                [authorityCode]="contextService.AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                        </div>
+                    </div>
+                    <hr class="hr-m2">
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="text-value" class="view-sub-title">Safety Notifications - CTIS</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 d-flex align-items-center">
+                            <ng-container *ngIf="isCtisCountry(sc.value.country); else nonCtisCountry">
+                                <input type="checkbox" class="form-check-input checkbox-2 me-2 mt-0" *ngIf="!isView"
+                                    [checked]="studyUsesCtisForSafetyNotifications" (click)="onChangeCtis($event, i)"/>
+                                <span class="text-value" *ngIf="!isView">Reports submitted through CTIS</span>
+                                <span class="text-value" *ngIf="isView">{{studyUsesCtisForSafetyNotifications ? "Reports submitted through CTIS" : "Reports not submitted through CTIS"}}</span>
+                            </ng-container>
+                            <ng-template #nonCtisCountry>
+                                <span class="text-value">N/A for non-CTIS countries</span>
+                            </ng-template>
+                        </div>
+                    </div>
+                    <hr class="hr-m2">
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="text-value" class="view-sub-title">Other types of notification</div>
                         </div>
                     </div>
                     <app-upsert-submission #otherNotifications [isOthers]="true" [submissionsData]="sc.value.otherNotifications" [studyCountry]="sc.value"></app-upsert-submission>
-                    <hr>
+                    <hr class="hr-m2">
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">End of trial notifications</div>
+                            <div class="text-value" class="view-sub-title">End of trial notifications</div>
                         </div>
                     </div>
                     <app-upsert-notification #notifications [notificationsData]="sc.value.notifications" [studyCountry]="sc.value"></app-upsert-notification>

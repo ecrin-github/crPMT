@@ -86,7 +86,10 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
     InlineSVGModule.forRoot(),
     NgbModule,
     NgxSpinnerModule,
-    ToastrModule.forRoot(),
+    ToastrModule.forRoot({
+      timeOut: 10000,
+      extendedTimeOut: 10000
+    }),
     MsalModule.forRoot(
       MSALInstanceFactory(),  // Factory returns IPublicClientApplication
       MSALGuardConfigFactory(),

@@ -10,7 +10,7 @@
                 <ng-container *ngIf="!isStudyPage; else cardWrapper">
                     <mat-expansion-panel [expanded]="!study.value.id ? true : false">
                         <mat-expansion-panel-header>
-                            <span class="view-sub-sub-title">Study{{this.id ? '' : ' ' + (i+1)}}{{study.value.shortTitle ? ": " + study.value.shortTitle : "" }}</span>
+                            <span class="view-sub-title">Study{{this.id ? '' : ' ' + (i+1)}}{{study.value.shortTitle ? ": " + study.value.shortTitle : "" }}</span>
                             <div class="p-0 m-0 d-flex align-items-center justify-content-center">
                                 <i class="fa fa-trash ms-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView && !id" (click)="deleteStudy($event, i)">
                                 </i>
@@ -60,7 +60,7 @@
                 <ng-template #studyView>
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">General Study Information</div>
+                            <div class="text-value" class="view-sub-title">General Study Information</div>
                         </div>
                     </div>
                     <div class="row form-group" *ngIf="isStudyPage && !isView">
@@ -129,7 +129,7 @@
                         <div class="col-md-4">
                             <div for="sponsorCountry" class="font-style">Sponsor Country</div>
                             <ng-select [items]="countries" formControlName="sponsorCountry" [searchFn]="searchCountries"
-                                [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
+                                [multiple]="false" [virtualScroll]="true" [compareWith]="compareCountries"
                                 notFoundText="No countries found" placeholder="Select sponsor country" *ngIf="!isView" 
                                 appendTo="body" name="sponsorCountry">
                                 <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
@@ -204,11 +204,11 @@
                                             notFoundText="No CTUs found" placeholder="Start typing to add a new CTU"
                                             addTagText="Add" [addTag]="addCTU"
                                             appendTo="body" name="leadCtu" [ngClass]="{ 'is-invalid': submitted && getControls(i).leadCtu.errors?.required }">
-                                            <ng-template ng-label-tmp let-item="item">{{getCountryFlagFromIso2(item.country.iso2)}}&nbsp;&nbsp;{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</ng-template>
+                                            <ng-template ng-label-tmp let-item="item">{{getCountryFlagFromIso2(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</ng-template>
                                             <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                                 <div class="row m-0">
                                                     <div class="col-md-11 col-11 p-0 m-0">
-                                                        <div class="col-md-12">{{getCountryFlagFromIso2(item.country.iso2)}}&nbsp;&nbsp;{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</div>
+                                                        <div class="col-md-12">{{getCountryFlagFromIso2(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName ? item.shortName + ' - ' : '' }}{{item.name}}</div>
                                                     </div>
                                                     <div class="col-md-1 col-1 p-0 m-0 d-flex" *ngIf="item.manualAdd">
                                                         <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
@@ -223,7 +223,7 @@
                                 </ng-container>
                                 <ng-template #displayLeadCTU>
                                     <div class="col-md-12">
-                                        <div *ngIf="isView" class="text-value">{{getCountryFlagFromIso2(study.value?.leadCtu?.country.iso2)}}&nbsp;{{study.value?.leadCtu?.shortName ? study.value?.leadCtu?.shortName + ' - ' : '' }}{{study.value?.leadCtu?.name}}</div>
+                                        <div *ngIf="isView" class="text-value">{{getCountryFlagFromIso2(study.value?.leadCtu?.country?.iso2)}}&nbsp;{{study.value?.leadCtu?.shortName ? study.value?.leadCtu?.shortName + ' - ' : '' }}{{study.value?.leadCtu?.name}}</div>
                                     </div>
                                 </ng-template>
                             </div>
@@ -376,7 +376,7 @@
                     <hr>
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Country, Site information</div>
+                            <div class="text-value" class="view-sub-title">Country, Site information</div>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -406,7 +406,7 @@
                             <div class="row">
                                 <div class="col-md-10">
                                     <ng-select [items]="countries" formControlName="coordinatingCountry" [searchFn]="searchCountries"
-                                        [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
+                                        [multiple]="false" [virtualScroll]="true" [compareWith]="compareCountries"
                                         notFoundText="No countries found" placeholder="Select coordinating country" *ngIf="!isView" 
                                         appendTo="body" name="coordinatingCountry">
                                         <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
@@ -450,7 +450,7 @@
                         </div>
                     </div>
                     <ng-container *ngIf="!isView; else viewStudyCountries">
-                        <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [studyId]="study.value.id" [projectId]="projectId"></app-upsert-study-country>
+                        <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [projectId]="projectId"></app-upsert-study-country>
                     </ng-container>
                     <ng-template #viewStudyCountries>
                         <div class="row form-group">
@@ -494,7 +494,7 @@
                     <hr>
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Clinical study timelines</div>
+                            <div class="text-value" class="view-sub-title">Clinical study timelines</div>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -601,7 +601,7 @@
                     <hr>
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Overall status</div>
+                            <div class="text-value" class="view-sub-title">Overall status</div>
                         </div>
                     </div>
                     <div class="row form-group">
