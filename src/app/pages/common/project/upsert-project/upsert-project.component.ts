@@ -205,10 +205,7 @@ export class UpsertProjectComponent implements OnInit {
 
   onSave() {
     this.spinner.show();
-    if (localStorage.getItem('updateProjectList')) {
-      localStorage.removeItem('updateProjectList');
-    }
-
+    
     if (this.allFormsValid()) {
       const payload = JSON.parse(JSON.stringify(this.projectForm.value));
       this.updatePayload(payload);
@@ -294,10 +291,8 @@ export class UpsertProjectComponent implements OnInit {
   scrollToFirstInvalidControl() {
     /* https://stackoverflow.com/questions/71501822/angular-formgroup-scroll-to-first-invalid-input-in-a-scrolling-div */
     const form = document.getElementById('formContainer');
-    console.log(form.getElementsByClassName('ng-invalid'));
-    console.log(form.getElementsByClassName('ng-invalid')[0]);
     const firstInvalidControl = form.getElementsByClassName('ng-invalid')[0];
-    firstInvalidControl.scrollIntoView();
+    // firstInvalidControl.scrollIntoView();
     (firstInvalidControl as HTMLElement).focus();
   }
 
