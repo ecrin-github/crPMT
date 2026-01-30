@@ -1,0 +1,80 @@
+<ng-container *ngIf="!isView; else reportingPeriodsView">
+    <div class="row">
+        <div class="col-md-2">
+            <div for="start" class="font-style">Stage</div>
+        </div>
+        <div class="col-md-2">
+            <div for="start" class="font-style">Start</div>
+        </div>
+        <div class="col-md-2">
+            <div for="end" class="font-style">End</div>
+        </div>
+        <div class="col-md-2">
+            <div for="end" class="font-style">Comment</div>
+        </div>
+    </div>
+    <hr class="mt-1 mb-1">
+    <form [formGroup]="form" ngNativeValidate>
+        <div formArrayName="reportingPeriods">
+            <div class="row" *ngFor="let reportingPeriod of fc; let i = index;" [formGroupName]="i">
+                <div class="col" [id]="'featpanel'+i">
+                    <hr *ngIf="i > 0" class="mt-1 mb-1">
+                    <div class="row" [ngClass]="i > 0 ? 'mt-1' : ''">
+                        <div class="col-md-2 d-flex align-items-center">
+                            <span class="text-value">Reporting period {{i+1}}</span>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group" *ngIf="!isView">
+                                <input class="form-control" placeholder="yyyy-mm-dd" name="start"
+                                    ngbDatepicker #start="ngbDatepicker" formControlName="start" container='body'>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" (click)="start.toggle()" type="button">
+                                        <i class="fa fa-calendar"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <span class="text-value" *ngIf="isView">{{fv.start ? dateToString(fv.start) : '' }}</span>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group" *ngIf="!isView">
+                                <input class="form-control" placeholder="yyyy-mm-dd" name="end"
+                                    ngbDatepicker #end="ngbDatepicker" formControlName="end" container='body'>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" (click)="end.toggle()" type="button">
+                                        <i class="fa fa-calendar"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <span class="text-value" *ngIf="isView">{{fv.end ? dateToString(fv.end) : '' }}</span>
+                        </div>
+                        <div class="col-md-5">
+                            <textarea cols="30" rows="1" class="form-control" placeholder="Notes when editing reporting period"
+                                formControlName="comment" *ngIf="!isView" id="comment" [ngClass]="{ 'is-invalid': submitted && fc.comment?.errors }"></textarea>
+                            <div *ngIf="isView" class="text-value">{{fv.comment}}</div>
+                        </div>
+                        <div class="col-md-1 d-flex justify-content-left align-items-center">
+                            <div class="row">
+                                <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;"
+                                    *ngIf="!isView" (click)="deleteReportingPeriod(i)"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</ng-container>
+<ng-template #reportingPeriodsView>
+    <div class="row">
+        <div class="col-md-8">
+            <app-timeline [data]="fv"></app-timeline>
+        </div>
+    </div>
+</ng-template>
+<div class="row mt-5 pb-4" *ngIf="!isView">
+    <div class="col-4 d-flex align-items-center justify-content-left">
+        <button class="btn btn-primary" (click)="addReportingPeriod()">
+            <i class="fa fa-plus"></i>New reporting period
+        </button>
+    </div>
+</div>

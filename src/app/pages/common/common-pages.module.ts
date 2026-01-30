@@ -32,6 +32,8 @@ import { UpsertStudyCtuComponent } from './study-ctu/upsert-study-ctu/upsert-stu
 import { StudyListComponent } from './study/study-list/study-list.component';
 import { UpsertStudyComponent } from './study/upsert-study/upsert-study.component';
 import { UpsertSubmissionComponent } from './submission/upsert-submission/upsert-submission.component';
+import { UpsertReportingPeriodComponent } from './reporting-period/upsert-reporting-period/upsert-reporting-period.component';
+import { WidgetsModule } from 'src/app/widgets/widgets.module';
 
 
 @NgModule({
@@ -52,7 +54,8 @@ import { UpsertSubmissionComponent } from './submission/upsert-submission/upsert
         UpsertSubmissionComponent,
         HospitalModalComponent,
         CtuModalComponent,
-        UpsertSafetyNotificationComponent
+        UpsertSafetyNotificationComponent,
+        UpsertReportingPeriodComponent,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [
@@ -139,6 +142,7 @@ import { UpsertSubmissionComponent } from './submission/upsert-submission/upsert
                 }
             },
         ]),
+        WidgetsModule,
         MatTableModule,
         MatPaginatorModule,
         MatButtonModule,

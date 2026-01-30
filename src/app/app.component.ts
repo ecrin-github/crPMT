@@ -5,18 +5,14 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { TranslationService } from './modules/i18n/translation.service';
 // language list
-import { locale as enLang } from './modules/i18n/vocabs/en';
-import { SplashScreenService } from './_rms/partials/layout/splash-screen/splash-screen.service';
-import { Router, NavigationEnd, NavigationError } from '@angular/router';
+import { Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
+import { SplashScreenService } from './_rms/partials/layout/splash-screen/splash-screen.service';
 import { TableExtendedService } from './_rms/shared/crud-table';
 
 // Required for MSAL
-import { MsalService, MsalBroadcastService, MSAL_GUARD_CONFIG, MsalGuardConfiguration } from '@azure/msal-angular';
-import { EventMessage, EventType, InteractionStatus, RedirectRequest } from '@azure/msal-browser';
-import { filter, takeUntil } from 'rxjs/operators';
+import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
 
 
 @Component({

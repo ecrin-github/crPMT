@@ -22,6 +22,18 @@ import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG, MsalBroadcas
 import { BrowserCacheLocation, IPublicClientApplication, InteractionType, PublicClientApplication } from '@azure/msal-browser';
 import { NgSelectModule } from '@ng-select/ng-select';
 
+// Echarts
+import { NgxEchartsModule } from 'ngx-echarts';
+// import echarts core
+import * as echarts from 'echarts/core';
+// import necessary echarts components
+import { BarChart, LineChart } from 'echarts/charts';
+import { DataZoomComponent, GraphicComponent, GridComponent, MarkLineComponent, TitleComponent, ToolboxComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+// All used echarts components
+echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer, 
+  LineChart, TitleComponent, ToolboxComponent, DataZoomComponent, VisualMapComponent, GraphicComponent, MarkLineComponent]);
+
 
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication({
@@ -69,7 +81,7 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
 @NgModule({
   declarations: [
     // Main component(s) declaration
-    AppComponent
+    AppComponent,
   ],
   imports: [
     NgSelectModule,
@@ -86,6 +98,7 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
     InlineSVGModule.forRoot(),
     NgbModule,
     NgxSpinnerModule,
+    NgxEchartsModule.forRoot({ echarts }),
     ToastrModule.forRoot({
       timeOut: 10000,
       extendedTimeOut: 10000

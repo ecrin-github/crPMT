@@ -1,3 +1,5 @@
+import { NgbDateStruct } from "@ng-bootstrap/ng-bootstrap";
+
 export function resolvePath(object, path) {
     /* Access nested properties from string */
     return path.split('.').reduce((o, p) => o ? o[p] : null, object);
@@ -142,4 +144,22 @@ export function getTagBorderColor(str) {
 export function getTagBgColor(str) {
 	const h = colorHash(str);
     return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
+}
+
+export function jsDateStrToString(str) {
+	let retStr = "";
+	if (str) {
+		const date = new Date(str);
+		if (date) {
+			retStr = date.toISOString();
+		}
+	}
+	return retStr;
+}
+
+export function ngbDateToString(ngbDate: NgbDateStruct): string {
+	if (ngbDate) {
+		return (ngbDate?.year + "-" + ngbDate?.month?.toString().padStart(2, "0") + "-" + ngbDate?.day.toString().padStart(2, "0"));
+	}
+	return "";
 }
