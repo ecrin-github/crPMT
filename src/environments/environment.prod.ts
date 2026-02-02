@@ -8,7 +8,7 @@ export const environment = {
   clientId: 'ecb6ece9-220c-420d-97bd-46093b270627',
   apiClientId: '3fe07317-fa56-4811-81fa-ca458a9d376e',
   appVersion: appVersion,
-  appTitle: 'crPMT: clinOps Project Management Tool',
+  appTitle: 'ECRIN Project Management Tool',
   baseUrl: baseUrl,
   baseUrlApi: baseUrl + '/api',  // No trailing slash
   wsBaseUrl: 'wss://api-crpmtdev.ecrin.org/',
