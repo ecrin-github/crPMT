@@ -9,6 +9,7 @@ import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { SafetyNotificationService } from 'src/app/_rms/services/entities/safety-notification/safety-notification.service';
 import { dateToString } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
+import { AuthorityCodes, CA_TEXT, EC_TEXT } from 'src/assets/js/constants';
 
 @Component({
   selector: 'app-upsert-safety-notification',
@@ -16,10 +17,8 @@ import { ConfirmationWindowComponent } from '../../confirmation-window/confirmat
   styleUrls: ['./upsert-safety-notification.component.scss']
 })
 export class UpsertSafetyNotificationComponent implements OnInit {
-  EC_TEXT: String = "Ethics Committee";
-  CA_TEXT: String = "Competent Authority";
+  AuthorityCodes = AuthorityCodes;
 
-  // @ViewChildren(NgbDatepicker) submissionDateInput: ElementRef[];
   @ViewChildren('submissionDate', { read: ElementRef }) submissionDateInputs: QueryList<ElementRef>;
 
   @Input() authorityCode: String;
@@ -46,10 +45,6 @@ export class UpsertSafetyNotificationComponent implements OnInit {
     this.isEdit = this.router.url.includes('edit');
     this.isView = this.router.url.includes('view');
     this.isAdd = this.router.url.includes('add');
-
-    // Note: have to do this because shared forms values don't update in the UI (thanks Angular!)
-    // See: https://stackoverflow.com/questions/77694477/update-the-view-of-two-forms-sharing-a-formgroup
-    this.form.valueChanges
   }
 
   get g() { return this.form.get('safetyNotifications')["controls"]; }
@@ -94,6 +89,8 @@ export class UpsertSafetyNotificationComponent implements OnInit {
   // }
 
   ngOnChanges(changes: SimpleChanges) {
+    // Note: have to do this because shared forms values don't update in the UI (thanks Angular!)
+    // See: https://stackoverflow.com/questions/77694477/update-the-view-of-two-forms-sharing-a-formgroup
     if (changes.form && this.form) {
       this.formValueChangesSub?.unsubscribe();
 
@@ -207,10 +204,10 @@ export class UpsertSafetyNotificationComponent implements OnInit {
   getAuthorityLabel() {
     let label: String = "";
 
-    if (this.authorityCode === this.contextService.AuthorityCodes.EC) {
-      label = this.EC_TEXT;
-    } else if (this.authorityCode === this.contextService.AuthorityCodes.CA) {
-      label = this.CA_TEXT;
+    if (this.authorityCode === AuthorityCodes.EC) {
+      label = EC_TEXT;
+    } else if (this.authorityCode === AuthorityCodes.CA) {
+      label = CA_TEXT;
     }
 
     return label;

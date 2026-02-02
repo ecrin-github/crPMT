@@ -21,6 +21,7 @@ import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToD
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
+import { REGULATORY_FRAMEWORKS, STUDY_STATUSES, TIME_UNITS } from 'src/assets/js/constants';
 
 @Component({
   selector: 'app-upsert-study',
@@ -46,10 +47,9 @@ export class UpsertStudyComponent implements OnInit {
   regulatoryFrameworkDetails: ClassValueInterface[] = [];
   filteredRegulatoryFrameworkDetails: ClassValueInterface[] = [];
   services: ClassValueInterface[] = [];
-  regulatoryFrameworks: String[] = ['CTR', 'MDR/IVDR', 'COMBINED', 'OTHER'];
-  studyStatuses: String[] = ["Start-up phase", "Running phase: Regulatory & ethical approvals", "Running phase: Follow up", "Running phase: Organisation of close-out", 
-                              "Completion & termination phase", "Completed", "Withdrawn", "On hold"];
-  timeUnits: String[] = ["Hours", "Days", "Weeks", "Months"]
+  REGULATORY_FRAMEWORKS: String[] = REGULATORY_FRAMEWORKS;
+  STUDY_STATUSES: String[] = STUDY_STATUSES;
+  TIME_UNITS: String[] = TIME_UNITS;
   id: string;
   isAdd: boolean = false;
   isEdit: boolean = false;

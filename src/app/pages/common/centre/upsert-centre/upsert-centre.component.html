@@ -105,7 +105,7 @@
                             <input type="checkbox" id="piNationalCoordinator" class="form-check-input checkbox" formControlName="piNationalCoordinator"/>
                         </div>
                     </div>
-                    <hr>
+                    <hr class="hr-m2">
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
                             <div class="text-value" class="view-sub-title">Site specific Study information</div>
@@ -123,6 +123,25 @@
                                     <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).patientsExpected.errors?.pattern">
                                         <p>If set, the patients expected field should be a number</p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div for="recruitmentGreenlight" class="font-style">Greenlight to start recruitment</div>
+                            <div class="row">
+                                <div class="col-md-9 pe-0">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd"
+                                        name="recruitmentGreenlight" ngbDatepicker #recruitmentGreenlight="ngbDatepicker"
+                                        formControlName="recruitmentGreenlight" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary"
+                                            (click)="recruitmentGreenlight.toggle()" type="button">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                        </div>
+                                    </div>
+                                    <span class="text-value" *ngIf="isView">{{dateToString(centre.value.recruitmentGreenlight)}}</span>
                                 </div>
                             </div>
                         </div>
@@ -146,13 +165,22 @@
                             </div>
                         </div>
                     </div>
-                    <hr>
+                    <hr class="hr-m2">
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="text-value" class="view-sub-title">Site Initiation Visit Information</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <app-upsert-visit [visits]="centre.value.siv" [visitTypeCode]="VisitTypeCodes.SIV" #siv></app-upsert-visit>
+                    </div>
+                    <hr class="hr-m2">
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
                             <div class="text-value" class="view-sub-title">Monitoring Information</div>
                         </div>
                     </div>
-                    <div class="row form-group align-items-start">
+                    <div class="row">
                         <div class="col-md-4">
                             <div for="movExpectedNumber" class="font-style">Number of Monitoring Visits expected</div>
                             <div class="row">
@@ -168,23 +196,17 @@
                             </div>
                         </div>
                     </div>
-                    <hr>
-                    <div class="row section-title">
-                        <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-title">Site Initiation Visit Information</div>
-                        </div>
+                    <div class="row">
+                        <app-upsert-visit [visits]="centre.value.mov" [visitTypeCode]="VisitTypeCodes.MOV" #mov></app-upsert-visit>
                     </div>
-                    <div>
-                        Coming soon!
-                    </div>
-                    <hr>
+                    <hr class="hr-m2">
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
                             <div class="text-value" class="view-sub-title">Close-Out Visit Information</div>
                         </div>
                     </div>
-                    <div>
-                        Coming soon!
+                    <div class="row">
+                        <app-upsert-visit [visits]="centre.value.cov" [visitTypeCode]="VisitTypeCodes.COV" #cov></app-upsert-visit>
                     </div>
                 </ng-template>
             </div>

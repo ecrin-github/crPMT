@@ -3,6 +3,7 @@ import { HospitalInterface } from "../context/hospital.interface";
 import { PersonInterface } from "../context/person.interface";
 import { StudyCTUInterface } from "./study-ctus.interface";
 import { StudyMainDataInterface } from "./study.interface";
+import { VisitInterface } from "./visit.interface";
 
 export interface CentreInterface {
     id: number;
@@ -12,9 +13,11 @@ export interface CentreInterface {
     pi: PersonInterface;
     piNationalCoordinator: boolean;
     patientsExpected: number;
+    recruitmentGreenlight: string;
     firstPatientVisit: string;
     movExpectedNumber: number;
     study: StudyMainDataInterface;
+    visits: VisitInterface[];
     studyCtu: StudyCTUInterface;
     ctu: CTUInterface;
 }

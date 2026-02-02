@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -11,8 +11,10 @@ import { CentreInterface } from 'src/app/_rms/interfaces/core/centre.interface';
 import { StudyCTUInterface } from 'src/app/_rms/interfaces/core/study-ctus.interface';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { CentreService } from 'src/app/_rms/services/entities/centre/centre.service';
+import { VisitTypeCodes } from 'src/assets/js/constants';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
+import { UpsertVisitComponent } from '../../visit/upsert-visit/upsert-visit.component';
 
 @Component({
   selector: 'app-upsert-centre',
@@ -20,6 +22,11 @@ import { ConfirmationWindowComponent } from '../../confirmation-window/confirmat
   styleUrls: ['./upsert-centre.component.scss']
 })
 export class UpsertCentreComponent implements OnInit {
+  VisitTypeCodes = VisitTypeCodes;
+
+  @ViewChildren("siv") sivComponent: QueryList<UpsertVisitComponent>;
+  @ViewChildren("mov") movComponent: QueryList<UpsertVisitComponent>;
+  @ViewChildren("cov") covComponent: QueryList<UpsertVisitComponent>;
   @Input() centresData: Array<CentreInterface>;
   @Input() studyCTU: StudyCTUInterface;
 
@@ -44,9 +51,9 @@ export class UpsertCentreComponent implements OnInit {
     private contextService: ContextService,
     private centreService: CentreService,
     private toastr: ToastrService) {
-      this.form = this.fb.group({
-        centres: this.fb.array([])
-      });
+    this.form = this.fb.group({
+      centres: this.fb.array([])
+    });
   }
 
   ngOnInit(): void {
@@ -83,8 +90,12 @@ export class UpsertCentreComponent implements OnInit {
       pi: null,
       piNationalCoordinator: false,
       patientsExpected: [null, [UpsertCentreComponent.intPatternValidatorFn]],
+      recruitmentGreenlight: null,
       firstPatientVisit: null,
       movExpectedNumber: [null, [UpsertCentreComponent.intPatternValidatorFn]],
+      siv: [[]],
+      mov: [[]],
+      cov: [[]],
       studyCtu: null,
       study: null,
       ctu: null,
@@ -92,18 +103,19 @@ export class UpsertCentreComponent implements OnInit {
   }
 
   patchForm() {
-    this.form.setControl('centres', this.patchArray());
+    this.form.setControl('centres', this.getFormArray());
 
     // Setting initial boolean variables to display or not certain fields
-    for (let i=0; i < this.g.length; i++) {
+    for (let i = 0; i < this.g.length; i++) {
       this.onChangeSiteNumber(i);
     }
   }
 
-  patchArray(): UntypedFormArray {
+  // TODO: separate visits
+  getFormArray(): UntypedFormArray {
     const formArray = new UntypedFormArray([]);
-    this.centres.forEach((centre) => {
-      formArray.push(this.fb.group({
+    this.centres.forEach((centre: CentreInterface) => {
+      const fbData = {
         id: centre.id,
         hospital: [centre.hospital, Validators.required],
         siteNumberFlag: centre.siteNumberFlag,
@@ -111,20 +123,41 @@ export class UpsertCentreComponent implements OnInit {
         pi: centre.pi,
         piNationalCoordinator: centre.piNationalCoordinator,
         patientsExpected: [centre.patientsExpected, [UpsertCentreComponent.intPatternValidatorFn]],
+        recruitmentGreenlight: centre.recruitmentGreenlight ? stringToDate(centre.recruitmentGreenlight) : null,
         firstPatientVisit: centre.firstPatientVisit ? stringToDate(centre.firstPatientVisit) : null,
         movExpectedNumber: [centre.movExpectedNumber, [UpsertCentreComponent.intPatternValidatorFn]],
+        siv: [[]],
+        mov: [[]],
+        cov: [[]],
         studyCtu: centre.studyCtu?.id,
         study: centre.study?.id,
-        ctu: centre.ctu,
-      }))
+      };
+
+      // Separating visits in the FE
+      if (centre.visits) {
+        for (const v of centre.visits) {
+          if (v.visitType === VisitTypeCodes.SIV) {
+            fbData.siv[0].push(v);
+          } else if (v.visitType === VisitTypeCodes.MOV) {
+            fbData.mov[0].push(v);
+          } else if (v.visitType === VisitTypeCodes.COV) {
+            fbData.cov[0].push(v);
+          } else {
+            this.toastr.error(`Unknown visit type ${v.visitType}`);
+          }
+        }
+      }
+
+      formArray.push(this.fb.group(fbData));
     });
+
     return formArray;
   }
 
   // TODO
   ngOnChanges(changes: SimpleChanges) {
     if (changes.centresData) {
-      if (this.centresData === null) {
+      if (!this.centresData) {
         this.centres = [];
       } else {
         this.centres = this.centresData;
@@ -139,10 +172,10 @@ export class UpsertCentreComponent implements OnInit {
 
   removeCentre(i: number) {
     const cId = this.getCentresForm().value[i].id;
-    if (!cId) { // Study CTU has been locally added only
+    if (!cId) { // Centre has been locally added only
       this.getCentresForm().removeAt(i);
-    } else {  // Existing study CTU
-      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+    } else {  // Existing centre
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
       removeModal.componentInstance.setDefaultDeleteMessage("centre");
 
       removeModal.result.then((remove) => {
@@ -150,15 +183,15 @@ export class UpsertCentreComponent implements OnInit {
           this.centreService.deleteCentre(cId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getCentresForm().removeAt(i);
-              this.toastr.success('Study CTU deleted successfully');
+              this.toastr.success('Centre deleted successfully');
             } else {
-              this.toastr.error('Error when deleting study CTU', res.statusText);
+              this.toastr.error('Error when deleting centre', res.statusText);
             }
           }, error => {
             this.toastr.error(error);
           });
         }
-      }, error => {this.toastr.error(error)});
+      }, error => { this.toastr.error(error) });
     }
   }
 
@@ -179,7 +212,7 @@ export class UpsertCentreComponent implements OnInit {
   searchPersons = (term: string, item) => {
     return this.contextService.searchPersons(term, item);
   }
-  
+
   // Necessary to write them as arrow functions
   addHospital = (hospitalName) => {
     return this.contextService.addHospitalDropdown(hospitalName, this.studyCTU?.studyCountry?.country);
@@ -215,11 +248,11 @@ export class UpsertCentreComponent implements OnInit {
 
   isFormValid() {
     this.submitted = true;
-    
+
     // Manually checking hospital field (shouldn't be empty)
     for (const i in this.form.get("centres")['controls']) {
       if (this.form.get("centres")['controls'][i].value.hospital == null) {
-        this.form.get("centres")['controls'][i].controls.hospital.setErrors({'required': true});
+        this.form.get("centres")['controls'][i].controls.hospital.setErrors({ 'required': true });
       }
     }
 
@@ -237,6 +270,7 @@ export class UpsertCentreComponent implements OnInit {
     if (payload.recruitmentGreenlight) {
       payload.recruitmentGreenlight = dateToString(payload.recruitmentGreenlight);
     }
+
     if (payload.firstPatientVisit) {
       payload.firstPatientVisit = dateToString(payload.firstPatientVisit);
     }
@@ -257,28 +291,64 @@ export class UpsertCentreComponent implements OnInit {
     let saveObs$: Array<Observable<boolean>> = [];
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
-  
+    
     for (const [i, item] of payload.centres.entries()) {
       this.updatePayload(item, sctuId, studyId, i);
+  
+      let centreObs$: Observable<Object> = null;
       if (!item.id) { // Add
-        saveObs$.push(this.centreService.addCentreFromStudyCTU(sctuId, item).pipe(
-          mergeMap((res: any) => {
-            if (res.statusCode === 201) {
-              return of(true);
-            }
-            return of(false);
-          })
-        ));
-      } else {  // Edit
-        saveObs$.push(this.centreService.editCentre(item.id, item).pipe(
-          mergeMap((res: any) => {
-            if (res.statusCode === 200) {
-              return of(true);
-            }
-            return of(false);
-          })
-        ));
+        centreObs$ = this.centreService.addCentreFromStudyCTU(sctuId, item);
+      } else {
+        centreObs$ = this.centreService.editCentre(item.id, item);
       }
+
+      saveObs$.push(centreObs$.pipe(
+        mergeMap((res: any) => {
+          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+            let subObs$: Observable<Boolean>[] = [];
+
+            // TODO: refactor
+            subObs$.push(this.sivComponent.get(i).onSave(res.id).pipe(
+              mergeMap((success) => {
+                if (success) {
+                  return of(true);
+                }
+                return of(false);
+              })
+            ));
+
+            subObs$.push(this.movComponent.get(i).onSave(res.id).pipe(
+              mergeMap((success) => {
+                if (success) {
+                  return of(true);
+                }
+                return of(false);
+              })
+            ));
+
+            subObs$.push(this.covComponent.get(i).onSave(res.id).pipe(
+              mergeMap((success) => {
+                if (success) {
+                  return of(true);
+                }
+                return of(false);
+              })
+            ));
+
+            if (subObs$.length == 0) {
+              subObs$.push(of(true));
+            }
+
+            return combineLatest(subObs$).pipe(
+              mergeMap((successArr: boolean[]) => {
+                const success: boolean = successArr.every(b => b);
+                return of(success);
+              })
+            );
+          }
+          return of(false);
+        })
+      ));
     }
 
     if (saveObs$.length == 0) {

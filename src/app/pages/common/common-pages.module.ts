@@ -17,7 +17,6 @@ import { NgxPermissionsModule } from 'ngx-permissions';
 import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
 import { UpsertCentreComponent } from './centre/upsert-centre/upsert-centre.component';
 import { ConfirmationWindowComponent } from './confirmation-window/confirmation-window.component';
-import { ConfirmationWindow1Component } from './confirmation-window1/confirmation-window1.component';
 import { CtuModalComponent } from './ctu-modal/ctu-modal.component';
 import { HospitalModalComponent } from './hospital-modal/hospital-modal.component';
 import { UpsertNotificationComponent } from './notification/upsert-notification/upsert-notification.component';
@@ -34,6 +33,7 @@ import { UpsertStudyComponent } from './study/upsert-study/upsert-study.componen
 import { UpsertSubmissionComponent } from './submission/upsert-submission/upsert-submission.component';
 import { UpsertReportingPeriodComponent } from './reporting-period/upsert-reporting-period/upsert-reporting-period.component';
 import { WidgetsModule } from 'src/app/widgets/widgets.module';
+import { UpsertVisitComponent } from './visit/upsert-visit/upsert-visit.component';
 
 
 @NgModule({
@@ -41,7 +41,6 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
         ProjectListComponent,
         UpsertStudyComponent,
         ConfirmationWindowComponent,
-        ConfirmationWindow1Component,
         UpsertProjectComponent,
         UpsertStudyCtuComponent,
         UpsertCentreComponent,
@@ -56,6 +55,7 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
         CtuModalComponent,
         UpsertSafetyNotificationComponent,
         UpsertReportingPeriodComponent,
+        UpsertVisitComponent,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [
@@ -66,7 +66,7 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
                 path: 'projects/:id/edit',
                 pathMatch: 'full',
                 component: UpsertProjectComponent,
-                data: { 
+                data: {
                     shouldReuse: false,
                     key: 'upsertprojectcomponentedit'
                 },
@@ -76,7 +76,7 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
                 path: 'projects/:id/view',
                 pathMatch: 'full',
                 component: UpsertProjectComponent,
-                data: { 
+                data: {
                     shouldReuse: false,
                     key: 'upsertprojectcomponentview'
                 }
@@ -86,7 +86,7 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
                 path: 'studies/:id/edit',
                 pathMatch: 'full',
                 component: UpsertStudyComponent,
-                data: { 
+                data: {
                     shouldReuse: false,
                     key: 'upsertstudycomponentedit'
                 },
@@ -96,7 +96,7 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
                 path: 'studies/:id/view',
                 pathMatch: 'full',
                 component: UpsertStudyComponent,
-                data: { 
+                data: {
                     shouldReuse: false,
                     key: 'upsertstudycomponentview'
                 }
@@ -106,7 +106,7 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
                 path: 'study-countries/:id/edit',
                 pathMatch: 'full',
                 component: UpsertStudyCountryComponent,
-                data: { 
+                data: {
                     shouldReuse: false,
                     key: 'upsertstudycountrycomponentedit'
                 },
@@ -116,7 +116,7 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
                 path: 'study-countries/:id/view',
                 pathMatch: 'full',
                 component: UpsertStudyCountryComponent,
-                data: { 
+                data: {
                     shouldReuse: false,
                     key: 'upsertstudycountrycomponentview'
                 }
@@ -126,7 +126,7 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
                 path: 'study-ctus/:id/edit',
                 pathMatch: 'full',
                 component: UpsertStudyCtuComponent,
-                data: { 
+                data: {
                     shouldReuse: false,
                     key: 'upsertstudyctucomponentedit'
                 },
@@ -136,7 +136,7 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
                 path: 'study-ctus/:id/view',
                 pathMatch: 'full',
                 component: UpsertStudyCtuComponent,
-                data: { 
+                data: {
                     shouldReuse: false,
                     key: 'upsertstudyctucomponentview'
                 }
@@ -157,6 +157,6 @@ import { WidgetsModule } from 'src/app/widgets/widgets.module';
         NgxPermissionsModule.forChild()
     ],
     providers: [NgbActiveModal],
-    exports: [ StudyListComponent, ProjectListComponent]
+    exports: [StudyListComponent, ProjectListComponent]
 })
-export class CommonPagesModule {}
+export class CommonPagesModule { }

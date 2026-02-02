@@ -158,13 +158,13 @@
                         </ng-template> -->
                         <div class="col-md-6">
                             <app-upsert-safety-notification #safetyNotificationsAnnualEC [form]="snForms[i]?.snAnnualEcForm"
-                                [typeCode]="contextService.SafetyNotificationTypeCodes.AnnualProgressReport"
-                                [authorityCode]="contextService.AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                                [typeCode]="SafetyNotificationTypeCodes.AnnualProgressReport"
+                                [authorityCode]="AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
                         </div>
                         <div class="col-md-6">
                             <app-upsert-safety-notification #safetyNotificationsAnnualCA [form]="snForms[i]?.snAnnualCaForm" 
-                                [typeCode]="contextService.SafetyNotificationTypeCodes.AnnualProgressReport"
-                                [authorityCode]="contextService.AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                                [typeCode]="SafetyNotificationTypeCodes.AnnualProgressReport"
+                                [authorityCode]="AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
                         </div>
                     </div>
                     <hr class="hr-m2">
@@ -193,13 +193,13 @@
                         </ng-template> -->
                         <div class="col-md-6">
                             <app-upsert-safety-notification #safetyNotificationsDsurEC [form]="snForms[i]?.snDsurEcForm"
-                                [typeCode]="contextService.SafetyNotificationTypeCodes.DSUR"
-                                [authorityCode]="contextService.AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                                [typeCode]="SafetyNotificationTypeCodes.DSUR"
+                                [authorityCode]="AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
                         </div>
                         <div class="col-md-6">
                             <app-upsert-safety-notification #safetyNotificationsDsurCA [form]="snForms[i]?.snDsurCaForm"
-                                [typeCode]="contextService.SafetyNotificationTypeCodes.DSUR"
-                                [authorityCode]="contextService.AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                                [typeCode]="SafetyNotificationTypeCodes.DSUR"
+                                [authorityCode]="AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
                         </div>
                     </div>
                     <hr class="hr-m2">

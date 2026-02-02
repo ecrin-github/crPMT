@@ -18,25 +18,10 @@ import { OrganisationInterface } from '../../interfaces/context/organisation.int
 import { PersonInterface } from '../../interfaces/context/person.interface';
 import { CommonApiService } from '../common/common-api/common-api.service';
 
-enum AuthorityCodes {
-    EC = "EC",
-    CA = "CA"
-}
-
-enum SafetyNotificationTypeCodes {
-    AnnualProgressReport = "ANNUAL",
-    CTIS = "CTIS",
-    DSUR = "DSUR"
-}
-
 @Injectable({
   providedIn: 'root'
 })
-export class ContextService {
-  
-  public AuthorityCodes = AuthorityCodes;
-  public SafetyNotificationTypeCodes = SafetyNotificationTypeCodes;
-  
+export class ContextService {  
   public complexTrialTypes: BehaviorSubject<ClassValueInterface[]> =
         new BehaviorSubject<ClassValueInterface[]>(null);
   public countries: BehaviorSubject<CountryInterface[]> =

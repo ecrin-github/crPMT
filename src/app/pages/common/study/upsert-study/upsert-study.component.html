@@ -283,7 +283,7 @@
                             <div for="regulatoryFramework" class="font-style">Regulatory framework</div>
                             <div class="row" *ngIf="!isView">
                                 <div class="col-md-5 pe-0">
-                                    <ng-select [items]="regulatoryFrameworks" formControlName="regulatoryFramework"  (change)="onChangeRegulatoryFramework(i)"
+                                    <ng-select [items]="REGULATORY_FRAMEWORKS" formControlName="regulatoryFramework"  (change)="onChangeRegulatoryFramework(i)"
                                         [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
                                         notFoundText="No regulatory frameworks found" placeholder="" *ngIf="!isView" 
                                         appendTo="body">
@@ -506,7 +506,7 @@
                                         formControlName="recruitmentPeriod" *ngIf="!isView" />
                                 </div>
                                 <div class="col-md-6 ps-0">
-                                    <ng-select [items]="timeUnits" formControlName="recruitmentPeriodUnit"
+                                    <ng-select [items]="TIME_UNITS" formControlName="recruitmentPeriodUnit"
                                         [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
                                         notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" 
                                         appendTo="body">
@@ -525,7 +525,7 @@
                                         formControlName="treatmentDurationPerPatient" *ngIf="!isView" />
                                 </div>
                                 <div class="col-md-6 ps-0">
-                                    <ng-select [items]="timeUnits" formControlName="treatmentDurationPerPatientUnit"
+                                    <ng-select [items]="TIME_UNITS" formControlName="treatmentDurationPerPatientUnit"
                                         [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
                                         notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" 
                                         appendTo="body">
@@ -544,7 +544,7 @@
                                                 formControlName="treatmentAndFollowUpDurationPerPatient" *ngIf="!isView" />
                                         </div>
                                         <div class="col-md-6 ps-0">
-                                            <ng-select [items]="timeUnits" formControlName="treatmentAndFollowUpDurationPerPatientUnit"
+                                            <ng-select [items]="TIME_UNITS" formControlName="treatmentAndFollowUpDurationPerPatientUnit"
                                                 [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
                                                 notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" 
                                                 appendTo="body">
@@ -607,7 +607,7 @@
                     <div class="row form-group">
                         <div class="col-md-4">
                             <div for="status" class="font-style">Status</div>
-                            <ng-select [items]="studyStatuses" formControlName="status"
+                            <ng-select [items]="STUDY_STATUSES" formControlName="status"
                                 [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 
                                 notFoundText="No study status found" placeholder="Select study status" *ngIf="!isView" 
                                 appendTo="body">

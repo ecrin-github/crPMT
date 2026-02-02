@@ -20,6 +20,7 @@ import { UpsertNotificationComponent } from '../../notification/upsert-notificat
 import { UpsertSafetyNotificationComponent } from '../../safety-notification/upsert-safety-notification/upsert-safety-notification.component';
 import { UpsertStudyCtuComponent } from '../../study-ctu/upsert-study-ctu/upsert-study-ctu.component';
 import { UpsertSubmissionComponent } from '../../submission/upsert-submission/upsert-submission.component';
+import { AuthorityCodes, SafetyNotificationTypeCodes } from 'src/assets/js/constants';
 
 @Component({
   selector: 'app-upsert-study-country',
@@ -27,6 +28,9 @@ import { UpsertSubmissionComponent } from '../../submission/upsert-submission/up
   styleUrls: ['./upsert-study-country.component.scss']
 })
 export class UpsertStudyCountryComponent implements OnInit {
+  SafetyNotificationTypeCodes = SafetyNotificationTypeCodes;
+  AuthorityCodes = AuthorityCodes;
+
   @ViewChildren('studyCTUs') studyCTUComponents: QueryList<UpsertStudyCtuComponent>;
   @ViewChildren('regulatorySubmissions') submissionsComponents: QueryList<UpsertSubmissionComponent>;
   @ViewChildren('amendments') amendmentsComponents: QueryList<UpsertSubmissionComponent>;
@@ -218,19 +222,19 @@ export class UpsertStudyCountryComponent implements OnInit {
       for (const sn of sc.safetyNotifications) {
         const authorityCode = sn.authority?.code ? sn.authority.code : sn.authority;
         const typeCode = sn.notificationType?.code ? sn.notificationType.code : sn.notificationType;
-        if (typeCode === this.contextService.SafetyNotificationTypeCodes.AnnualProgressReport) {
-          if (authorityCode === this.contextService.AuthorityCodes.EC) {
+        if (typeCode === SafetyNotificationTypeCodes.AnnualProgressReport) {
+          if (authorityCode === AuthorityCodes.EC) {
             sns.snsAnnualEc.push(sn);
-          } else if (authorityCode === this.contextService.AuthorityCodes.CA) {
+          } else if (authorityCode === AuthorityCodes.CA) {
             sns.snsAnnualCa.push(sn);
           } else {
             console.log(authorityCode);
             this.toastr.error("No annual progress report notification authority found");
           }
-        } else if (typeCode === this.contextService.SafetyNotificationTypeCodes.DSUR) {
-          if (authorityCode === this.contextService.AuthorityCodes.EC) {
+        } else if (typeCode === SafetyNotificationTypeCodes.DSUR) {
+          if (authorityCode === AuthorityCodes.EC) {
             sns.snsDsurEc.push(sn);
-          } else if (authorityCode === this.contextService.AuthorityCodes.CA) {
+          } else if (authorityCode === AuthorityCodes.CA) {
             sns.snsDsurCa.push(sn);
           } else {
             this.toastr.error("No DSUR notification authority found");
@@ -522,6 +526,7 @@ export class UpsertStudyCountryComponent implements OnInit {
       this.toastr.error("Please correct the errors in the study countries form");
     }
 
+    // TODO
     return this.form.valid && !this.studyCTUComponents.some(b => !b.isFormValid());
   }
 
