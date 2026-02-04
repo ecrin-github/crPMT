@@ -464,7 +464,7 @@
                                                 <span class="text-value"><a [routerLink]="['/study-ctus', sctu.id, 'view']" class="text-value">{{sctu.ctu.name}}</a></span>
                                                 <ul>
                                                     <li *ngFor="let site of sctu.centres" class="text-value-small">
-                                                        {{site.hospital?.name}}
+                                                        {{site.hospital?.name}}, {{site.hospital?.city}}
                                                     </li>
                                                 </ul>
                                             </li>
@@ -605,7 +605,7 @@
                         </div>
                     </div>
                     <div class="row form-group">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div for="status" class="font-style">Status</div>
                             <ng-select [items]="STUDY_STATUSES" formControlName="status"
                                 [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" 

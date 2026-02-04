@@ -176,7 +176,7 @@ export class UpsertReportingPeriodComponent implements OnInit {
     }
 
     if (saveObs$.length == 0) {
-      saveObs$.push(of(false));
+      saveObs$.push(of(true));
     }
 
     return combineLatest(saveObs$);

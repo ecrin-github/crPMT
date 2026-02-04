@@ -534,7 +534,7 @@ export class UpsertStudyComponent implements OnInit {
         this.onSave(projectId).subscribe((success) => {
           this.spinner.hide();
           if (success) {
-            this.toastr.success("Data saved successfully");
+            this.toastr.success("Changes saved successfully");
             this.router.navigate([`/studies/${this.id}/view`]);
           }
         });

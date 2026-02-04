@@ -241,6 +241,10 @@ export class UpsertProjectComponent implements OnInit {
               })
             ));
 
+            if (saveObs$.length === 0) {
+              saveObs$.push(of(true));
+            }
+
             return combineLatest(saveObs$);
           } else {
             this.toastr.error(res.message, "Error saving project", { timeOut: 60000, extendedTimeOut: 60000 });
@@ -254,9 +258,10 @@ export class UpsertProjectComponent implements OnInit {
 
       success.pipe(
         map((successArr: boolean[]) => {
+          this.spinner.hide();
           const success: boolean = successArr.every(b => b);
           if (success) {
-            this.toastr.success('Data saved successfully');
+            this.toastr.success('Changes saved successfully');
             this.router.navigate([`/projects/${this.id}/view`]);
           }
         })

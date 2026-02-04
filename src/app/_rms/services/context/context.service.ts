@@ -21,29 +21,29 @@ import { CommonApiService } from '../common/common-api/common-api.service';
 @Injectable({
   providedIn: 'root'
 })
-export class ContextService {  
+export class ContextService {
   public complexTrialTypes: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public countries: BehaviorSubject<CountryInterface[]> =
-        new BehaviorSubject<CountryInterface[]>(null);
+    new BehaviorSubject<CountryInterface[]>(null);
   public ctus: BehaviorSubject<CTUInterface[]> =
-        new BehaviorSubject<CTUInterface[]>(null);
+    new BehaviorSubject<CTUInterface[]>(null);
   public hospitals: BehaviorSubject<HospitalInterface[]> =
-        new BehaviorSubject<HospitalInterface[]>(null);
+    new BehaviorSubject<HospitalInterface[]>(null);
   public fundingSources: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public medicalFields: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public organisations: BehaviorSubject<OrganisationInterface[]> =
-        new BehaviorSubject<OrganisationInterface[]>(null);
+    new BehaviorSubject<OrganisationInterface[]>(null);
   public persons: BehaviorSubject<PersonInterface[]> =
-        new BehaviorSubject<PersonInterface[]>(null);
+    new BehaviorSubject<PersonInterface[]>(null);
   public populations: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public regulatoryFrameworkDetails: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public services: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
 
   constructor(
     private commonApiService: CommonApiService,
@@ -111,7 +111,7 @@ export class ContextService {
   }
 
   deleteComplexTrialType(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/complex-trial-types/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/complex-trial-types/${id}`, { observe: "response", responseType: 'json' });
   }
 
   updateComplexTrialTypes() {
@@ -128,10 +128,10 @@ export class ContextService {
    * @returns 
    */
   addComplexTrialTypeDropdown(value) {
-    let ctt = {"id": "", "value": ""};
-    
+    let ctt = { "id": "", "value": "" };
+
     this.spinner.show();
-    return this.addComplexTrialType({'value': value}).pipe(
+    return this.addComplexTrialType({ 'value': value }).pipe(
       mergeMap((c: any) => {
         ctt.id = c.id;
         ctt.value = c.value;
@@ -206,12 +206,12 @@ export class ContextService {
   isCtisCountry(c: CountryInterface) {
     return c?.isInEu || c?.isInEea;
   }
-  
+
   /* CTUs */
   getCTUs() {
     return this.http.get(`${environment.baseUrlApi}/context/ctus`);
   }
-  
+
   setCTUs(ctus) {
     this.ctus.next(ctus);
   }
@@ -221,7 +221,7 @@ export class ContextService {
   }
 
   deleteCTU(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/ctus/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/ctus/${id}`, { observe: "response", responseType: 'json' });
   }
 
   updateCTUs() {
@@ -234,9 +234,9 @@ export class ContextService {
 
   searchCTUs(term: string, item) {
     term = term.toLocaleLowerCase();
-    return item.name?.toLocaleLowerCase().indexOf(term) > -1 
-        || item.shortName?.toLocaleLowerCase().indexOf(term) > -1 
-        || item.addressInfo?.toLocaleLowerCase().indexOf(term) > -1;
+    return item.name?.toLocaleLowerCase().indexOf(term) > -1
+      || item.shortName?.toLocaleLowerCase().indexOf(term) > -1
+      || item.addressInfo?.toLocaleLowerCase().indexOf(term) > -1;
   }
 
   addCTUDropdown(ctuName) {
@@ -248,10 +248,10 @@ export class ContextService {
         this.spinner.hide();
         return new Promise(null);
       }
-      
+
       this.spinner.show();
       return this.addCTU(result).pipe(
-        mergeMap((o:any) => {
+        mergeMap((o: any) => {
           result.id = o.id;
           return this.updateCTUs();
         }),
@@ -265,11 +265,11 @@ export class ContextService {
         })
       ).toPromise();
     })
-    .catch((err) => {
-      this.toastr.error(err, "Error adding CTU", { timeOut: 20000, extendedTimeOut: 20000 });
-      this.spinner.hide();
-      return null;
-    });
+      .catch((err) => {
+        this.toastr.error(err, "Error adding CTU", { timeOut: 20000, extendedTimeOut: 20000 });
+        this.spinner.hide();
+        return null;
+      });
   }
 
   /**
@@ -322,7 +322,7 @@ export class ContextService {
     this.sortHospitals(hospitals);
     this.hospitals.next(hospitals);
   }
-  
+
   updateHospitals() {
     return this.getHospitals().pipe(
       map((hospitals) => {
@@ -335,7 +335,7 @@ export class ContextService {
     const { compare } = Intl.Collator('en-GB');
     hospitals.sort((a, b) => { return compare(a.name, b.name); });
   }
-  
+
   addHospital(payload) {
     return this.http.post(`${environment.baseUrlApi}/context/hospitals`, payload);
   }
@@ -345,13 +345,13 @@ export class ContextService {
   }
 
   deleteHospital(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/hospitals/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/hospitals/${id}`, { observe: "response", responseType: 'json' });
   }
 
   searchHospitals(term, item) {
     term = term.toLocaleLowerCase();
-    return item.name?.toLocaleLowerCase().indexOf(term) > -1 
-      || item.city?.toLocaleLowerCase().indexOf(term) > -1 
+    return item.name?.toLocaleLowerCase().indexOf(term) > -1
+      || item.city?.toLocaleLowerCase().indexOf(term) > -1
       || item.country?.name?.toLocaleLowerCase().indexOf(term) > -1;
   }
 
@@ -370,10 +370,10 @@ export class ContextService {
         this.spinner.hide();
         return new Promise(null);
       }
-      
+
       this.spinner.show();
       return this.addHospital(result).pipe(
-        mergeMap((o:any) => {
+        mergeMap((o: any) => {
           result.id = o.id;
           return this.updateHospitals();
         }),
@@ -387,11 +387,11 @@ export class ContextService {
         })
       ).toPromise();
     })
-    .catch((err) => {
-      this.toastr.error(err, "Error adding hospital", { timeOut: 20000, extendedTimeOut: 20000 });
-      this.spinner.hide();
-      return null;
-    });
+      .catch((err) => {
+        this.toastr.error(err, "Error adding hospital", { timeOut: 20000, extendedTimeOut: 20000 });
+        this.spinner.hide();
+        return null;
+      });
   }
 
   /**
@@ -457,7 +457,7 @@ export class ContextService {
   }
 
   deleteFundingSource(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/funding-sources/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/funding-sources/${id}`, { observe: "response", responseType: 'json' });
   }
 
   deleteFundingSourceDropdown(fsToRemove, filter) {
@@ -514,7 +514,7 @@ export class ContextService {
     this.sortOrganisations(organisations);
     this.organisations.next(organisations);
   }
-  
+
   updateOrganisations() {
     return this.getOrganisations().pipe(
       map((organisations) => {
@@ -527,7 +527,7 @@ export class ContextService {
     const { compare } = Intl.Collator('en-GB');
     organisations.sort((a, b) => { return compare(a.name, b.name); });
   }
-  
+
   addOrganisation(payload) {
     return this.http.post(`${environment.baseUrlApi}/context/organisations`, payload);
   }
@@ -537,7 +537,7 @@ export class ContextService {
   }
 
   deleteOrganisation(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/organisations/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/organisations/${id}`, { observe: "response", responseType: 'json' });
   }
 
   searchOrganisations(term, item) {
@@ -559,10 +559,10 @@ export class ContextService {
         this.spinner.hide();
         return new Promise(null);
       }
-      
+
       this.spinner.show();
       return this.addOrganisation(result).pipe(
-        mergeMap((o:any) => {
+        mergeMap((o: any) => {
           result.id = o.id;
           return this.updateOrganisations();
         }),
@@ -576,11 +576,11 @@ export class ContextService {
         })
       ).toPromise();
     })
-    .catch((err) => {
-      this.toastr.error(err, "Error adding organisation", { timeOut: 20000, extendedTimeOut: 20000 });
-      this.spinner.hide();
-      return null;
-    });
+      .catch((err) => {
+        this.toastr.error(err, "Error adding organisation", { timeOut: 20000, extendedTimeOut: 20000 });
+        this.spinner.hide();
+        return null;
+      });
   }
 
   /**
@@ -656,14 +656,14 @@ export class ContextService {
   }
 
   deletePerson(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/persons/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/persons/${id}`, { observe: "response", responseType: 'json' });
   }
 
   searchPersons(term: string, item) {
     term = term.toLocaleLowerCase();
     return item.fullName?.toLocaleLowerCase().indexOf(term) > -1
-     || item.email?.toLocaleLowerCase().indexOf(term) > -1
-     || item.country?.name.toLocaleLowerCase().indexOf(term) > -1 ;
+      || item.email?.toLocaleLowerCase().indexOf(term) > -1
+      || item.country?.name.toLocaleLowerCase().indexOf(term) > -1;
   }
 
   addPersonDropdown(personName) {
@@ -677,7 +677,7 @@ export class ContextService {
 
       this.spinner.show();
       return this.addPerson(result).pipe(
-        mergeMap((p:any) => {
+        mergeMap((p: any) => {
           result.id = p.id;
           return this.updatePersons();
         }),
@@ -691,11 +691,11 @@ export class ContextService {
         })
       ).toPromise();
     })
-    .catch((err) => {
-      this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
-      this.spinner.hide();
-      return null;
-    });
+      .catch((err) => {
+        this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
+        this.spinner.hide();
+        return null;
+      });
   }
 
   deletePersonDropdown(pToRemove, filter) {
@@ -761,7 +761,7 @@ export class ContextService {
     this.sortClassValues(services);
     this.services.next(services);
   }
-  
+
   updateServices() {
     return this.getServices().pipe(
       map((services) => {
@@ -773,16 +773,16 @@ export class ContextService {
   addService(payload) {
     return this.http.post(`${environment.baseUrlApi}/context/services`, payload);
   }
-  
+
   deleteService(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/services/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/services/${id}`, { observe: "response", responseType: 'json' });
   }
 
   addServiceDropdown(value) {
-    let service = {"id": "", "value": ""};
-    
+    let service = { "id": "", "value": "" };
+
     this.spinner.show();
-    return this.addService({'value': value}).pipe(
+    return this.addService({ 'value': value }).pipe(
       mergeMap((s: any) => {
         service.id = s.id;
         service.value = s.value;

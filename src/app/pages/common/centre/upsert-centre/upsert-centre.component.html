@@ -27,41 +27,39 @@
                         </div>
                     </div>
                     <div class="row form-group align-items-start">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div for="hospital" class="font-style">Hospital<sup *ngIf="!isView">*</sup></div>
-                            <ng-select [items]="filteredHospitals" formControlName="hospital" [searchFn]="searchHospitals" [compareWith]="compareIds"
-                                [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No hospital found" 
-                                placeholder="Start typing to add a new hospital" *ngIf="!isView" [clearSearchOnAdd]="true"
-                                addTagText="Add" [addTag]="addHospital" appendTo="body">
-                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
-                                    <span class="ng-value-label">{{item.name}}</span>
-                                </ng-template>
-                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
-                                    <div class="row m-0">
-                                        <div class="col-md-11 col-11 p-0 m-0">
-                                            <div class="col-md-12">{{item.name}}</div>
-                                            <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.city}}</div>
-                                        </div>
-                                        <div class="col-md-1 col-1 p-0 m-0 d-flex">
-                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-start justify-content-center">
-                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteHospital($event, item)">
-                                                </i>
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <ng-select [items]="filteredHospitals" formControlName="hospital" [searchFn]="searchHospitals" [compareWith]="compareIds"
+                                        [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No hospital found" 
+                                        placeholder="Start typing to add a new hospital" *ngIf="!isView" [clearSearchOnAdd]="true"
+                                        addTagText="Add" [addTag]="addHospital" appendTo="body">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <span class="ng-value-label">{{item.name}}, {{item.city}}</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                            <div class="row m-0">
+                                                <div class="col-md-11 col-11 p-0 m-0">
+                                                    <div class="col-md-12">{{item.name}}</div>
+                                                    <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.city}}</div>
+                                                </div>
+                                                <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                                    <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-start justify-content-center">
+                                                        <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteHospital($event, item)">
+                                                        </i>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </ng-template>
-                            </ng-select>
-                            <div class="text-value" *ngIf="isView">{{centre.value.hospital?.name}}</div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                            </div>
+                            <div class="text-value" *ngIf="isView">{{centre.value.hospital?.name}}, {{centre.value.hospital?.city}}</div>
                             <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).hospital.errors?.required">
                                 <p>Hospital field is required</p>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div for="town" class="font-style">City</div>
-                            <span class="text-value">{{centre.value.hospital?.city}}</span>
-                        </div>
-                    </div>
-                    <div class="row form-group align-items-start">
                         <div class="col-md-2">
                             <div for="siteNumber" class="font-style">Site number</div>
                             <div class="row" *ngIf="!isView">
@@ -74,35 +72,42 @@
                             </div>
                             <span class="text-value" *ngIf="isView">{{centre.value.siteNumberFlag ? centre.value.siteNumber : 'No'}}</span>
                         </div>
-                        <div class="col-md-4">
+                    </div>
+                    <div class="row form-group align-items-start">
+                        <div class="col-md-6">
                             <div for="pi" class="font-style">PI name</div>
-                            <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds"
-                                [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" 
-                                placeholder="Start typing to add a new person" *ngIf="!isView" 
-                                addTagText="Add" [addTag]="addPerson" appendTo="body">
-                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
-                                    <span class="ng-value-label">{{item.fullName}}</span>
-                                </ng-template>
-                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
-                                    <div class="row m-0">
-                                        <div class="col-md-11 col-11 p-0 m-0">
-                                            <div class="col-md-12">{{item.fullName}}</div>
-                                            <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.email}}</div>
-                                        </div>
-                                        <div class="col-md-1 col-1 p-0 m-0 d-flex">
-                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-start justify-content-center">
-                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deletePerson($event, item)">
-                                                </i>
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds"
+                                        [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" 
+                                        placeholder="Start typing to add a new person" *ngIf="!isView" 
+                                        addTagText="Add" [addTag]="addPerson" appendTo="body">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <span class="ng-value-label">{{item.fullName}}</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                            <div class="row m-0">
+                                                <div class="col-md-11 col-11 p-0 m-0">
+                                                    <div class="col-md-12">{{item.fullName}}</div>
+                                                    <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.email}}</div>
+                                                </div>
+                                                <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                                    <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-start justify-content-center">
+                                                        <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deletePerson($event, item)">
+                                                        </i>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </ng-template>
-                            </ng-select>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                            </div>
                             <div class="text-value" *ngIf="isView">{{centre.value.pi?.fullName}}{{centre.value.piNationalCoordinator ? ' (National coordinator)' : ''}}</div>
                         </div>
-                        <div class="col-md-4" *ngIf="!isView">
+                        <div class="col-md-4">
                             <div for="piNationalCoordinator" class="font-style">National PI Coordinator</div>
-                            <input type="checkbox" id="piNationalCoordinator" class="form-check-input checkbox" formControlName="piNationalCoordinator"/>
+                            <input type="checkbox" id="piNationalCoordinator" class="form-check-input checkbox" formControlName="piNationalCoordinator"  *ngIf="!isView"/>
+                            <span class="text-value" *ngIf="isView">{{centre.value.piNationalCoordinator ? "Yes" : "No"}}</span>
                         </div>
                     </div>
                     <hr class="hr-m2">
@@ -213,7 +218,7 @@
         </div>
     </div>
 </form>
-<div class="row mt-5 pb-4" *ngIf="!isView && studyCTU?.ctu">
+<div class="row mt-5" *ngIf="!isView && studyCTU?.ctu">
     <div class="col-2 d-flex align-items-start justify-content-left">
         <button class="btn btn-primary" (click)="addCentre()">
             <i class="fa fa-plus"></i>New centre
