@@ -223,6 +223,8 @@ export class UpsertProjectComponent implements OnInit {
       const success = projectQueryObs$.pipe(
         mergeMap((res: any) => {
           if ((this.isEdit && res.statusCode === 200) || (this.isAdd && res.statusCode === 201)) {
+            this.id = res.id;
+
             let saveObs$: Array<Observable<boolean>> = [];
 
             // Studies
