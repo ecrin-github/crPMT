@@ -1,0 +1,62 @@
+<div class="ps-2 pe-2">
+    <div [ngClass]="isView ? 'table-container-view' : ''">
+        <div class="row">
+            <div class="col-md-5">
+                <div for="amendments" class="font-style">Amendments</div>
+            </div>
+            <div class="col-md-6">
+                <div for="signedDate" class="font-style">Signed</div>
+            </div>
+        </div>
+        <hr class="mt-1 mb-1">
+        <form [formGroup]="form" ngNativeValidate>
+            <div formArrayName="ctuAgreementAmendments">
+                <ng-container *ngIf="!(isView && getAmendmentsForm()?.length === 0); else noAmendmentsView">
+                    <div class="row" *ngFor="let amendment of getAmendmentsForm()?.controls; let i = index;" [formGroupName]="i">
+                        <div class="col">
+                            <hr *ngIf="i > 0" class="mt-1 mb-1">
+                            <div class="row" [ngClass]="i > 0 ? 'mt-1' : ''">
+                                <div class="col-md-5 d-flex align-items-center">
+                                    <span class="text-value">Amendment {{i+1}}</span>
+                                </div>
+                                <div class="col-md-6 pe-1">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd" name="signedDate"
+                                            ngbDatepicker #signedDate="ngbDatepicker" formControlName="signedDate"
+                                            container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" (click)="signedDate.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <span class="text-value" *ngIf="isView">{{dateToString(amendment.value.signedDate)}}</span>
+                                </div>
+                                <div class="col-md-1 d-flex justify-content-center align-items-center">
+                                    <div class="row">
+                                        <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;"
+                                            *ngIf="!isView" (click)="removeAmendment(i)"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+                <ng-template #noAmendmentsView>
+                    <div class="row">
+                        <div class="col">
+                            <span class="text-value">No amendments</span>
+                        </div>
+                    </div>
+                </ng-template>
+            </div>
+        </form>
+        <div class="row mt-2" *ngIf="!isView">
+            <div class="col-md-8 d-flex align-items-center justify-content-left">
+                <button class="btn btn-primary" (click)="onClickNewAmendment()">
+                    <i class="fa fa-plus"></i>New amendment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -34,6 +34,9 @@ import { UpsertSubmissionComponent } from './submission/upsert-submission/upsert
 import { UpsertReportingPeriodComponent } from './reporting-period/upsert-reporting-period/upsert-reporting-period.component';
 import { WidgetsModule } from 'src/app/widgets/widgets.module';
 import { UpsertVisitComponent } from './visit/upsert-visit/upsert-visit.component';
+import { UpsertCtuAgreementComponent } from './ctu-agreement/upsert-ctu-agreement/upsert-ctu-agreement.component';
+import { UpsertCtuAgreementAmendmentComponent } from './ctu-agreement-amendment/upsert-ctu-agreement-amendment/upsert-ctu-agreement-amendment.component';
+import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amendment-modal.component';
 
 
 @NgModule({
@@ -56,6 +59,9 @@ import { UpsertVisitComponent } from './visit/upsert-visit/upsert-visit.componen
         UpsertSafetyNotificationComponent,
         UpsertReportingPeriodComponent,
         UpsertVisitComponent,
+        UpsertCtuAgreementComponent,
+        UpsertCtuAgreementAmendmentComponent,
+        AmendmentModalComponent,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [

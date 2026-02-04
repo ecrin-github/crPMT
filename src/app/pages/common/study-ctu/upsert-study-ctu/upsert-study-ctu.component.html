@@ -159,7 +159,7 @@
                                 <app-upsert-centre #centres [centresData]="sctu.value.centres" [studyCTU]="sctu.value"></app-upsert-centre>
                             </div>
                         </div>
-                        <hr>
+                        <hr class="hr-m2">
                         <div class="row section-title">
                             <div class="col-md-12 text-left">
                                 <div class="text-value" class="view-sub-title">Quality / Certification Information</div>
@@ -175,7 +175,7 @@
                                 <span class="text-value" [ngClass]="sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'sas-approved' : 'sas-not-approved') : ''">{{sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'Yes' : 'No') : ''}}</span>
                             </div>
                         </div>
-                        <hr>
+                        <hr class="hr-m2">
                         <div class="row section-title">
                             <div class="col-md-12 text-left">
                                 <div class="text-value" class="view-sub-title">Agreements</div>
@@ -183,10 +183,10 @@
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                Coming soon!
+                                <app-upsert-ctu-agreement #ctuAgreements [ctuAgreements]="sctu.value.ctuAgreements"></app-upsert-ctu-agreement>
                             </div>
                         </div>
-                        <hr>
+                        <hr class="hr-m2">
                         <div class="row section-title">
                             <div class="col-md-12 text-left">
                                 <div class="text-value" class="view-sub-title">Finances & Budget</div>

@@ -1,0 +1,81 @@
+<form [formGroup]="form" ngNativeValidate>
+    <div formArrayName="ctuAgreements">
+        <div class="row" *ngFor="let ctuAgreement of getCTUAgreementsForm()?.controls; let i = index;"
+            [formGroupName]="i">
+            <div class="col">
+                <div class="row mb-1">
+                    <div class="col-md-4">
+                        <span class="view-sub-sub-title underline">ECRIN-CTU Agreement</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-1">
+                        <div for="signed" class="font-style">Signed</div>
+                        <input *ngIf="!isView" type="checkbox" id="signed" class="form-check-input checkbox"
+                            (change)="onChangeAgreementSigned(i)" formControlName="signed" />
+                            <div *ngIf="isView" class="text-value">{{ctuAgreement.value.signed ? 'Yes' : 'No'}}</div>
+                    </div>
+                    <div class="col-md-2" *ngIf="agreementSigned[i]">
+                        <div for="startDate" class="font-style">Start date</div>
+                        <div class="input-group" *ngIf="!isView">
+                            <input class="form-control" placeholder="yyyy-mm-dd" name="startDate" ngbDatepicker
+                                #startDate="ngbDatepicker" formControlName="startDate" container='body'>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" (click)="startDate.toggle()" type="button">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="isView" class="text-value">{{ctuAgreement.value.signed ?
+                            dateToString(ctuAgreement.value.startDate) : '/'}}</div>
+                    </div>
+                    <div class="col-md-2" *ngIf="agreementSigned[i]">
+                        <div for="startDate" class="font-style">End date</div>
+                        <div class="input-group" *ngIf="!isView">
+                            <input class="form-control" placeholder="yyyy-mm-dd" name="endDate" ngbDatepicker
+                                #endDate="ngbDatepicker" formControlName="endDate" container='body'>
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" (click)="endDate.toggle()" type="button">
+                                    <i class="fa fa-calendar"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div *ngIf="isView" class="text-value">{{ctuAgreement.value.signed ?
+                            dateToString(ctuAgreement.value.endDate) : '/'}}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div for="ctuStatuses" class="font-style">CTU Status</div>
+                        <ng-select [items]="ctuStatuses" formControlName="ctuStatus" [searchFn]="searchClassValues"
+                            [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control"
+                            notFoundText="No CTU Status found" placeholder="Start typing to add a new status"
+                            *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addCTUStatus"
+                            appendTo="body">
+                            <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                <span class="ng-value-label">{{item.value}}</span>
+                            </ng-template>
+                            <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                <div class="row m-0">
+                                    <div class="col-md-11 col-11 p-0 m-0">
+                                        <div class="col-md-12 p-0 m-0">{{item.value}}</div>
+                                    </div>
+                                    <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                        <div
+                                            class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                            <i class="fa fa-trash" style="color:#f24437; cursor: pointer;"
+                                                (click)="deleteCTUStatus($event, item)">
+                                            </i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </ng-select>
+                        <div *ngIf="isView" class="text-value">{{ctuAgreement.value.ctuStatus?.value}}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <app-upsert-ctu-agreement-amendment [ctuAgreementAmendments]="ctuAgreement.value.ctuAgreementAmendments" #ctuAgreementAmendments></app-upsert-ctu-agreement-amendment>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
