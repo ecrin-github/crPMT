@@ -3,7 +3,7 @@ import {Routes, RouterModule} from '@angular/router';
 import {AuthComponent} from './auth.component';
 import {LoginComponent} from './login/login.component';
 import {LogoutComponent} from './logout/logout.component';
-import { UserGuideComponent } from './user-guide/user-guide.component';
+// import { UserGuideComponent } from './user-guide/user-guide.component';
 
 
 const routes: Routes = [
@@ -24,10 +24,10 @@ const routes: Routes = [
       //   path: 'contactUs',
       //   component: ContactUsComponent
       // },
-      {
-        path: 'user-guide',
-        component: UserGuideComponent
-      },
+      // {
+      //   path: 'user-guide',
+      //   component: UserGuideComponent
+      // },
       {
         path: 'logout',
         component: LogoutComponent
