@@ -28,3 +28,11 @@ export enum VisitTypeCodes {
     MOV = "MOV",
     COV = "COV"
 }
+
+export enum CtuEvaluationResults {
+    SATISFACTORY = "Satisfactory",
+    NEEDS_IMPROVEMENT = "Needs Improvement",
+    UNSATISFACTORY = "Unsatisfactory"
+}
+
+export const ctuEvaluationsListUrl = "https://ecrineu.sharepoint.com/sites/Quality/Lists/CTU%20Evaluations/AllItems.aspx";

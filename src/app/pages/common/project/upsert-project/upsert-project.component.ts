@@ -16,8 +16,8 @@ import { ProjectService } from 'src/app/_rms/services/entities/project/project.s
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
 import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { dateToString, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
-import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.component';
 import { UpsertReportingPeriodComponent } from '../../reporting-period/upsert-reporting-period/upsert-reporting-period.component';
+import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.component';
 
 @Component({
   selector: 'app-upsert-project',
@@ -64,7 +64,7 @@ export class UpsertProjectComponent implements OnInit {
       endDate: null,
       fundingSources: [],
       gaNumber: '',
-      studyData: [],
+      studies: [],
       reportingPeriods: [],
       publicSummary: null,
       url: '',
@@ -135,6 +135,7 @@ export class UpsertProjectComponent implements OnInit {
   }
 
   get g() { return this.projectForm.controls; }
+  get fv() { return this.projectForm.value; }
 
   getProjectById(id) {
     return this.projectService.getProjectById(id);
@@ -143,9 +144,6 @@ export class UpsertProjectComponent implements OnInit {
   setProjectById(projectData) {
     if (projectData) {
       this.projectData = projectData;
-      // TODO: ?
-      this.projectData.startDate = dateToString(stringToDate(this.projectData.startDate));
-      this.projectData.endDate = dateToString(stringToDate(this.projectData.endDate));
       this.id = projectData.id;
       this.patchProjectForm();
     }
@@ -161,12 +159,11 @@ export class UpsertProjectComponent implements OnInit {
       endDate: this.projectData.endDate ? stringToDate(this.projectData.endDate) : null,
       fundingSources: this.projectData.fundingSources,
       gaNumber: this.projectData.gaNumber,
-      studyData: this.projectData.studies,
+      studies: this.projectData.studies,
       reportingPeriods: this.projectData.reportingPeriods,
       publicSummary: this.projectData.publicSummary,
       url: this.projectData.url,
       // TODO: publications
-      // totalPatientsExpected: this.projectData.totalPatientsExpected,
     });
 
     this.onChangeFundingSources();
@@ -399,6 +396,10 @@ export class UpsertProjectComponent implements OnInit {
       return "https://" + link;
     }
     return link;
+  }
+
+  dateToString(date) {
+    return dateToString(date);
   }
 
   print() {

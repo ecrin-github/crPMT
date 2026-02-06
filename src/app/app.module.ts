@@ -60,6 +60,9 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
     // 'openid', 'profile', 'email'
   ]);
 
+  // Graph API Calls (SharePoint)
+  protectedResourceMap.set('https://graph.microsoft.com/v1.0', ['Sites.Read.All']);
+
   return {
     interactionType: InteractionType.Redirect,
     protectedResourceMap,
@@ -70,8 +73,7 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
     authRequest: {
-      // scopes: ["user.read", 'openid', 'profile', 'email', `${environment.apiClientId}/access_as_user`],
-      scopes: ['openid', 'profile', 'email', `api://${environment.apiClientId}/access_as_user`],
+      scopes: ['openid', 'profile', 'email', 'Sites.Read.All', `api://${environment.apiClientId}/access_as_user`],
     },
     // loginFailedRoute: "/",
   };

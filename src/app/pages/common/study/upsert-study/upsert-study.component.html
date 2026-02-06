@@ -450,7 +450,7 @@
                         </div>
                     </div>
                     <ng-container *ngIf="!isView; else viewStudyCountries">
-                        <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [projectId]="projectId"></app-upsert-study-country>
+                        <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [study]="study.value"></app-upsert-study-country>
                     </ng-container>
                     <ng-template #viewStudyCountries>
                         <div class="row form-group">

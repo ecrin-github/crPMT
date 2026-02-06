@@ -5,10 +5,11 @@ export function resolvePath(object, path) {
 	return path.split('.').reduce((o, p) => o ? o[p] : null, object);
 }
 
+// TODO: same thing as ngbDateToString
 export function dateToString(date) {
 	if (date?.day && date?.month && date?.year) {
 		const dateString = date.year + '-' + date.month.toString().padStart(2, '0') + '-' + date.day.toString().padStart(2, '0');
-		return new Date(dateString).toISOString().slice(0, 10);
+		return getYYYYMMDDFromDateString(new Date(dateString).toISOString());
 	} else {
 		return null;
 	}
@@ -25,6 +26,39 @@ export function dateObjToTimeString(date) {
         ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
 	}
 	throw new Error("Date must be an instance of Date class");
+}
+
+export function anyStringToDateString(str) {
+	const date = new Date(str);
+	if (date) {
+		return date.toISOString();
+	}
+	return "";
+}
+
+export function jsDateStrToString(str) {
+	let retStr = "";
+	if (str) {
+		const date = new Date(str);
+		if (date) {
+			retStr = date.toISOString();
+		}
+	}
+	return retStr;
+}
+
+export function getYYYYMMDDFromDateString(dateStr) {
+	if (dateStr) {
+		return dateStr.slice(0, 10);
+	}
+	return null;
+}
+
+export function ngbDateToString(ngbDate: NgbDateStruct): string {
+	if (ngbDate) {
+		return (ngbDate?.year + "-" + ngbDate?.month?.toString().padStart(2, "0") + "-" + ngbDate?.day.toString().padStart(2, "0"));
+	}
+	return "";
 }
 
 export function isWholeNumber(value) {
@@ -144,24 +178,6 @@ export function getTagBorderColor(str) {
 export function getTagBgColor(str) {
 	const h = colorHash(str);
 	return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
-}
-
-export function jsDateStrToString(str) {
-	let retStr = "";
-	if (str) {
-		const date = new Date(str);
-		if (date) {
-			retStr = date.toISOString();
-		}
-	}
-	return retStr;
-}
-
-export function ngbDateToString(ngbDate: NgbDateStruct): string {
-	if (ngbDate) {
-		return (ngbDate?.year + "-" + ngbDate?.month?.toString().padStart(2, "0") + "-" + ngbDate?.day.toString().padStart(2, "0"));
-	}
-	return "";
 }
 
 // Context functions

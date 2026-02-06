@@ -22,6 +22,7 @@ import { ConfirmationWindowComponent } from '../../confirmation-window/confirmat
 import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { REGULATORY_FRAMEWORKS, STUDY_STATUSES, TIME_UNITS } from 'src/assets/js/constants';
+import { ProjectInterface } from 'src/app/_rms/interfaces/core/project.interface';
 
 @Component({
   selector: 'app-upsert-study',
@@ -33,7 +34,7 @@ export class UpsertStudyComponent implements OnInit {
 
   @ViewChildren('studyCountries') studyCountryComponents: QueryList<UpsertStudyCountryComponent>;
   @Input() studiesData: Array<StudyInterface>;
-  @Input() projectId: String;
+  @Input() project: ProjectInterface;
 
   // Context
   complexTrialTypes: ClassValueInterface[] = [];
@@ -218,7 +219,7 @@ export class UpsertStudyComponent implements OnInit {
       firstPatientIn: null,
       lastPatientOut: null,
       status: null,
-      project: null,
+      project: this.project,
       studyCountries: [],
     });
   }

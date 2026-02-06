@@ -21,6 +21,7 @@ import { UpsertSafetyNotificationComponent } from '../../safety-notification/ups
 import { UpsertStudyCtuComponent } from '../../study-ctu/upsert-study-ctu/upsert-study-ctu.component';
 import { UpsertSubmissionComponent } from '../../submission/upsert-submission/upsert-submission.component';
 import { AuthorityCodes, SafetyNotificationTypeCodes } from 'src/assets/js/constants';
+import { StudyInterface } from 'src/app/_rms/interfaces/core/study.interface';
 
 @Component({
   selector: 'app-upsert-study-country',
@@ -41,6 +42,7 @@ export class UpsertStudyCountryComponent implements OnInit {
   @ViewChildren('otherNotifications') otherNotificationsComponents: QueryList<UpsertSubmissionComponent>;
   @ViewChildren('notifications') notificationsComponents: QueryList<UpsertNotificationComponent>;
   @Input() studyCountriesData: Array<StudyCountryInterface>;
+  @Input() study: StudyInterface;
 
   id: string;
   form: UntypedFormGroup;
@@ -140,7 +142,7 @@ export class UpsertStudyCountryComponent implements OnInit {
       otherNotifications: [[]],
       safetyNotifications: [[]],  // Used when saving
       submissions: [[]],
-      study: null,
+      study: this.study,
       studyCTUs: null
     });
   }

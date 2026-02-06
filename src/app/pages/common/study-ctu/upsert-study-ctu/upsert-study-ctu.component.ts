@@ -1,22 +1,24 @@
 import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { StudyCTUInterface } from 'src/app/_rms/interfaces/core/study-ctus.interface';
-import { ContextService } from 'src/app/_rms/services/context/context.service';
-import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor } from 'src/assets/js/util';
-import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { Observable, combineLatest, of } from 'rxjs';
-import { catchError, map, mergeMap } from 'rxjs/operators';
+import { catchError, map, mergeMap, startWith } from 'rxjs/operators';
+import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
 import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
 import { StudyCountryInterface } from 'src/app/_rms/interfaces/core/study-country.interface';
-import { ActivatedRoute, Router } from '@angular/router';
-import { UpsertCentreComponent } from '../../centre/upsert-centre/upsert-centre.component';
+import { StudyCTUInterface } from 'src/app/_rms/interfaces/core/study-ctus.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
-import { NgxSpinnerService } from 'ngx-spinner';
+import { GraphApiService } from 'src/app/_rms/services/common/graph-api/graph-api.service';
+import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { StudyCtuService } from 'src/app/_rms/services/entities/study-ctu/study-ctu.service';
-import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
+import { anyStringToDateString, dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, getYYYYMMDDFromDateString } from 'src/assets/js/util';
+import { UpsertCentreComponent } from '../../centre/upsert-centre/upsert-centre.component';
+import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { UpsertCtuAgreementComponent } from '../../ctu-agreement/upsert-ctu-agreement/upsert-ctu-agreement.component';
+import { CtuEvaluationResults, ctuEvaluationsListUrl } from 'src/assets/js/constants';
 
 @Component({
   selector: 'app-upsert-study-ctu',
@@ -29,6 +31,7 @@ export class UpsertStudyCtuComponent implements OnInit {
   @Input() studyCTUsData: Array<StudyCTUInterface>;
   @Input() studyCountry: StudyCountryInterface;
 
+  public ctuEvaluationsListUrl: string = ctuEvaluationsListUrl;
   static intPatternValidatorFn: ValidatorFn = Validators.pattern("^[0-9]*$");
 
   id: string;
@@ -41,6 +44,8 @@ export class UpsertStudyCtuComponent implements OnInit {
   ctus: CTUInterface[] = [];
   services: ClassValueInterface[] = [];
   studyCTUs: StudyCTUInterface[] = [];
+  ctuEvaluations: any[] = [];
+  loadingCTUEvaluations: boolean = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -49,6 +54,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     private modalService: NgbModal,
     private router: Router,
     private contextService: ContextService,
+    private graphApi: GraphApiService,
     private spinner: NgxSpinnerService,
     private studyCTUService: StudyCtuService,
     private toastr: ToastrService) {
@@ -114,6 +120,9 @@ export class UpsertStudyCtuComponent implements OnInit {
     return this.g[i].controls;
   }
 
+  get fv() { return this.getStudyCTUsForm()?.value; }
+  get fc() { return this.getStudyCTUsForm()?.controls; }
+
   getStudyCTUsForm(): UntypedFormArray {
     return this.form.get('studyCTUs') as UntypedFormArray;
   }
@@ -123,7 +132,7 @@ export class UpsertStudyCtuComponent implements OnInit {
       id: null,
       leadCtu: false,
       services: [],
-      study: null,
+      study: this.studyCountry?.study,  // TODO: verify
       studyCountry: this.studyCountry,
       ctu: [null, Validators.required],
       ctuAgreements: [],
@@ -149,6 +158,8 @@ export class UpsertStudyCtuComponent implements OnInit {
 
   patchForm() {
     this.form.setControl('studyCTUs', this.patchArray());
+
+    this.onChangeCTU(); // Setting CTU Evaluation data
   }
 
   patchArray(): UntypedFormArray {
@@ -235,29 +246,102 @@ export class UpsertStudyCtuComponent implements OnInit {
     return getFlagEmoji(iso2);
   }
 
-  onChangeCTU(i) {  // Unused
-    let existingStudyCTU = null;
-    for (const sctu of this.studyCTUs) {
-      if (sctu?.ctu?.id === this.g[i].value?.ctu?.id) {
-        existingStudyCTU = sctu;
-        break;
+  // onChangeCTU(i) {  // Unused
+  //   let existingStudyCTU = null;
+  //   for (const sctu of this.studyCTUs) {
+  //     if (sctu?.ctu?.id === this.g[i].value?.ctu?.id) {
+  //       existingStudyCTU = sctu;
+  //       break;
+  //     }
+  //   }
+
+  //   if (existingStudyCTU) {
+  //     delete existingStudyCTU["order"];
+  //     this.getStudyCTUsForm().at(i).setValue(existingStudyCTU);
+  //   } else {
+  //     const ctu = this.g[i].value.ctu;
+  //     this.g[i].reset();
+  //     this.getStudyCTUsForm().at(i).patchValue({ ctu: ctu });
+
+  //     const centreC = this.centreComponents.get(i);
+
+  //     if (centreC.getCentresForm().controls.length == 0) {
+  //       centreC.addCentre();
+  //     }
+  //   }
+  // }
+
+  onChangeCTU() {
+    this.loadingCTUEvaluations = true;
+    this.graphApi.ctuEvaluations$.subscribe((ctuEvaluations) => {
+      for (const [i, fv] of this.fv.entries()) {
+        const projectShortName = fv.study?.project?.shortName?.toLowerCase()?.trim();
+        const ctuShortName = fv.ctu?.shortName?.toLowerCase()?.trim();
+        if (projectShortName && ctuShortName && ctuEvaluations[projectShortName]) {
+          this.ctuEvaluations[i] = ctuEvaluations[projectShortName].filter((fields) => fields?.CTU?.toLowerCase() === ctuShortName);
+        } else {
+          this.ctuEvaluations[i] = [];
+        }
+      }
+
+      this.sortCTUEvaluations();
+
+      this.loadingCTUEvaluations = false;
+    });
+  }
+
+  sortCTUEvaluations() {
+    this.ctuEvaluations.sort((a,b) => (a.Created > b.Created) ? 1 : ((b.Created > a.Created) ? -1 : 0))
+  }
+
+  getCTUEvaluationResult(i) {
+    if (this.ctuEvaluations[i]?.length > 0) {
+      return this.ctuEvaluations[i][0]?.Result;
+    } else if (this.loadingCTUEvaluations) {
+      return "Loading...";
+    }
+    return null;
+  }
+
+  getCTUEvaluationDate(i) {
+    if (this.ctuEvaluations[i]?.length > 0) {
+      return `(${getYYYYMMDDFromDateString(this.ctuEvaluations[i][0]?.Created)})`;
+    } else if (this.loadingCTUEvaluations) {
+      return "Loading...";
+    }
+    return "";
+  }
+
+  getCTUEvaluationTagClass(i) {
+    let tagClass = "";
+    const resultText = this.getCTUEvaluationResult(i)?.toLowerCase().trim();
+
+    if (resultText) {
+      if (resultText === CtuEvaluationResults.SATISFACTORY?.toLowerCase()) {
+        tagClass = "tag-success";
+      } else if (resultText === CtuEvaluationResults.NEEDS_IMPROVEMENT?.toLowerCase()) {
+        tagClass = "tag-warning";
+      } else if (resultText === CtuEvaluationResults.UNSATISFACTORY?.toLowerCase()) {
+        tagClass = "tag-danger";
       }
     }
+    return tagClass;
+  }
 
-    if (existingStudyCTU) {
-      delete existingStudyCTU["order"];
-      this.getStudyCTUsForm().at(i).setValue(existingStudyCTU);
-    } else {
-      const ctu = this.g[i].value.ctu;
-      this.g[i].reset();
-      this.getStudyCTUsForm().at(i).patchValue({ ctu: ctu });
+  getCTUEvaluationTagBorderColor(i) {
+    return getTagBorderColor(this.getCTUEvaluationResult(i));
+  }
 
-      const centreC = this.centreComponents.get(i);
+  getCTUEvaluationTagBgColor(i) {
+    return getTagBgColor(this.getCTUEvaluationResult(i));
+  }
 
-      if (centreC.getCentresForm().controls.length == 0) {
-        centreC.addCentre();
-      }
-    }
+  getTagBorderColor(text) {
+    return getTagBorderColor(text);
+  }
+
+  getTagBgColor(text) {
+    return getTagBgColor(text);
   }
 
   searchClassValues = (term: string, item) => {
@@ -276,14 +360,6 @@ export class UpsertStudyCtuComponent implements OnInit {
     } else {  // Already existing
       this.contextService.deleteServiceDropdown(sToRemove, !this.isAdd);
     }
-  }
-
-  getTagBorderColor(text) {
-    return getTagBorderColor(text);
-  }
-
-  getTagBgColor(text) {
-    return getTagBgColor(text);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -395,7 +471,7 @@ export class UpsertStudyCtuComponent implements OnInit {
   onSave(scId: string, studyId: string): Observable<boolean[]> {
     this.submitted = true;
     let saveObs$: Array<Observable<boolean>> = [];
-    
+
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
     for (const [i, item] of payload.studyCTUs.entries()) {
@@ -442,7 +518,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     // as in by switching CTU for an existing study CTU rather than deleting the study CTU and making a new one
     const formIds: Array<String> = payload.studyCTUs.map((item: StudyCTUInterface) => { return item.id; });
     const removedItems: Array<StudyCTUInterface> = this.studyCTUs.filter((previousItem: StudyCTUInterface) => formIds.indexOf(previousItem.id) < 0);
-    
+
     // Deleting items removed in the UI
     removedItems.forEach((sctu: StudyCTUInterface) => {
       saveObs$.push(this.studyCTUService.deleteStudyCTU(sctu.id).pipe(
