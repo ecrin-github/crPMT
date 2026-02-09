@@ -4,7 +4,7 @@ Front end for the Clinical Research Project Management Tool
 Versioning convention:  [major releases].[new features/major fixes/].[minor fixes]
 
 ## Requirements
-- Node, installation with nvm is recommended (tested with v24.11.0)
+- Node.js, installation with nvm is recommended (tested with v24.11.0)
 - Yarn (tested with 1.22.22)
 
 ## Installation
