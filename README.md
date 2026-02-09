@@ -3,7 +3,20 @@ Front end for the Clinical Research Project Management Tool
 
 Versioning convention:  [major releases].[new features/major fixes/].[minor fixes]
 
-# Changelog
+## Requirements
+- Node, installation with nvm is recommended (tested with v24.11.0)
+- Yarn (tested with 1.22.22)
+
+## Installation
+- Run `yarn install` to install all required packages
+
+For local deployment:
+- Run `ng serve --open` to serve the Angular app locally
+
+For deployment on server:
+- Run `./build.sh` (see script usage with `-h`)
+
+## Changelog
 
 ## [0.7.0dev] - 2026-02-06
 ### Global
