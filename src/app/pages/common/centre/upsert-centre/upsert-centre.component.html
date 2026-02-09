@@ -6,7 +6,7 @@
                 <hr *ngIf="i > 0">
                 <mat-expansion-panel [expanded]="!centre.value.id ? true : false">
                     <mat-expansion-panel-header>
-                        <span class="view-sub-sub-title">Centre {{i+1}} - {{centre.value.hospital?.name}}</span>
+                        <span class="view-sub-title">Centre {{i+1}} - {{centre.value.hospital?.name}}</span>
                         <div class="p-0 m-0 d-flex align-items-center justify-content-center">
                             <i class="fa fa-trash sc-delete-icon ms-4" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeCentre(i)"></i>
                         </div>
@@ -17,51 +17,49 @@
                 <ng-template #centreForm>
                     <!-- <div class="row section-title">
                         <div class="col-8 text-left d-flex align-items-center">
-                            <div class="view-sub-sub-title title-border">Centre name here</div>
+                            <div class="view-sub-title title-border">Centre name here</div>
                             <i class="fa fa-trash sc-delete-icon ms-4" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="removeCentre(i)"></i>
                         </div>
                     </div> -->
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">General Information</div>
+                            <div class="text-value view-sub-title">General Information</div>
                         </div>
                     </div>
                     <div class="row form-group align-items-start">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div for="hospital" class="font-style">Hospital<sup *ngIf="!isView">*</sup></div>
-                            <ng-select [items]="filteredHospitals" formControlName="hospital" [searchFn]="searchHospitals" [compareWith]="compareIds"
-                                [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No hospital found" 
-                                placeholder="Start typing to add a new hospital" *ngIf="!isView" [clearSearchOnAdd]="true"
-                                addTagText="Add" [addTag]="addHospital" appendTo="body">
-                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
-                                    <span class="ng-value-label">{{item.name}}</span>
-                                </ng-template>
-                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
-                                    <div class="row m-0">
-                                        <div class="col-md-11 col-11 p-0 m-0">
-                                            <div class="col-md-12">{{item.name}}</div>
-                                            <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.city}}</div>
-                                        </div>
-                                        <div class="col-md-1 col-1 p-0 m-0 d-flex">
-                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-start justify-content-center">
-                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteHospital($event, item)">
-                                                </i>
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <ng-select [items]="filteredHospitals" formControlName="hospital" [searchFn]="searchHospitals" [compareWith]="compareIds"
+                                        [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No hospital found" 
+                                        placeholder="Start typing to add a new hospital" *ngIf="!isView" [clearSearchOnAdd]="true"
+                                        addTagText="Add" [addTag]="addHospital" appendTo="body">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <span class="ng-value-label">{{item.name}}, {{item.city}}</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                            <div class="row m-0">
+                                                <div class="col-md-11 col-11 p-0 m-0">
+                                                    <div class="col-md-12">{{item.name}}</div>
+                                                    <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.city}}</div>
+                                                </div>
+                                                <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                                    <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-start justify-content-center">
+                                                        <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteHospital($event, item)">
+                                                        </i>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </ng-template>
-                            </ng-select>
-                            <div class="text-value" *ngIf="isView">{{centre.value.hospital?.name}}</div>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                            </div>
+                            <div class="text-value" *ngIf="isView">{{centre.value.hospital?.name}}, {{centre.value.hospital?.city}}</div>
                             <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).hospital.errors?.required">
                                 <p>Hospital field is required</p>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div for="town" class="font-style">City</div>
-                            <span class="text-value">{{centre.value.hospital?.city}}</span>
-                        </div>
-                    </div>
-                    <div class="row form-group align-items-start">
                         <div class="col-md-2">
                             <div for="siteNumber" class="font-style">Site number</div>
                             <div class="row" *ngIf="!isView">
@@ -74,41 +72,48 @@
                             </div>
                             <span class="text-value" *ngIf="isView">{{centre.value.siteNumberFlag ? centre.value.siteNumber : 'No'}}</span>
                         </div>
-                        <div class="col-md-4">
+                    </div>
+                    <div class="row form-group align-items-start">
+                        <div class="col-md-6">
                             <div for="pi" class="font-style">PI name</div>
-                            <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds"
-                                [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" 
-                                placeholder="Start typing to add a new person" *ngIf="!isView" 
-                                addTagText="Add" [addTag]="addPerson" appendTo="body">
-                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
-                                    <span class="ng-value-label">{{item.fullName}}</span>
-                                </ng-template>
-                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
-                                    <div class="row m-0">
-                                        <div class="col-md-11 col-11 p-0 m-0">
-                                            <div class="col-md-12">{{item.fullName}}</div>
-                                            <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.email}}</div>
-                                        </div>
-                                        <div class="col-md-1 col-1 p-0 m-0 d-flex">
-                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-start justify-content-center">
-                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deletePerson($event, item)">
-                                                </i>
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds"
+                                        [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" 
+                                        placeholder="Start typing to add a new person" *ngIf="!isView" 
+                                        addTagText="Add" [addTag]="addPerson" appendTo="body">
+                                        <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                            <span class="ng-value-label">{{item.fullName}}</span>
+                                        </ng-template>
+                                        <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                            <div class="row m-0">
+                                                <div class="col-md-11 col-11 p-0 m-0">
+                                                    <div class="col-md-12">{{item.fullName}}</div>
+                                                    <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.email}}</div>
+                                                </div>
+                                                <div class="col-md-1 col-1 p-0 m-0 d-flex">
+                                                    <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-start justify-content-center">
+                                                        <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deletePerson($event, item)">
+                                                        </i>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </ng-template>
-                            </ng-select>
+                                        </ng-template>
+                                    </ng-select>
+                                </div>
+                            </div>
                             <div class="text-value" *ngIf="isView">{{centre.value.pi?.fullName}}{{centre.value.piNationalCoordinator ? ' (National coordinator)' : ''}}</div>
                         </div>
-                        <div class="col-md-4" *ngIf="!isView">
+                        <div class="col-md-4">
                             <div for="piNationalCoordinator" class="font-style">National PI Coordinator</div>
-                            <input type="checkbox" id="piNationalCoordinator" class="form-check-input checkbox" formControlName="piNationalCoordinator"/>
+                            <input type="checkbox" id="piNationalCoordinator" class="form-check-input checkbox" formControlName="piNationalCoordinator"  *ngIf="!isView"/>
+                            <span class="text-value" *ngIf="isView">{{centre.value.piNationalCoordinator ? "Yes" : "No"}}</span>
                         </div>
                     </div>
-                    <hr>
+                    <hr class="hr-m2">
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Site specific Study information</div>
+                            <div class="text-value" class="view-sub-title">Site specific Study information</div>
                         </div>
                     </div>
                     <div class="row form-group align-items-start">
@@ -123,6 +128,25 @@
                                     <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).patientsExpected.errors?.pattern">
                                         <p>If set, the patients expected field should be a number</p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div for="recruitmentGreenlight" class="font-style">Greenlight to start recruitment</div>
+                            <div class="row">
+                                <div class="col-md-9 pe-0">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd"
+                                        name="recruitmentGreenlight" ngbDatepicker #recruitmentGreenlight="ngbDatepicker"
+                                        formControlName="recruitmentGreenlight" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary"
+                                            (click)="recruitmentGreenlight.toggle()" type="button">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                        </div>
+                                    </div>
+                                    <span class="text-value" *ngIf="isView">{{dateToString(centre.value.recruitmentGreenlight)}}</span>
                                 </div>
                             </div>
                         </div>
@@ -146,13 +170,22 @@
                             </div>
                         </div>
                     </div>
-                    <hr>
+                    <hr class="hr-m2">
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Monitoring Information</div>
+                            <div class="text-value" class="view-sub-title">Site Initiation Visit Information</div>
                         </div>
                     </div>
-                    <div class="row form-group align-items-start">
+                    <div class="row">
+                        <app-upsert-visit [visits]="centre.value.siv" [visitTypeCode]="VisitTypeCodes.SIV" #siv></app-upsert-visit>
+                    </div>
+                    <hr class="hr-m2">
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="text-value" class="view-sub-title">Monitoring Information</div>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-4">
                             <div for="movExpectedNumber" class="font-style">Number of Monitoring Visits expected</div>
                             <div class="row">
@@ -168,30 +201,24 @@
                             </div>
                         </div>
                     </div>
-                    <hr>
+                    <div class="row">
+                        <app-upsert-visit [visits]="centre.value.mov" [visitTypeCode]="VisitTypeCodes.MOV" #mov></app-upsert-visit>
+                    </div>
+                    <hr class="hr-m2">
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Site Initiation Visit Information</div>
+                            <div class="text-value" class="view-sub-title">Close-Out Visit Information</div>
                         </div>
                     </div>
-                    <div>
-                        Coming soon!
-                    </div>
-                    <hr>
-                    <div class="row section-title">
-                        <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-sub-title">Close-Out Visit Information</div>
-                        </div>
-                    </div>
-                    <div>
-                        Coming soon!
+                    <div class="row">
+                        <app-upsert-visit [visits]="centre.value.cov" [visitTypeCode]="VisitTypeCodes.COV" #cov></app-upsert-visit>
                     </div>
                 </ng-template>
             </div>
         </div>
     </div>
 </form>
-<div class="row mt-5 pb-4" *ngIf="!isView && studyCTU?.ctu">
+<div class="row mt-5" *ngIf="!isView && studyCTU?.ctu">
     <div class="col-2 d-flex align-items-start justify-content-left">
         <button class="btn btn-primary" (click)="addCentre()">
             <i class="fa fa-plus"></i>New centre

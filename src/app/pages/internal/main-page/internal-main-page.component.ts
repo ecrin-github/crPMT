@@ -1,6 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { LayoutService } from 'src/app/_rms';
-import { DashboardService } from 'src/app/_rms/services/entities/dashboard/dashboard.service';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
 
 @Component({
@@ -31,8 +30,7 @@ export class InternalMainPageComponent implements OnInit {
   role: string = '';
   
   constructor(private statesService: StatesService,
-              private layout: LayoutService,
-              private dashboardService: DashboardService) { 
+              private layout: LayoutService) { 
     this.colorsGrayGray100 = this.layout.getProp('js.colors.gray.gray100');
     this.colorsGrayGray700 = this.layout.getProp('js.colors.gray.gray700');
     this.colorsThemeBaseSuccess = this.layout.getProp(
@@ -46,26 +44,6 @@ export class InternalMainPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.organisationName = "";
-    // this.getStatistics();
-  }
-
-  getStatistics() {
-    this.dashboardService.getStatistics().subscribe((res: any) => {
-      if (res) {
-        this.studyTotal = res.totalStudies;
-        this.studyChartOptions = this.getChartOptions(this.studyTotal, 'Total Studies', false);
-        this.objectTotal = res.totalObjects;
-        this.objectChartOptions = this.getChartOptions(this.objectTotal, 'Total Objects', false);
-        this.peopleTotal = res.totalUsers;
-        this.peopleChartOptions = this.getChartOptions(this.peopleTotal, 'Total People', false);
-        this.dtpTotal = res.dtp.total;
-        this.dtpChartOptions = this.getChartOptions(this.dtpTotal, 'Completed DTs', false);  
-        this.dupTotal = res.dup.total;
-        this.dupChartOptions = this.getChartOptions(this.dupTotal, 'Completed DUs', false);
-        }
-    }, error => {
-
-    })
   }
 
   getChartOptions(data, label, format) {

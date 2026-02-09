@@ -20,7 +20,7 @@ export class HospitalModalComponent implements OnInit {
   ngOnInit(): void { }
 
   onSave() {
-    this.activeModal.close({'id': this.id, 'name': this.name, 'city': this.city, 'country': this.country?.id});
+    this.activeModal.close({'id': this.id, 'name': this.name, 'city': this.city, 'country': this.country?.iso2});
   }
 
   closeModal() {

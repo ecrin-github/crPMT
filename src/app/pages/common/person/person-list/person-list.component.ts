@@ -1,18 +1,13 @@
-import { Component, HostListener, OnInit, OnDestroy, ViewChild, Renderer2 } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { NgxPermissionsService } from 'ngx-permissions';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
 import { Subject, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, mergeMap } from 'rxjs/operators';
-import { NavigationEnd, Router } from '@angular/router';
-import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
-import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
+import { catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
-import { resolvePath } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { PersonModalComponent } from '../../person-modal/person-modal.component';
@@ -100,6 +95,7 @@ export class PersonListComponent implements OnInit {
   }
 
   editPerson(person) {
+    console.log(JSON.stringify(person));
     const personModal = this.modalService.open(PersonModalComponent, { size: 'lg', backdrop: 'static' });
     personModal.componentInstance.isAdd = false;
     personModal.componentInstance.loadPerson(person);
@@ -124,7 +120,8 @@ export class PersonListComponent implements OnInit {
 
   deletePerson(id) {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-    deleteModal.componentInstance.itemType = 'person';
+    deleteModal.componentInstance.setDefaultDeleteMessage("person");
+
     deleteModal.result.then((_delete: boolean) => {
       if (_delete) {
         this.spinner.show();

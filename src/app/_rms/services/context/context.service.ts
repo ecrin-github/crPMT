@@ -1,56 +1,55 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
 import { catchError, map, mergeMap } from 'rxjs/operators';
+import { CtuModalComponent } from 'src/app/pages/common/ctu-modal/ctu-modal.component';
+import { HospitalModalComponent } from 'src/app/pages/common/hospital-modal/hospital-modal.component';
+import { OrganisationModalComponent } from 'src/app/pages/common/organisation-modal/organisation-modal.component';
+import { PersonModalComponent } from 'src/app/pages/common/person-modal/person-modal.component';
 import { environment } from 'src/environments/environment';
+import { ClassValueInterface } from '../../interfaces/context/class-value.interface';
 import { CountryInterface } from '../../interfaces/context/country.interface';
 import { CTUInterface } from '../../interfaces/context/ctu.interface';
-import { PersonInterface } from '../../interfaces/context/person.interface';
-import { OrganisationInterface } from '../../interfaces/context/organisation.interface';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { ProjectInterface } from '../../interfaces/project/project.interface';
-import { ListService } from '../entities/list/list.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { PersonModalComponent } from 'src/app/pages/common/person-modal/person-modal.component';
-import { OrganisationModalComponent } from 'src/app/pages/common/organisation-modal/organisation-modal.component';
-import { ClassValueInterface } from '../../interfaces/context/class-value.interface';
-import { HospitalModalComponent } from 'src/app/pages/common/hospital-modal/hospital-modal.component';
 import { HospitalInterface } from '../../interfaces/context/hospital.interface';
+import { OrganisationInterface } from '../../interfaces/context/organisation.interface';
+import { PersonInterface } from '../../interfaces/context/person.interface';
+import { CommonApiService } from '../common/common-api/common-api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ContextService {
-
   public complexTrialTypes: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public countries: BehaviorSubject<CountryInterface[]> =
-        new BehaviorSubject<CountryInterface[]>(null);
+    new BehaviorSubject<CountryInterface[]>(null);
   public ctus: BehaviorSubject<CTUInterface[]> =
-        new BehaviorSubject<CTUInterface[]>(null);
+    new BehaviorSubject<CTUInterface[]>(null);
   public hospitals: BehaviorSubject<HospitalInterface[]> =
-        new BehaviorSubject<HospitalInterface[]>(null);
+    new BehaviorSubject<HospitalInterface[]>(null);
   public fundingSources: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public medicalFields: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public organisations: BehaviorSubject<OrganisationInterface[]> =
-        new BehaviorSubject<OrganisationInterface[]>(null);
+    new BehaviorSubject<OrganisationInterface[]>(null);
   public persons: BehaviorSubject<PersonInterface[]> =
-        new BehaviorSubject<PersonInterface[]>(null);
+    new BehaviorSubject<PersonInterface[]>(null);
   public populations: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public regulatoryFrameworkDetails: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public services: BehaviorSubject<ClassValueInterface[]> =
-        new BehaviorSubject<ClassValueInterface[]>(null);
+    new BehaviorSubject<ClassValueInterface[]>(null);
 
   constructor(
+    private commonApiService: CommonApiService,
     private http: HttpClient,
     private spinner: NgxSpinnerService,
     private modalService: NgbModal,
-    private listService: ListService,
     private toastr: ToastrService) {
     // Note: be careful if you add new observables because of the way their result is retrieved later (combineLatest + pop)
     // The code is built like this because in the version of RxJS used here combineLatest does not handle dictionaries
@@ -112,7 +111,7 @@ export class ContextService {
   }
 
   deleteComplexTrialType(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/complex-trial-types/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/complex-trial-types/${id}`, { observe: "response", responseType: 'json' });
   }
 
   updateComplexTrialTypes() {
@@ -129,10 +128,10 @@ export class ContextService {
    * @returns 
    */
   addComplexTrialTypeDropdown(value) {
-    let ctt = {"id": "", "value": ""};
-    
+    let ctt = { "id": "", "value": "" };
+
     this.spinner.show();
-    return this.addComplexTrialType({'value': value}).pipe(
+    return this.addComplexTrialType({ 'value': value }).pipe(
       mergeMap((c: any) => {
         ctt.id = c.id;
         ctt.value = c.value;
@@ -152,7 +151,7 @@ export class ContextService {
   deleteComplexTrialTypeDropdown(cttToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this complex trial type
-    this.listService.getReferenceCountByClass("complextrialtype", cttToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("complextrialtype", cttToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if complex trial type has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -203,14 +202,115 @@ export class ContextService {
     term = term.toLocaleLowerCase();
     return item.name?.toLocaleLowerCase().indexOf(term) > -1;
   }
-  
+
+  isCtisCountry(c: CountryInterface) {
+    return c?.isInEu || c?.isInEea;
+  }
+
   /* CTUs */
   getCTUs() {
     return this.http.get(`${environment.baseUrlApi}/context/ctus`);
   }
-  
+
   setCTUs(ctus) {
     this.ctus.next(ctus);
+  }
+
+  addCTU(payload) {
+    return this.http.post(`${environment.baseUrlApi}/context/ctus`, payload);
+  }
+
+  deleteCTU(id) {
+    return this.http.delete(`${environment.baseUrlApi}/context/ctus/${id}`, { observe: "response", responseType: 'json' });
+  }
+
+  updateCTUs() {
+    return this.getCTUs().pipe(
+      map((ctus) => {
+        this.setCTUs(ctus);
+      })
+    );
+  }
+
+  searchCTUs(term: string, item) {
+    term = term.toLocaleLowerCase();
+    return item.name?.toLocaleLowerCase().indexOf(term) > -1
+      || item.shortName?.toLocaleLowerCase().indexOf(term) > -1
+      || item.addressInfo?.toLocaleLowerCase().indexOf(term) > -1;
+  }
+
+  addCTUDropdown(ctuName) {
+    const addCTU = this.modalService.open(CtuModalComponent, { size: 'lg', backdrop: 'static' });
+    addCTU.componentInstance.name = ctuName;
+
+    return addCTU.result.then((result) => {
+      if (result === null) {
+        this.spinner.hide();
+        return new Promise(null);
+      }
+
+      this.spinner.show();
+      return this.addCTU(result).pipe(
+        mergeMap((o: any) => {
+          result.id = o.id;
+          return this.updateCTUs();
+        }),
+        mergeMap(() => {
+          this.spinner.hide();
+          return of(result);
+        }),
+        catchError((err) => {
+          this.toastr.error(err, "Error adding CTU", { timeOut: 20000, extendedTimeOut: 20000 });
+          return of(null);
+        })
+      ).toPromise();
+    })
+      .catch((err) => {
+        this.toastr.error(err, "Error adding CTU", { timeOut: 20000, extendedTimeOut: 20000 });
+        this.spinner.hide();
+        return null;
+      });
+  }
+
+  /**
+   * 
+   * @param ctuToRemove TODO
+   * @param currProjectId 
+   */
+  deleteCTUDropdown(ctuToRemove, filter) {
+    this.spinner.show();
+    // Checking if other projects have this CTU
+    this.commonApiService.getReferenceCountByClass("ctu", ctuToRemove.id).subscribe((res: any) => {
+      let refCount = res.totalCount;
+      // Allowing deletion if CTU has already been added and is only referenced once by the calling class
+      if (filter) { // !isAdd
+        refCount -= 1;
+      }
+
+      if (refCount > 0) {
+        this.toastr.error(`Failed to delete this CTU as it is used in ${refCount} other objects (projects, studies, etc.)`);
+        this.spinner.hide();
+      } else {
+        // Delete CTU from the DB, then locally if succeeded
+        this.deleteCTU(ctuToRemove.id).subscribe((res: any) => {
+          if (res.status !== 204) {
+            this.toastr.error('Error when deleting CTU', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
+          } else {
+            // Updating CTUs list
+            this.updateCTUs().subscribe(() => {
+              this.spinner.hide();
+            });
+          }
+          this.spinner.hide();
+        }, error => {
+          this.toastr.error(error);
+          this.spinner.hide();
+        });
+      }
+    }, error => {
+      this.toastr.error(error);
+      this.spinner.hide();
+    });
   }
 
   /* Hospitals */
@@ -222,7 +322,7 @@ export class ContextService {
     this.sortHospitals(hospitals);
     this.hospitals.next(hospitals);
   }
-  
+
   updateHospitals() {
     return this.getHospitals().pipe(
       map((hospitals) => {
@@ -235,7 +335,7 @@ export class ContextService {
     const { compare } = Intl.Collator('en-GB');
     hospitals.sort((a, b) => { return compare(a.name, b.name); });
   }
-  
+
   addHospital(payload) {
     return this.http.post(`${environment.baseUrlApi}/context/hospitals`, payload);
   }
@@ -245,13 +345,13 @@ export class ContextService {
   }
 
   deleteHospital(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/hospitals/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/hospitals/${id}`, { observe: "response", responseType: 'json' });
   }
 
   searchHospitals(term, item) {
     term = term.toLocaleLowerCase();
-    return item.name?.toLocaleLowerCase().indexOf(term) > -1 
-      || item.city?.toLocaleLowerCase().indexOf(term) > -1 
+    return item.name?.toLocaleLowerCase().indexOf(term) > -1
+      || item.city?.toLocaleLowerCase().indexOf(term) > -1
       || item.country?.name?.toLocaleLowerCase().indexOf(term) > -1;
   }
 
@@ -270,10 +370,10 @@ export class ContextService {
         this.spinner.hide();
         return new Promise(null);
       }
-      
+
       this.spinner.show();
       return this.addHospital(result).pipe(
-        mergeMap((o:any) => {
+        mergeMap((o: any) => {
           result.id = o.id;
           return this.updateHospitals();
         }),
@@ -287,11 +387,11 @@ export class ContextService {
         })
       ).toPromise();
     })
-    .catch((err) => {
-      this.toastr.error(err, "Error adding hospital", { timeOut: 20000, extendedTimeOut: 20000 });
-      this.spinner.hide();
-      return null;
-    });
+      .catch((err) => {
+        this.toastr.error(err, "Error adding hospital", { timeOut: 20000, extendedTimeOut: 20000 });
+        this.spinner.hide();
+        return null;
+      });
   }
 
   /**
@@ -302,7 +402,7 @@ export class ContextService {
   deleteHospitalDropdown(hospitalToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this hospital
-    this.listService.getReferenceCountByClass("hospital", hospitalToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("hospital", hospitalToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if hospital has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -357,13 +457,13 @@ export class ContextService {
   }
 
   deleteFundingSource(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/funding-sources/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/funding-sources/${id}`, { observe: "response", responseType: 'json' });
   }
 
   deleteFundingSourceDropdown(fsToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this funding source
-    this.listService.getReferenceCountByClass("fundingsource", fsToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("fundingsource", fsToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if funding source has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -395,6 +495,7 @@ export class ContextService {
     });
   }
 
+  /* Medical Fields() */
   getMedicalFields() {
     return this.http.get(`${environment.baseUrlApi}/context/medical-fields`);
   }
@@ -413,7 +514,7 @@ export class ContextService {
     this.sortOrganisations(organisations);
     this.organisations.next(organisations);
   }
-  
+
   updateOrganisations() {
     return this.getOrganisations().pipe(
       map((organisations) => {
@@ -426,7 +527,7 @@ export class ContextService {
     const { compare } = Intl.Collator('en-GB');
     organisations.sort((a, b) => { return compare(a.name, b.name); });
   }
-  
+
   addOrganisation(payload) {
     return this.http.post(`${environment.baseUrlApi}/context/organisations`, payload);
   }
@@ -436,7 +537,7 @@ export class ContextService {
   }
 
   deleteOrganisation(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/organisations/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/organisations/${id}`, { observe: "response", responseType: 'json' });
   }
 
   searchOrganisations(term, item) {
@@ -458,10 +559,10 @@ export class ContextService {
         this.spinner.hide();
         return new Promise(null);
       }
-      
+
       this.spinner.show();
       return this.addOrganisation(result).pipe(
-        mergeMap((o:any) => {
+        mergeMap((o: any) => {
           result.id = o.id;
           return this.updateOrganisations();
         }),
@@ -475,11 +576,11 @@ export class ContextService {
         })
       ).toPromise();
     })
-    .catch((err) => {
-      this.toastr.error(err, "Error adding organisation", { timeOut: 20000, extendedTimeOut: 20000 });
-      this.spinner.hide();
-      return null;
-    });
+      .catch((err) => {
+        this.toastr.error(err, "Error adding organisation", { timeOut: 20000, extendedTimeOut: 20000 });
+        this.spinner.hide();
+        return null;
+      });
   }
 
   /**
@@ -490,7 +591,7 @@ export class ContextService {
   deleteOrganisationDropdown(orgToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this organisation
-    this.listService.getReferenceCountByClass("organisation", orgToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("organisation", orgToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if organisation has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -555,14 +656,14 @@ export class ContextService {
   }
 
   deletePerson(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/persons/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/persons/${id}`, { observe: "response", responseType: 'json' });
   }
 
   searchPersons(term: string, item) {
     term = term.toLocaleLowerCase();
     return item.fullName?.toLocaleLowerCase().indexOf(term) > -1
-     || item.email?.toLocaleLowerCase().indexOf(term) > -1
-     || item.country?.name.toLocaleLowerCase().indexOf(term) > -1 ;
+      || item.email?.toLocaleLowerCase().indexOf(term) > -1
+      || item.country?.name.toLocaleLowerCase().indexOf(term) > -1;
   }
 
   addPersonDropdown(personName) {
@@ -576,7 +677,7 @@ export class ContextService {
 
       this.spinner.show();
       return this.addPerson(result).pipe(
-        mergeMap((p:any) => {
+        mergeMap((p: any) => {
           result.id = p.id;
           return this.updatePersons();
         }),
@@ -590,17 +691,17 @@ export class ContextService {
         })
       ).toPromise();
     })
-    .catch((err) => {
-      this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
-      this.spinner.hide();
-      return null;
-    });
+      .catch((err) => {
+        this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
+        this.spinner.hide();
+        return null;
+      });
   }
 
   deletePersonDropdown(pToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this person
-    this.listService.getReferenceCountByClass("person", pToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("person", pToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if person has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd
@@ -660,7 +761,7 @@ export class ContextService {
     this.sortClassValues(services);
     this.services.next(services);
   }
-  
+
   updateServices() {
     return this.getServices().pipe(
       map((services) => {
@@ -672,16 +773,16 @@ export class ContextService {
   addService(payload) {
     return this.http.post(`${environment.baseUrlApi}/context/services`, payload);
   }
-  
+
   deleteService(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/services/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${environment.baseUrlApi}/context/services/${id}`, { observe: "response", responseType: 'json' });
   }
 
   addServiceDropdown(value) {
-    let service = {"id": "", "value": ""};
-    
+    let service = { "id": "", "value": "" };
+
     this.spinner.show();
-    return this.addService({'value': value}).pipe(
+    return this.addService({ 'value': value }).pipe(
       mergeMap((s: any) => {
         service.id = s.id;
         service.value = s.value;
@@ -701,7 +802,7 @@ export class ContextService {
   deleteServiceDropdown(sToRemove, filter) {
     this.spinner.show();
     // Checking if other projects have this service
-    this.listService.getReferenceCountByClass("service", sToRemove.id).subscribe((res: any) => {
+    this.commonApiService.getReferenceCountByClass("service", sToRemove.id).subscribe((res: any) => {
       let refCount = res.totalCount;
       // Allowing deletion if service has already been added and is only referenced once by the calling class
       if (filter) { // !isAdd

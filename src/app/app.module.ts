@@ -1,29 +1,38 @@
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
-import { environment } from 'src/environments/environment';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ClipboardModule } from 'ngx-clipboard';
+import { environment } from 'src/environments/environment';
 // import { TranslateModule } from '@ngx-translate/core';
-import { InlineSVGModule } from 'ng-inline-svg';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { InlineSVGModule } from 'ng-inline-svg';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 // Highlight JS
-import { HighlightModule, HIGHLIGHT_OPTIONS } from 'ngx-highlightjs';
-import { SplashScreenModule } from './_rms/partials/layout/splash-screen/splash-screen.module';
-import { AbstractSecurityStorage, AuthModule, LogLevel } from 'angular-auth-oidc-client';
-import { AuthGuard } from './_rms/guards/auth/auth.guard';
-import { StorageService } from './_rms/services/storage/storage.service';
+import { MatTableModule } from '@angular/material/table';
+import { FileSaverModule } from 'ngx-filesaver';
+import { HIGHLIGHT_OPTIONS, HighlightModule } from 'ngx-highlightjs';
+import { NgxPermissionsModule } from 'ngx-permissions';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { ToastrModule } from 'ngx-toastr';
-import { NgxPermissionsModule } from 'ngx-permissions';
-import { FileSaverModule } from 'ngx-filesaver';
-import { MatTableModule } from '@angular/material/table';
+import { SplashScreenModule } from './_rms/partials/layout/splash-screen/splash-screen.module';
 // https://github.com/ng-select/ng-select/issues/1464
-import { NgSelectModule } from '@ng-select/ng-select';
-import { MsalModule, MsalService, MSAL_INSTANCE, MSAL_GUARD_CONFIG, MSAL_INTERCEPTOR_CONFIG, MsalGuard, MsalInterceptor, MsalGuardConfiguration, MsalInterceptorConfiguration, MsalRedirectComponent, MsalBroadcastService } from '@azure/msal-angular';
+import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG, MsalBroadcastService, MsalGuard, MsalGuardConfiguration, MsalInterceptor, MsalInterceptorConfiguration, MsalModule, MsalRedirectComponent, MsalService } from '@azure/msal-angular';
 import { BrowserCacheLocation, IPublicClientApplication, InteractionType, PublicClientApplication } from '@azure/msal-browser';
+import { NgSelectModule } from '@ng-select/ng-select';
+
+// Echarts
+import { NgxEchartsModule } from 'ngx-echarts';
+// import echarts core
+import * as echarts from 'echarts/core';
+// import necessary echarts components
+import { BarChart, LineChart } from 'echarts/charts';
+import { DataZoomComponent, GraphicComponent, GridComponent, MarkLineComponent, TitleComponent, ToolboxComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+// All used echarts components
+echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer, 
+  LineChart, TitleComponent, ToolboxComponent, DataZoomComponent, VisualMapComponent, GraphicComponent, MarkLineComponent]);
 
 
 export function MSALInstanceFactory(): IPublicClientApplication {
@@ -31,8 +40,10 @@ export function MSALInstanceFactory(): IPublicClientApplication {
     auth: {
       clientId: environment.clientId,
       authority: environment.authority,
-      redirectUri: "http://localhost:4200",
-      postLogoutRedirectUri: "http://localhost:4200",
+      // Works for some reason
+      redirectUri: window.location.origin,
+      postLogoutRedirectUri: window.location.origin,
+      navigateToLoginRequestUrl: false,
     },
     cache: {
       cacheLocation: BrowserCacheLocation.LocalStorage,
@@ -49,6 +60,9 @@ export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
     // 'openid', 'profile', 'email'
   ]);
 
+  // Graph API Calls (SharePoint)
+  protectedResourceMap.set('https://graph.microsoft.com/v1.0', ['Sites.Read.All']);
+
   return {
     interactionType: InteractionType.Redirect,
     protectedResourceMap,
@@ -59,8 +73,7 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
     authRequest: {
-      // scopes: ["user.read", 'openid', 'profile', 'email', `${environment.apiClientId}/access_as_user`],
-      scopes: ['openid', 'profile', 'email', `api://${environment.apiClientId}/access_as_user`],
+      scopes: ['openid', 'profile', 'email', 'Sites.Read.All', `api://${environment.apiClientId}/access_as_user`],
     },
     // loginFailedRoute: "/",
   };
@@ -70,7 +83,7 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
 @NgModule({
   declarations: [
     // Main component(s) declaration
-    AppComponent
+    AppComponent,
   ],
   imports: [
     NgSelectModule,
@@ -87,7 +100,11 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
     InlineSVGModule.forRoot(),
     NgbModule,
     NgxSpinnerModule,
-    ToastrModule.forRoot(),
+    NgxEchartsModule.forRoot({ echarts }),
+    ToastrModule.forRoot({
+      timeOut: 10000,
+      extendedTimeOut: 10000
+    }),
     MsalModule.forRoot(
       MSALInstanceFactory(),  // Factory returns IPublicClientApplication
       MSALGuardConfigFactory(),

@@ -1,0 +1,38 @@
+<div class="modal-content">
+    <div class="modal-header">
+        <h5 class="modal-title">{{isAdd ? 'Add new CTU' : 'Edit CTU'}}</h5>
+    </div>
+    <div class="modal-body">
+        <div class="row form-group">
+            <div class="col-md-12">
+                <label for="name" class="font-style">Short Name</label>
+                <input type="text" id="name" class="form-control" [(ngModel)]="shortName"/>
+            </div>
+        </div>
+        <div class="row form-group">
+            <div class="col-md-12">
+                <label for="name" class="font-style">Name<sup>*</sup></label>
+                <input type="text" id="name" class="form-control" [(ngModel)]="name"/>
+            </div>
+        </div>
+        <div class="row form-group">
+            <div class="col-md-12">
+                <label for="country" class="font-style">Country</label>
+                <ng-select [items]="countries" bindLabel="name" bindValue="iso2" [(ngModel)]="countryId"
+                    [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true"
+                    notFoundText="No countries found" placeholder="Select country" appendTo="body" name="country">
+                    <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
+                    <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                        <div class="row m-0">
+                            <div class="col-md-12 col-12 p-0 m-0">{{item.name}}</div>
+                        </div>
+                    </ng-template>
+                </ng-select>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="onSave()">Save</button>
+        <button type="button" class="btn btn-danger" (click)="closeModal()">Cancel</button>
+    </div>
+</div>

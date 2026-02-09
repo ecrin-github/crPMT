@@ -1,29 +1,28 @@
-import { Component, HostListener, Input, OnInit, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { combineLatest, Observable, of } from 'rxjs';
-import { catchError, finalize, map, mergeMap, reduce, switchMap, take } from 'rxjs/operators';
-import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
-import { BackService } from 'src/app/_rms/services/back/back.service';
-import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
-import { PdfGeneratorService } from 'src/app/_rms/services/entities/pdf-generator/pdf-generator.service';
-import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
-import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
-import { StatesService } from 'src/app/_rms/services/states/states.service';
-import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
-import { StudyInterface } from 'src/app/_rms/interfaces/study/study.interface';
-import { colorHash, dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
-import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
-import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ContextService } from 'src/app/_rms/services/context/context.service';
-import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
-import { ProjectInterface } from 'src/app/_rms/interfaces/project/project.interface';
-import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
+import { Observable, combineLatest, of } from 'rxjs';
+import { catchError, mergeMap } from 'rxjs/operators';
 import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
+import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
+import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
+import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
+import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
+import { StudyInterface } from 'src/app/_rms/interfaces/core/study.interface';
+import { BackService } from 'src/app/_rms/services/back/back.service';
+import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
+import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
+import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
+import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
+import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
+import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
+import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
+import { REGULATORY_FRAMEWORKS, STUDY_STATUSES, TIME_UNITS } from 'src/assets/js/constants';
+import { ProjectInterface } from 'src/app/_rms/interfaces/core/project.interface';
 
 @Component({
   selector: 'app-upsert-study',
@@ -35,11 +34,12 @@ export class UpsertStudyComponent implements OnInit {
 
   @ViewChildren('studyCountries') studyCountryComponents: QueryList<UpsertStudyCountryComponent>;
   @Input() studiesData: Array<StudyInterface>;
-  @Input() projectId: String;
+  @Input() project: ProjectInterface;
 
   // Context
   complexTrialTypes: ClassValueInterface[] = [];
   countries: CountryInterface[] = [];
+  ctus: CTUInterface[] = [];
   eucos: PersonInterface[] = [];
   medicalFields: ClassValueInterface[] = [];
   organisations: OrganisationInterface[] = [];
@@ -48,15 +48,15 @@ export class UpsertStudyComponent implements OnInit {
   regulatoryFrameworkDetails: ClassValueInterface[] = [];
   filteredRegulatoryFrameworkDetails: ClassValueInterface[] = [];
   services: ClassValueInterface[] = [];
-  regulatoryFrameworks: String[] = ['CTR', 'MDR/IVDR', 'COMBINED', 'OTHER'];
-  studyStatuses: String[] = ["Start-up phase", "Running phase: Regulatory & ethical approvals", "Running phase: Follow up", "Running phase: Organisation of close-out", 
-                              "Completion & termination phase", "Completed", "Withdrawn", "On hold"];
-  timeUnits: String[] = ["Hours", "Days", "Weeks", "Months"]
+  REGULATORY_FRAMEWORKS: String[] = REGULATORY_FRAMEWORKS;
+  STUDY_STATUSES: String[] = STUDY_STATUSES;
+  TIME_UNITS: String[] = TIME_UNITS;
   id: string;
   isAdd: boolean = false;
   isEdit: boolean = false;
   isStudyPage: boolean = false;
   isView: boolean = false;
+  isAgreementSigned: boolean[] = [];
   isComplexTrial: boolean[] = [];
   isObservational: boolean[] = [];
   hasRegulatoryFrameworkDetails: boolean[] = [];
@@ -66,16 +66,14 @@ export class UpsertStudyComponent implements OnInit {
   submitted: boolean = false;
   studyForm: UntypedFormGroup;
   summaryMaxChars: number = 1300;
-  summaryRemainingChars: number = this.summaryMaxChars;
+  summaryRemainingChars: number[] = [];
   studies = [];
 
-  constructor(private statesService: StatesService,
-              private fb: UntypedFormBuilder, 
-              private router: Router, 
+  constructor(private fb: UntypedFormBuilder, 
+              private router: Router,
+              private projectService: ProjectService, 
               private studyService: StudyService, 
               private contextService: ContextService,
-              private reuseService: ReuseService,
-              private listService: ListService,
               private modalService: NgbModal,
               private scrollService: ScrollService,
               private activatedRoute: ActivatedRoute,
@@ -118,7 +116,7 @@ export class UpsertStudyComponent implements OnInit {
       queryFuncs.push(this.getStudyById(this.id));
     }
     if (this.isStudyPage && !this.isView) {
-      queryFuncs.push(this.listService.getProjectList());
+      queryFuncs.push(this.projectService.getProjectList());
     }
 
     let obsArr: Array<Observable<any>> = [];
@@ -145,6 +143,9 @@ export class UpsertStudyComponent implements OnInit {
     });
     this.contextService.countries.subscribe((countries) => {
       this.countries = countries;
+    });
+    this.contextService.ctus.subscribe((ctus) => {
+      this.ctus = ctus;
     });
     this.contextService.medicalFields.subscribe((medicalFields) => {
       this.medicalFields = medicalFields;
@@ -191,6 +192,9 @@ export class UpsertStudyComponent implements OnInit {
       shortTitle: null,
       title: null,
       sponsorOrganisation: null,
+      leadCtu: null,
+      agreementSigned: false,
+      agreementSignedDate: null,
       coordinatingInvestigator: null,
       sponsorCountry: null,
       medicalFields: [],
@@ -215,7 +219,7 @@ export class UpsertStudyComponent implements OnInit {
       firstPatientIn: null,
       lastPatientOut: null,
       status: null,
-      project: null,
+      project: this.project,
       studyCountries: [],
     });
   }
@@ -239,15 +243,15 @@ export class UpsertStudyComponent implements OnInit {
   deleteStudy($event, i: number) {
     $event.stopPropagation(); // Expands the panel otherwise
 
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-    removeModal.componentInstance.itemType = "study";
+    const studyId = this.getStudiesForm().value[i].id;
+    if (!studyId) { // Study has been locally added only
+      this.getStudiesForm().removeAt(i);
+    } else {  // Existing study
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      removeModal.componentInstance.setDefaultDeleteMessage("study");
 
-    removeModal.result.then((remove) => {
-      if (remove) {
-        const studyId = this.getStudiesForm().value[i].id;
-        if (!studyId) { // Study has been locally added only
-          this.getStudiesForm().removeAt(i);
-        } else {  // Existing study
+      removeModal.result.then((remove) => {
+        if (remove) {
           this.studyService.deleteStudyById(studyId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getStudiesForm().removeAt(i);
@@ -256,11 +260,11 @@ export class UpsertStudyComponent implements OnInit {
               this.toastr.error('Error when deleting study', res.statusText);
             }
           }, error => {
-            this.toastr.error(error.error.title);
-          })
+            this.toastr.error(error);
+          });
         }
-      }
-    }, error => {});
+      }, error => {this.toastr.error(error)});
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -272,12 +276,15 @@ export class UpsertStudyComponent implements OnInit {
 
   getFormArray() {
     const formArray = new UntypedFormArray([]);
-    this.studies.forEach(s => {
+    this.studies.forEach((s, index) => {
       formArray.push(this.fb.group({
         id: s.id,
         shortTitle: s.shortTitle,
         title: s.title,
         sponsorOrganisation: s.sponsorOrganisation,
+        leadCtu: s.leadCtu,
+        agreementSigned: s.agreementSigned,
+        agreementSignedDate: s.agreementSignedDate ? stringToDate(s.agreementSignedDate) : null,
         coordinatingInvestigator: s.coordinatingInvestigator,
         sponsorCountry: s.sponsorCountry,
         medicalFields: [s.medicalFields],
@@ -307,7 +314,12 @@ export class UpsertStudyComponent implements OnInit {
         studyCountries: [s.studyCountries]
       }));
 
-      this.summaryRemainingChars = this.summaryMaxChars - s.summary?.length;
+      if (s.summary?.length) {
+        this.summaryRemainingChars[index] = this.summaryMaxChars - s.summary.length;
+      } else {
+
+        this.summaryRemainingChars[index] = this.summaryMaxChars;
+      }
     });
     return formArray;
   }
@@ -317,6 +329,7 @@ export class UpsertStudyComponent implements OnInit {
 
     // Setting initial boolean variables to display or not certain fields
     for (let i=0; i < this.g.length; i++) {
+      this.onChangeAgreementSigned(i);
       this.onChangeComplexTrialDesign(i);
       this.onChangeRegulatoryFramework(i);
     }
@@ -349,6 +362,7 @@ export class UpsertStudyComponent implements OnInit {
     }
 
     payload.project = projectId;
+    payload.agreementSignedDate = dateToString(payload.agreementSignedDate);
     payload.firstPatientIn = dateToString(payload.firstPatientIn);
     payload.lastPatientOut = dateToString(payload.lastPatientOut);
     
@@ -360,8 +374,12 @@ export class UpsertStudyComponent implements OnInit {
       payload.complexTrialType = payload.complexTrialType.id;
     }
     
-    if (payload.coordinatingCountry?.id) {
-      payload.coordinatingCountry = payload.coordinatingCountry.id;
+    if (payload.coordinatingCountry?.iso2) {
+      payload.coordinatingCountry = payload.coordinatingCountry.iso2;
+    }
+    
+    if (payload.leadCtu?.id) {
+      payload.leadCtu = payload.leadCtu.id;
     }
     
     if (payload.medicalFields?.length > 0) {
@@ -413,8 +431,8 @@ export class UpsertStudyComponent implements OnInit {
       payload.services = [];
     }
         
-    if (payload.sponsorCountry?.id) {
-      payload.sponsorCountry = payload.sponsorCountry.id;
+    if (payload.sponsorCountry?.iso2) {
+      payload.sponsorCountry = payload.sponsorCountry.iso2;
     }
         
     if (payload.sponsorOrganisation?.id) {
@@ -517,7 +535,7 @@ export class UpsertStudyComponent implements OnInit {
         this.onSave(projectId).subscribe((success) => {
           this.spinner.hide();
           if (success) {
-            this.toastr.success("Data saved successfully");
+            this.toastr.success("Changes saved successfully");
             this.router.navigate([`/studies/${this.id}/view`]);
           }
         });
@@ -534,6 +552,18 @@ export class UpsertStudyComponent implements OnInit {
 
   compareIds(fv1, fv2): boolean {
     return fv1?.id == fv2?.id;
+  }
+
+  compareCountries(c1, c2): boolean {
+    return c1?.iso2 == c2?.iso2;
+  }
+
+  onChangeAgreementSigned(i) {
+    if (this.studyForm.value?.studies[i].agreementSigned) {
+      this.isAgreementSigned[i] = true;
+    } else {
+      this.isAgreementSigned[i] = false;
+    }
   }
 
   onChangeComplexTrialDesign(i) {
@@ -570,6 +600,10 @@ export class UpsertStudyComponent implements OnInit {
     return this.contextService.searchClassValues(term, item);
   }
 
+  searchCTUs = (term: string, item) => {
+    return this.contextService.searchCTUs(term, item);
+  }
+
   addComplexTrialType = (type) => {
     return this.contextService.addComplexTrialTypeDropdown(type);
   }
@@ -586,6 +620,20 @@ export class UpsertStudyComponent implements OnInit {
 
   searchCountries = (term: string, item) => {
     return this.contextService.searchCountries(term, item);
+  }
+
+  addCTU = (ctuName) => {
+    return this.contextService.addCTUDropdown(ctuName);
+  }
+
+  deleteCTU($event, ctuToRemove) {
+    $event.stopPropagation();
+
+    if (ctuToRemove.id == -1) { // Created locally by user
+      this.ctus = this.ctus.filter(o => !(o.id == ctuToRemove.id && o.name == ctuToRemove.name));
+    } else {  // Already existing
+      this.contextService.deleteCTUDropdown(ctuToRemove, !this.isAdd);
+    }
   }
 
   // Necessary to write them as arrow functions
@@ -667,15 +715,12 @@ export class UpsertStudyComponent implements OnInit {
     return count + " site" + (count == 1 ? '' : 's');
   }
 
-  getCountryFlag(country) {
-    if (country?.iso2) {
-      return getFlagEmoji(country.iso2);
-    }
-    return '';
+  getCountryFlagFromIso2(iso2) {
+    return getFlagEmoji(iso2);
   }
 
-  changeRemainingChars($event) {
-    this.summaryRemainingChars = this.summaryMaxChars - $event.target.value?.length;
+  changeRemainingChars($event, i) {
+    this.summaryRemainingChars[i] = this.summaryMaxChars - $event.target.value?.length;
   }
 
   print() {

@@ -5,6 +5,30 @@ Versioning convention:  [major releases].[new features/major fixes/].[minor fixe
 
 # Changelog
 
+## [0.7.0dev] - 2026-02-06
+### Global
+- Modified delete buttons to not ask for confirmation (for now, only if the item to be deleted has only been locally added for components where deleting an item like this is permanent)
+- Improved UI in various places
+### Project
+- Added timelines according to consortium (reporting periods)
+### Study
+- Added lead CTU and agreement (signed + date) fields
+- Fixed characters remaining number for summary field (when editing a Project with multiple studies)
+### Study country
+- Improved submissions and notifications display
+- Renamed "New submission" button to "Other authority submission"
+- Added Safety Notifications (Annual Progress Report + DSUR), with an unfinished feature to enable countries that are part of CTIS to share the same safety notifications
+### Study CTU
+- Added CTU Evaluation field (display-only) with data fetched from SharePoint list
+- Added ECRIN-CTU agreement (with agreement amendments)
+### Centre
+- Added "Greenlight to start recruitment" field
+- Added Visits (SIV, MOV, COV)
+### Other
+- Added Apache ECharts library for data viz
+- Code cleaning
+- Various bug fixes
+
 ## [0.6.0dev] - 2026-01-06
 - Replaced LS AAI login system with Microsoft Entra
 - Code cleaning (removal of files unused from the crDSR)

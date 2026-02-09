@@ -1,21 +1,20 @@
-import { Component, HostListener, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { NavigationEnd, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgxPermissionsService } from 'ngx-permissions';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { StudyListEntryInterface } from 'src/app/_rms/interfaces/study/study-listentry.interface';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
-import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
-import { Subject, combineLatest, fromEvent } from 'rxjs';
-import { NgxPermissionsService } from 'ngx-permissions';
-import { NavigationEnd, Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
+import { StudyListEntryInterface } from 'src/app/_rms/interfaces/core/study-listentry.interface';
+import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
+import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
 import { resolvePath } from 'src/assets/js/util';
+import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 
 @Component({
   selector: 'app-study-list',
@@ -58,7 +57,6 @@ export class StudyListComponent implements OnInit {
   constructor(private statesService: StatesService,
               private reuseService: ReuseService,
               private scrollService: ScrollService, 
-              private listService: ListService, 
               private spinner: NgxSpinnerService, 
               private toastr: ToastrService, 
               private modalService: NgbModal,
@@ -96,7 +94,7 @@ export class StudyListComponent implements OnInit {
 
   getStudyList() {
     this.spinner.show();
-    this.listService.getStudyList().subscribe((res: any) => {
+    this.studyService.getStudyList().subscribe((res: any) => {
       if (res) {
         this.getSortedStudies(res);
         this.dataSource = new MatTableDataSource<StudyListEntryInterface>(res);
@@ -116,7 +114,7 @@ export class StudyListComponent implements OnInit {
 
   deleteRecord(id) {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-    deleteModal.componentInstance.itemType = 'study';
+    deleteModal.componentInstance.setDefaultDeleteMessage("study");
 
     deleteModal.result.then((data: any) => {
       if (data) {

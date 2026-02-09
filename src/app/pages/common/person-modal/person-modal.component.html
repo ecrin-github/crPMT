@@ -24,7 +24,7 @@
         <div class="row form-group">
             <div class="col-md-12">
                 <label for="country" class="font-style">Country</label>
-                <ng-select [items]="countries" bindLabel="name" bindValue="id" [(ngModel)]="countryId"
+                <ng-select [items]="countries" bindLabel="name" bindValue="iso2" [(ngModel)]="countryId"
                     [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true"
                     notFoundText="No countries found" placeholder="Select country" appendTo="body" name="country">
                     <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
@@ -38,8 +38,8 @@
         </div>
         <div class="row form-group">
             <div class="col-md-12">
-                <label for="isEuco" class="font-style">Is EuCo?</label>
-                <input type="checkbox" id="isEuco" class="form-control checkbox" [(ngModel)]="isEuco"/>
+                <label for="isEuco" class="font-style">EuCo?</label>
+                <input type="checkbox" id="isEuco" class="form-check-input checkbox" [(ngModel)]="isEuco"/>
             </div>
         </div>
     </div>

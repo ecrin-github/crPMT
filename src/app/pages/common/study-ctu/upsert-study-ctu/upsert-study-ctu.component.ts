@@ -1,22 +1,24 @@
 import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastrService } from 'ngx-toastr';
-import { StudyCTUInterface } from 'src/app/_rms/interfaces/study/study-ctus.interface';
-import { ContextService } from 'src/app/_rms/services/context/context.service';
-import { colorHash, dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
-import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { Observable, combineLatest, of } from 'rxjs';
-import { catchError, mergeMap } from 'rxjs/operators';
-import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
-import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
-import { StudyCountryInterface } from 'src/app/_rms/interfaces/study/study-country.interface';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UpsertCentreComponent } from '../../centre/upsert-centre/upsert-centre.component';
-import { BackService } from 'src/app/_rms/services/back/back.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
-import { StudyCtuService } from 'src/app/_rms/services/entities/study-ctu/study-ctu.service';
+import { ToastrService } from 'ngx-toastr';
+import { Observable, combineLatest, of } from 'rxjs';
+import { catchError, map, mergeMap, startWith } from 'rxjs/operators';
 import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
+import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
+import { StudyCountryInterface } from 'src/app/_rms/interfaces/core/study-country.interface';
+import { StudyCTUInterface } from 'src/app/_rms/interfaces/core/study-ctus.interface';
+import { BackService } from 'src/app/_rms/services/back/back.service';
+import { GraphApiService } from 'src/app/_rms/services/common/graph-api/graph-api.service';
+import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { StudyCtuService } from 'src/app/_rms/services/entities/study-ctu/study-ctu.service';
+import { anyStringToDateString, dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, getYYYYMMDDFromDateString } from 'src/assets/js/util';
+import { UpsertCentreComponent } from '../../centre/upsert-centre/upsert-centre.component';
+import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
+import { UpsertCtuAgreementComponent } from '../../ctu-agreement/upsert-ctu-agreement/upsert-ctu-agreement.component';
+import { CtuEvaluationResults, ctuEvaluationsListUrl } from 'src/assets/js/constants';
 
 @Component({
   selector: 'app-upsert-study-ctu',
@@ -24,10 +26,12 @@ import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value
   styleUrls: ['./upsert-study-ctu.component.scss']
 })
 export class UpsertStudyCtuComponent implements OnInit {
+  @ViewChildren('ctuAgreements') ctuAgreementComponents: QueryList<UpsertCtuAgreementComponent>;
   @ViewChildren('centres') centreComponents: QueryList<UpsertCentreComponent>;
   @Input() studyCTUsData: Array<StudyCTUInterface>;
   @Input() studyCountry: StudyCountryInterface;
 
+  public ctuEvaluationsListUrl: string = ctuEvaluationsListUrl;
   static intPatternValidatorFn: ValidatorFn = Validators.pattern("^[0-9]*$");
 
   id: string;
@@ -39,8 +43,9 @@ export class UpsertStudyCtuComponent implements OnInit {
   isSctuPage: boolean = false;
   ctus: CTUInterface[] = [];
   services: ClassValueInterface[] = [];
-
   studyCTUs: StudyCTUInterface[] = [];
+  ctuEvaluations: any[] = [];
+  loadingCTUEvaluations: boolean = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -49,13 +54,13 @@ export class UpsertStudyCtuComponent implements OnInit {
     private modalService: NgbModal,
     private router: Router,
     private contextService: ContextService,
-    private spinner: NgxSpinnerService, 
+    private graphApi: GraphApiService,
+    private spinner: NgxSpinnerService,
     private studyCTUService: StudyCtuService,
-    private studyService: StudyService,
     private toastr: ToastrService) {
-      this.form = this.fb.group({
-        studyCTUs: this.fb.array([])
-      });
+    this.form = this.fb.group({
+      studyCTUs: this.fb.array([])
+    });
   }
 
   ngOnInit(): void {
@@ -99,7 +104,7 @@ export class UpsertStudyCtuComponent implements OnInit {
 
     this.contextService.ctus.subscribe((ctus) => {
       this.ctus = ctus;
-      if (this.ctus != null) {
+      if (this.ctus?.length > 0) {
         this.sortCTUs();
       }
     });
@@ -115,6 +120,9 @@ export class UpsertStudyCtuComponent implements OnInit {
     return this.g[i].controls;
   }
 
+  get fv() { return this.getStudyCTUsForm()?.value; }
+  get fc() { return this.getStudyCTUsForm()?.controls; }
+
   getStudyCTUsForm(): UntypedFormArray {
     return this.form.get('studyCTUs') as UntypedFormArray;
   }
@@ -124,9 +132,10 @@ export class UpsertStudyCtuComponent implements OnInit {
       id: null,
       leadCtu: false,
       services: [],
-      study: null,
+      study: this.studyCountry?.study,  // TODO: verify
       studyCountry: this.studyCountry,
       ctu: [null, Validators.required],
+      ctuAgreements: [],
       centres: null
     });
   }
@@ -149,6 +158,8 @@ export class UpsertStudyCtuComponent implements OnInit {
 
   patchForm() {
     this.form.setControl('studyCTUs', this.patchArray());
+
+    this.onChangeCTU(); // Setting CTU Evaluation data
   }
 
   patchArray(): UntypedFormArray {
@@ -161,8 +172,9 @@ export class UpsertStudyCtuComponent implements OnInit {
         study: sctu.study,
         studyCountry: sctu.studyCountry,
         ctu: sctu.ctu,
+        ctuAgreements: [sctu.ctuAgreements],
         centres: [sctu.centres]
-      }))
+      }));
     });
     return formArray;
   }
@@ -173,15 +185,15 @@ export class UpsertStudyCtuComponent implements OnInit {
       const { compare } = Intl.Collator('en-GB');
 
       this.ctus.sort((a, b) => {
-        if (a.country.iso2?.localeCompare(countryISO2) == 0) {
-          if (b.country.iso2?.localeCompare(countryISO2) == 0) {
+        if (a.country?.iso2?.localeCompare(countryISO2) == 0) {
+          if (b.country?.iso2?.localeCompare(countryISO2) == 0) {
             return compare(a.shortName + a.name, b.shortName + b.name); // TODO: short name?
           }
           return -1;
-        } else if (b.country.iso2?.localeCompare(countryISO2) == 0) {
+        } else if (b.country?.iso2?.localeCompare(countryISO2) == 0) {
           return 1;
         } else {  // Sorting by country + name if none of the CTUs match the current country
-          const countryCompare = a.country.name?.localeCompare(b.country.name);
+          const countryCompare = a.country?.name?.localeCompare(b.country?.name);
           if (countryCompare > 0) {
             return 1;
           } else if (countryCompare < 0) {
@@ -191,8 +203,6 @@ export class UpsertStudyCtuComponent implements OnInit {
           }
         }
       });
-    } else {
-      console.log("Could not get country ID to sort CTUs");
     }
   }
 
@@ -236,29 +246,102 @@ export class UpsertStudyCtuComponent implements OnInit {
     return getFlagEmoji(iso2);
   }
 
-  onChangeCTU(i) {  // Unused
-    let existingStudyCTU = null;
-    for (const sctu of this.studyCTUs) {
-      if (sctu?.ctu?.id === this.g[i].value?.ctu?.id) {
-        existingStudyCTU = sctu;
-        break;
+  // onChangeCTU(i) {  // Unused
+  //   let existingStudyCTU = null;
+  //   for (const sctu of this.studyCTUs) {
+  //     if (sctu?.ctu?.id === this.g[i].value?.ctu?.id) {
+  //       existingStudyCTU = sctu;
+  //       break;
+  //     }
+  //   }
+
+  //   if (existingStudyCTU) {
+  //     delete existingStudyCTU["order"];
+  //     this.getStudyCTUsForm().at(i).setValue(existingStudyCTU);
+  //   } else {
+  //     const ctu = this.g[i].value.ctu;
+  //     this.g[i].reset();
+  //     this.getStudyCTUsForm().at(i).patchValue({ ctu: ctu });
+
+  //     const centreC = this.centreComponents.get(i);
+
+  //     if (centreC.getCentresForm().controls.length == 0) {
+  //       centreC.addCentre();
+  //     }
+  //   }
+  // }
+
+  onChangeCTU() {
+    this.loadingCTUEvaluations = true;
+    this.graphApi.ctuEvaluations$.subscribe((ctuEvaluations) => {
+      for (const [i, fv] of this.fv.entries()) {
+        const projectShortName = fv.study?.project?.shortName?.toLowerCase()?.trim();
+        const ctuShortName = fv.ctu?.shortName?.toLowerCase()?.trim();
+        if (projectShortName && ctuShortName && ctuEvaluations[projectShortName]) {
+          this.ctuEvaluations[i] = ctuEvaluations[projectShortName].filter((fields) => fields?.CTU?.toLowerCase() === ctuShortName);
+        } else {
+          this.ctuEvaluations[i] = [];
+        }
+      }
+
+      this.sortCTUEvaluations();
+
+      this.loadingCTUEvaluations = false;
+    });
+  }
+
+  sortCTUEvaluations() {
+    this.ctuEvaluations.sort((a,b) => (a.Created > b.Created) ? 1 : ((b.Created > a.Created) ? -1 : 0))
+  }
+
+  getCTUEvaluationResult(i) {
+    if (this.ctuEvaluations[i]?.length > 0) {
+      return this.ctuEvaluations[i][0]?.Result;
+    } else if (this.loadingCTUEvaluations) {
+      return "Loading...";
+    }
+    return null;
+  }
+
+  getCTUEvaluationDate(i) {
+    if (this.ctuEvaluations[i]?.length > 0) {
+      return `(${getYYYYMMDDFromDateString(this.ctuEvaluations[i][0]?.Created)})`;
+    } else if (this.loadingCTUEvaluations) {
+      return "Loading...";
+    }
+    return "";
+  }
+
+  getCTUEvaluationTagClass(i) {
+    let tagClass = "";
+    const resultText = this.getCTUEvaluationResult(i)?.toLowerCase().trim();
+
+    if (resultText) {
+      if (resultText === CtuEvaluationResults.SATISFACTORY?.toLowerCase()) {
+        tagClass = "tag-success";
+      } else if (resultText === CtuEvaluationResults.NEEDS_IMPROVEMENT?.toLowerCase()) {
+        tagClass = "tag-warning";
+      } else if (resultText === CtuEvaluationResults.UNSATISFACTORY?.toLowerCase()) {
+        tagClass = "tag-danger";
       }
     }
+    return tagClass;
+  }
 
-    if (existingStudyCTU) {
-      delete existingStudyCTU["order"];
-      this.getStudyCTUsForm().at(i).setValue(existingStudyCTU);
-    } else {
-      const ctu = this.g[i].value.ctu;
-      this.g[i].reset();
-      this.getStudyCTUsForm().at(i).patchValue({ctu: ctu});
+  getCTUEvaluationTagBorderColor(i) {
+    return getTagBorderColor(this.getCTUEvaluationResult(i));
+  }
 
-      const centreC = this.centreComponents.get(i);
+  getCTUEvaluationTagBgColor(i) {
+    return getTagBgColor(this.getCTUEvaluationResult(i));
+  }
 
-      if (centreC.getCentresForm().controls.length == 0) {
-        centreC.addCentre();
-      }
-    }
+  getTagBorderColor(text) {
+    return getTagBorderColor(text);
+  }
+
+  getTagBgColor(text) {
+    return getTagBgColor(text);
   }
 
   searchClassValues = (term: string, item) => {
@@ -279,23 +362,15 @@ export class UpsertStudyCtuComponent implements OnInit {
     }
   }
 
-  getTagBorderColor(text) {
-    return getTagBorderColor(text);
-  }
-
-  getTagBgColor(text) {
-    return getTagBgColor(text);
-  }
-
   ngOnChanges(changes: SimpleChanges) {
     let patchForm = false;
     if (changes.studyCountry?.previousValue?.country?.iso2 != changes.studyCountry?.currentValue?.country?.iso2) {
-      if (this.ctus != null) {
+      if (this.ctus?.length > 0) {
         this.sortCTUs();
       }
       patchForm = true;
     }
-    
+
     if (changes.studyCTUsData) {
       if (this.studyCTUsData === null) {
         this.studyCTUs = [];
@@ -304,7 +379,7 @@ export class UpsertStudyCtuComponent implements OnInit {
       }
       patchForm = true;
     }
-    
+
     if (patchForm) {
       this.patchForm();
     }
@@ -316,40 +391,41 @@ export class UpsertStudyCtuComponent implements OnInit {
 
   deleteStudyCTU($event, i: number) {
     $event.stopPropagation(); // Expands the panel otherwise
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-    removeModal.componentInstance.itemType = "study CTU";
 
-    removeModal.result.then((remove) => {
-      if (remove) {
-        const sctuId = this.getStudyCTUsForm().value[i].id;
-        if (!sctuId) { // Study CTU has been locally added only
-          this.getStudyCTUsForm().removeAt(i);
-        } else {  // Existing study CTU
-          this.studyService.deleteStudyCTUFromStudyCountry(this.studyCountry.id, sctuId).subscribe((res: any) => {
+    const sctuId = this.getStudyCTUsForm().value[i].id;
+    if (!sctuId) { // Study CTU has been locally added only
+      this.getStudyCTUsForm().removeAt(i);
+    } else {  // Existing study CTU
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
+      removeModal.componentInstance.setDefaultDeleteMessage("study CTU");
+
+      removeModal.result.then((remove) => {
+        if (remove) {
+          this.studyCTUService.deleteStudyCTU(sctuId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getStudyCTUsForm().removeAt(i);
 
               // Removing study CTU from studyCTUs list, otherwise there will be a failing API call to delete it on save
-              this.studyCTUs = this.studyCTUs.filter((item:any) => item.id != sctuId);
+              this.studyCTUs = this.studyCTUs.filter((item: any) => item.id != sctuId);
               this.toastr.success('Study CTU deleted successfully');
             } else {
               this.toastr.error('Error when deleting study CTU', res.statusText);
             }
           }, error => {
-            this.toastr.error(error.error.title);
-          })
+            this.toastr.error(error);
+          });
         }
-      }
-    }, error => {});
+      }, error => { this.toastr.error(error) });
+    }
   }
 
   isFormValid() {
     this.submitted = true;
-    
+
     // Manually checking CTU field (shouldn't be empty)
     for (const i in this.form.get("studyCTUs")['controls']) {
       if (this.form.get("studyCTUs")['controls'][i].value.ctu == null) {
-        this.form.get("studyCTUs")['controls'][i].controls.ctu.setErrors({'required': true});
+        this.form.get("studyCTUs")['controls'][i].controls.ctu.setErrors({ 'required': true });
       }
     }
 
@@ -393,128 +469,78 @@ export class UpsertStudyCtuComponent implements OnInit {
   }
 
   onSave(scId: string, studyId: string): Observable<boolean[]> {
-      this.submitted = true;
-      let saveObs$: Array<Observable<boolean>> = [];
-  
-      // Used to check for study CTUs that have been "soft deleted" from the interface, 
-      // as in by switching CTU for an existing study CTU rather than deleting the study CTU and making a new one
-      const sctuIds: Array<Number> = this.studyCTUs.map((item: StudyCTUInterface) => {return item.id;});
-  
-      const payload = JSON.parse(JSON.stringify(this.form.value));
-  
-      for (const [i, item] of payload.studyCTUs.entries()) {
-        this.updatePayload(item, scId, studyId, i);
-        if (!item.id) {  // Add
-  
-          saveObs$.push(this.studyService.addStudyCTUFromStudy(studyId, item).pipe(
-            mergeMap((res: any) => {
-              if (res.statusCode === 201) {
-                return this.centreComponents.get(i).onSave(res.id, studyId).pipe(
-                  mergeMap((success) => {
-                    if (success) {
-                      return of(true);
-                    }
-                    return of(false);
-                  })
-                );
-              }
-              return of(false);
-            })
-          ));
-        } else {  // Edit
-          // See comment above
-          const index = sctuIds.indexOf(item.id, 0);
-          if (index > -1) {
-            sctuIds.splice(index, 1);
+    this.submitted = true;
+    let saveObs$: Array<Observable<boolean>> = [];
+
+    const payload = JSON.parse(JSON.stringify(this.form.value));
+
+    for (const [i, item] of payload.studyCTUs.entries()) {
+      this.updatePayload(item, scId, studyId, i);
+
+      let itemObs$: Observable<Object> = null;
+
+      if (!item.id) {  // Add
+        itemObs$ = this.studyCTUService.addStudyCTUFromStudy(studyId, item)
+      } else {
+        itemObs$ = this.studyCTUService.editStudyCTU(item.id, item);
+      }
+
+      saveObs$.push(itemObs$.pipe(
+        mergeMap((res: any) => {
+          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+            let subObs$: Observable<boolean>[] = [];
+
+            subObs$.push(this.centreComponents.get(i).onSave(res.id, studyId).pipe(
+              map((successArr: boolean[]) => {
+                return successArr.every(a => a);
+              })
+            ));
+
+            subObs$.push(this.ctuAgreementComponents.get(i).onSave(res.id).pipe(
+              map((successArr: boolean[]) => {
+                return successArr.every(a => a);
+              })
+            ));
+
+            return combineLatest(subObs$).pipe(
+              map((successArr: boolean[]) => {
+                return successArr.every(a => a);
+              })
+            );
           }
-  
-          const sctuObs$ = this.centreComponents.get(i).onSave(item.id, item.study).pipe(
-            mergeMap((successArr: boolean[]) => {
-              const success: boolean = successArr.every(b => b);
-              if (!success) {
-                this.toastr.error('Failed to update centres');
-              }
-              return of(success);
-            })
-          );
-  
-          saveObs$.push(sctuObs$);
-  
-          // TODO: don't do editObs if sctuObs$ false?
-          
-          const scObs$ = this.studyService.editStudyCTUFromStudy(studyId, item.id, item).pipe(
-            mergeMap((res: any) => {
-              if (res.statusCode === 200) {
-                // this.reuseService.notifyComponents();
-                return of(true);
-              } else {
-                this.toastr.error(res.detail);
-                return of(false);
-              }
-            }), catchError(err => {
-              this.toastr.error(err);
-              return of(false);
-            })
-          );
-  
-          saveObs$.push(scObs$);
-        }
-      }
-  
-      sctuIds.forEach((scId) => {
-        saveObs$.push(this.studyService.deleteStudyCTUFromStudy(studyId, scId).pipe(
-          mergeMap((res: any) => {
-            if (res.status === 204) {
-              return of(true);
-            } else {
-              this.toastr.error(res);
-              return of(false);
-            }
-          }), catchError(err => {
-            this.toastr.error(err);
+          this.toastr.error("Failed to save Study CTU");
+          return of(false);
+        })
+      ))
+    }
+
+    // Used to check for study CTUs that have been "soft deleted" from the interface, 
+    // as in by switching CTU for an existing study CTU rather than deleting the study CTU and making a new one
+    const formIds: Array<String> = payload.studyCTUs.map((item: StudyCTUInterface) => { return item.id; });
+    const removedItems: Array<StudyCTUInterface> = this.studyCTUs.filter((previousItem: StudyCTUInterface) => formIds.indexOf(previousItem.id) < 0);
+
+    // Deleting items removed in the UI
+    removedItems.forEach((sctu: StudyCTUInterface) => {
+      saveObs$.push(this.studyCTUService.deleteStudyCTU(sctu.id).pipe(
+        mergeMap((res: any) => {
+          if (res.status === 204) {
+            return of(true);
+          } else {
+            this.toastr.error(res);
             return of(false);
-          }))
-        );
-      });
-  
-      if (saveObs$.length == 0) {
-        saveObs$.push(of(true));
-      }
-  
-      return combineLatest(saveObs$);
+          }
+        }), catchError(err => {
+          this.toastr.error(err);
+          return of(false);
+        }))
+      );
+    });
 
+    if (saveObs$.length == 0) {
+      saveObs$.push(of(true));
+    }
 
-    // this.submitted = true;
-    // let saveObs$: Array<Observable<boolean>> = [];
-
-    // JSON.parse(JSON.stringify(this.form.value.studyCTUs)).forEach(item => {
-    //   this.updatePayload(item, scId, studyId);
-    //   if (!item.id) { // Add
-    //     saveObs$.push(this.studyService.addStudyCTUFromStudyCountry(scId, item).pipe(
-    //       mergeMap((res: any) => {
-    //         if (res.statusCode === 201) {
-    //           return of(true);
-    //         }
-    //         return of(false);
-    //       })
-    //     ));
-    //   } else {  // Edit
-    //     saveObs$.push(this.studyService.editStudyCTUFromStudyCountry(scId, item.id, item).pipe(
-    //       mergeMap((res: any) => {
-    //         if (res.statusCode === 200) {
-    //           return of(true);
-    //         }
-    //         return of(false);
-    //       })
-    //     ));
-    //   }
-    // });
-
-    // if (saveObs$.length == 0) {
-    //   saveObs$.push(of(true));
-    // }
-
-    // return combineLatest(saveObs$);
+    return combineLatest(saveObs$);
   }
 
   onSaveStudyCtu() {
@@ -527,7 +553,7 @@ export class UpsertStudyCtuComponent implements OnInit {
         this.onSave(scId, studyId).subscribe((success) => {
           this.spinner.hide();
           if (success) {
-            this.toastr.success("Data saved successfully");
+            this.toastr.success("Changes saved successfully");
             this.router.navigate([`/study-ctus/${this.id}/view`]);
           }
         });
@@ -546,13 +572,10 @@ export class UpsertStudyCtuComponent implements OnInit {
     return fv1?.id == fv2?.id;
   }
 
-  searchCTUs(term: string, item) {
-    term = term.toLocaleLowerCase();
-    return item.name?.toLocaleLowerCase().indexOf(term) > -1 
-        || item.shortName?.toLocaleLowerCase().indexOf(term) > -1 
-        || item.addressInfo?.toLocaleLowerCase().indexOf(term) > -1;
+  searchCTUs = (term: string, item) => {
+    return this.contextService.searchCTUs(term, item);
   }
-  
+
   back(): void {
     this.backService.back();
   }

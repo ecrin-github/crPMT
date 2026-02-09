@@ -23,8 +23,6 @@ import { UpsertStudyComponent } from '../common/study/upsert-study/upsert-study.
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { NgxPermissionsModule } from 'ngx-permissions';
 import { CommonPagesModule } from '../common/common-pages.module';
-import { SummaryUserComponent } from '../common/user/summary-user/summary-user/summary-user.component';
-import { UpsertUserComponent } from '../common/user/upsert/upsert-user/upsert-user.component';
 import { ManagerGuard } from 'src/app/_rms/guards/role/manager.guard';
 import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
 import { PersonListComponent } from '../common/person/person-list/person-list.component';
@@ -100,13 +98,13 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
             },
             // People
             {
-                path: 'persons',
+                path: 'people',
                 pathMatch: 'full',
                 component: PersonListComponent,
                 data: { 
                     shouldReuse: true,
                     key: 'summaryusercomponent',
-                    reuseRoutesFrom: ['persons/:id/view', 'persons/:id/add', 'persons/:id/edit']
+                    reuseRoutesFrom: ['people/:id/view', 'people/:id/add', 'people/:id/edit']
                 }
             }
         ]),

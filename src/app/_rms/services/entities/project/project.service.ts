@@ -10,8 +10,29 @@ const base = environment.baseUrlApi;
 export class ProjectService {
 
   constructor( private http: HttpClient) { }
+
+  /* Project lists */
+  getProjectList() {
+    return this.http.get(`${base}/core/projects`);
+  }
+
+  getProjectsByFundingSource(fsId) {
+    return this.http.get(`${base}/core/projects-by-funding-source/${fsId}`);
+  }
+
+  getProjectsByOrganisation(orgId) {
+    return this.http.get(`${base}/core/projects-by-organisation/${orgId}`);
+  }
+
+  getProjectsByService(sId) {
+    return this.http.get(`${base}/core/projects-by-service/${sId}`);
+  }
+
+  getProjectsByPerson(pId) {
+    return this.http.get(`${base}/core/projects-by-person/${pId}`);
+  }
   
-  /* project data */
+  /* Project CRUD */
   addProject(payload) {
     return this.http.post(`${base}/core/projects`, payload);
   }

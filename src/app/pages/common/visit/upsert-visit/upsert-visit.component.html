@@ -1,0 +1,159 @@
+<form [formGroup]="form" ngNativeValidate>
+    <div formArrayName="visits">
+        <div class="row" *ngFor="let visit of getVisitsForm()?.controls; let i = index;" [formGroupName]="i"
+            [ngClass]="{'mt-2': i > 0, 'mt-7': visitTypeCode === VisitTypeCodes.MOV}">
+            <div class="col">
+                <div class="row mb-1" *ngIf="visitTypeCode === VisitTypeCodes.MOV">
+                    <div class="col-md-2">
+                        <span class="view-sub-sub-title underline">MOV {{i+1}}</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-4 pe-1">
+                                <div for="visitDate" class="font-style">Visit date</div>
+                                <div class="input-group" *ngIf="!isView">
+                                    <input class="form-control" placeholder="yyyy-mm-dd" name="visitDate" ngbDatepicker
+                                        #visitDate="ngbDatepicker" formControlName="visitDate" container='body' />
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" (click)="visitDate.toggle()" type="button">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <span class="text-value" *ngIf="isView">{{dateToString(visit.value.visitDate)}}</span>
+                            </div>
+                            <div class="col-md-8">
+                                <div for="pharmacy" class="font-style">Pharmacy</div>
+                                <input type="text" id="pharmacy" class="form-control" formControlName="pharmacy"
+                                    *ngIf="!isView" />
+                                <span class="text-value" *ngIf="isView">{{visit.value.pharmacy}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-md-4 pe-1">
+                                <div for="duration" class="font-style">Duration</div>
+                                <div class="row">
+                                    <div class="col-md-4 pe-0">
+                                        <input type="text" id="duration" class="form-control" formControlName="duration"
+                                            *ngIf="!isView" />
+                                    </div>
+                                    <div class="col-md-8 ps-0">
+                                        <ng-select [items]="TIME_UNITS" formControlName="durationUnit"
+                                            [multiple]="false" [virtualScroll]="false"
+                                            class="form-control ng-form-control" notFoundText="No units found"
+                                            placeholder="Select unit" *ngIf="!isView" appendTo="body">
+                                        </ng-select>
+                                    </div>
+                                </div>
+                                <div *ngIf="isView" class="text-value">{{visit.value.duration}}
+                                    {{visit.value.durationUnit}}
+                                </div>
+                            </div>
+                            <div [ngClass]="isView ? 'col-md-8' : 'col-md-7'">
+                                <div for="comment" class="font-style">Comment</div>
+                                <ng-container *ngIf="!isView; else commentView">
+                                    <textarea cols="30" rows="1" class="form-control" placeholder="" formControlName="comment"
+                                        *ngIf="!isView" id="comment">
+                                    </textarea>
+                                </ng-container>
+                                <ng-template #commentView>
+                                    <ng-container *ngIf="visit.value.comment; else noComment">
+                                        <div class="text-value" #commentDiv>{{displayComment(i, visit.value.comment)}}
+                                            <a (click)="setTruncate(i)"
+                                                *ngIf="visit.value?.comment?.length > maxCharsBeforeTruncate"
+                                                class="more-less-link">{{truncate[i] ? 'more' : 'less'}}</a>
+                                        </div>
+                                    </ng-container>
+                                    <ng-template #noComment>
+                                        <span class="text-value">/</span>
+                                    </ng-template>
+                                </ng-template>
+                            </div>
+                            <div class="col-md-1 d-flex justify-content-left align-items-center">
+                                <div class="row">
+                                    <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;"
+                                        *ngIf="!isView && visitTypeCode === VisitTypeCodes.MOV" (click)="removeVisit(i)"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-6">
+                    <div class="col-md-6">
+                        <div for="reportSent" class="font-style">Report sent to the sponsor or lead CTU</div>
+                        <div class="row" *ngIf="!isView">
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <input *ngIf="!isView" type="checkbox" id="reportSent" class="form-check-input checkbox"
+                                            (change)="onChangeReportSent(i)" formControlName="reportSent" />
+                                    </div>
+                                    <div class="col-md-8 ps-0" *ngIf="reportSent[i]">
+                                        <div class="input-group" *ngIf="!isView">
+                                            <input class="form-control" placeholder="yyyy-mm-dd" name="reportSentDate"
+                                                ngbDatepicker #reportSentDate="ngbDatepicker" formControlName="reportSentDate"
+                                                container='body'>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary" (click)="reportSentDate.toggle()" type="button">
+                                                    <i class="fa fa-calendar"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="isView" class="text-value">{{visit.value.reportSent ?
+                            dateToString(visit.value.reportSentDate) : 'No'}}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div for="reportApproved" class="font-style">Report reviewed/approved by the lead CTU/sponsor
+                        </div>
+                        <ng-container *ngIf="!isView && reportSent[i]; else reportApprovedView">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <input *ngIf="!isView" type="checkbox" id="reportApproved"
+                                                class="form-check-input checkbox" formControlName="reportApproved" />
+                                        </div>
+                                        <div class="col-md-8 ps-0">
+                                            <div class="input-group" *ngIf="!isView">
+                                                <input class="form-control" placeholder="yyyy-mm-dd" name="reportApprovedDate"
+                                                    ngbDatepicker #reportApprovedDate="ngbDatepicker"
+                                                    formControlName="reportApprovedDate" container='body'>
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-primary" (click)="reportApprovedDate.toggle()"
+                                                        type="button">
+                                                        <i class="fa fa-calendar"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+                        <ng-template #reportApprovedView>
+                            <div *ngIf="isView" class="text-value">{{visit.value.reportSent ?
+                                (visit.value.reportApproved ? dateToString(visit.value.reportApprovedDate) : 'No') :
+                                'Report has not
+                                been sent yet'}}</div>
+                        </ng-template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<div class="row mt-6" *ngIf="!isView && visitTypeCode === VisitTypeCodes.MOV">
+    <div class="col-md-6 d-flex align-items-center justify-content-left">
+        <button class="btn btn-primary" (click)="addVisit()">
+            <i class="fa fa-plus"></i>Add MOV
+        </button>
+    </div>
+</div>

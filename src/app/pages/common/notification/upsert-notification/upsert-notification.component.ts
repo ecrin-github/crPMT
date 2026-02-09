@@ -1,18 +1,14 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
-import { NotificationInterface } from 'src/app/_rms/interfaces/study/notification.interface';
-import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { Observable, combineLatest, of } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+import { NotificationInterface } from 'src/app/_rms/interfaces/core/notification.interface';
+import { NotificationService } from 'src/app/_rms/services/entities/notification/notification.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { Observable, combineLatest, of } from 'rxjs';
-import { catchError, mergeMap } from 'rxjs/operators';
-import { Router } from '@angular/router';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
-import { NotificationService } from 'src/app/_rms/services/entities/notification/notification.service';
-import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';
 
 @Component({
   selector: 'app-upsert-notification',
@@ -27,15 +23,15 @@ export class UpsertNotificationComponent implements OnInit {
   isEdit: boolean = false;
   isView: boolean = false;
   isAdd: boolean = false;
+  maxCharsBeforeTruncate: number = 60;
 
+  truncate: boolean[] = [];
   notifications: NotificationInterface[] = [];
 
   constructor(
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private router: Router,
-    private spinner: NgxSpinnerService,
-    private studyCountryService: StudyCountryService,
     private notificationService: NotificationService,
     private toastr: ToastrService) {
       this.form = this.fb.group({
@@ -77,6 +73,10 @@ export class UpsertNotificationComponent implements OnInit {
       this.getNotificationsForm().at(0).patchValue({authority: "Ethics Committee"});
       this.getNotificationsForm().at(1).patchValue({authority: "National Competent Authority"});
     }
+
+    for (let i=0; i < this.g.length; i++) {
+      this.setInitialTruncate(i);
+    }
   }
 
   patchArray(): UntypedFormArray {
@@ -110,16 +110,16 @@ export class UpsertNotificationComponent implements OnInit {
   }
 
   deleteNotification(i: number) {
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-    removeModal.componentInstance.itemType = "notification";
+    const nId = this.getNotificationsForm().value[i].id;
+    if (!nId) { // Notification has been locally added only
+      this.getNotificationsForm().removeAt(i);
+    } else {  // Existing notification
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      removeModal.componentInstance.setDefaultDeleteMessage("notification");
 
-    removeModal.result.then((remove) => {
-      if (remove) {
-        const sId = this.getNotificationsForm().value[i].id;
-        if (!sId) { // Notification has been locally added only
-          this.getNotificationsForm().removeAt(i);
-        } else {  // Existing notification
-          this.notificationService.deleteNotification(sId).subscribe((res: any) => {
+      removeModal.result.then((remove) => {
+        if (remove) {
+          this.notificationService.deleteNotification(nId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getNotificationsForm().removeAt(i);
               this.toastr.success('Notification deleted successfully');
@@ -127,11 +127,34 @@ export class UpsertNotificationComponent implements OnInit {
               this.toastr.error('Error when deleting notification', res.statusText);
             }
           }, error => {
-            this.toastr.error(error.error.title);
-          })
+            this.toastr.error(error);
+          });
         }
-      }
-    }, error => {});
+      }, error => {this.toastr.error(error)});
+    }
+  }
+
+  setInitialTruncate(i) {
+    if (this.form.value?.notifications[i]?.comment?.length > this.maxCharsBeforeTruncate) {
+      this.truncate[i] = true;
+    } else {
+      this.truncate[i] = false;
+    }
+  }
+  
+  setTruncate(i) {
+    if (!this.truncate[i]) {
+      this.truncate[i] = true;
+    } else {
+      this.truncate[i] = false;
+    }
+  }
+
+  displayComment(i, comment) {
+    if (this.truncate[i]) {
+      return comment.slice(0, this.maxCharsBeforeTruncate) + "...";
+    }
+    return comment;
   }
 
   // TODO?
@@ -167,7 +190,7 @@ export class UpsertNotificationComponent implements OnInit {
     for (const [i, item] of payload.notifications.entries()) {
       this.updatePayload(item, scId, i);
       if (!item.id) { // Add
-        saveObs$.push(this.studyCountryService.addNotificationFromStudyCountry(scId, item).pipe(
+        saveObs$.push(this.notificationService.addNotificationFromStudyCountry(scId, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 201) {
               return of(true);

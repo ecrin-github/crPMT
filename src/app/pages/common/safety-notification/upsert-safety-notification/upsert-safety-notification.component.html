@@ -1,0 +1,66 @@
+<div class="ps-6 pe-6">
+    <div class="row mb-2">
+        <div class="col-md-12">
+            <span class="safety-notification-table-title">{{getAuthorityLabel()}}</span>
+        </div>
+    </div>
+    <div [ngClass]="isView ? 'table-container-view' : ''">
+        <div class="row">
+            <div class="col-md-3">
+                <div for="year" class="font-style">Year</div>
+            </div>
+            <div class="col-md-6">
+                <div for="submissionDate" class="font-style">Submission date</div>
+            </div>
+        </div>
+        <hr class="mt-1 mb-1">
+        <form [formGroup]="form" ngNativeValidate>
+            <div formArrayName="safetyNotifications">
+                <div class="row" *ngFor="let safetyNotification of getSafetyNotificationsForm()?.controls; let i = index;" [formGroupName]="i">
+                    <div class="col" [id]="'featpanel'+i">
+                        <hr *ngIf="i > 0" class="mt-1 mb-1">
+                        <div class="row" [ngClass]="i > 0 ? 'mt-1' : ''">
+                            <div class="col-md-3">
+                                <input type="text" id="year" class="form-control" formControlName="year" *ngIf="!isView"/>
+                                <span class="text-value" *ngIf="isView">{{safetyNotification.value.year}}</span>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="input-group" *ngIf="!isView">
+                                    <input class="form-control" placeholder="yyyy-mm-dd"
+                                        [disabled]="safetyNotification.value.notApplicable" name="submissionDate"
+                                        ngbDatepicker #submissionDate="ngbDatepicker" formControlName="submissionDate"
+                                        container='body'>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" (click)="submissionDate.toggle()" type="button">
+                                            <i class="fa fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <span class="text-value" *ngIf="isView">{{safetyNotification.value.notApplicable ? "N/A"
+                                    : dateToString(safetyNotification.value.submissionDate)}}</span>
+                            </div>
+                            <div class="col-md-2 pe-0 d-flex align-items-center" *ngIf="!isView">
+                                <input type="checkbox" class="form-check-input checkbox-2 me-2 mt-0"
+                                    formControlName="notApplicable" />
+                                <span class="text-value">N/A</span>
+                            </div>
+                            <div class="col-md-1 d-flex justify-content-left align-items-center">
+                                <div class="row">
+                                    <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;"
+                                        *ngIf="!isView" (click)="deleteSafetyNotification(i)"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="row mt-2" *ngIf="!isView">
+            <div class="col-md-6 d-flex align-items-center justify-content-left">
+                <button class="btn btn-primary" (click)="addSafetyNotification()">
+                    <i class="fa fa-plus"></i>Add row
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -3,7 +3,7 @@
         <div id="navbar">
             <div class="row upsert-navbar">
                 <div class="col-md-8 d-inline-flex">
-                    <div class="view-title text-truncate">Project: {{projectForm.value.shortName ? projectForm.value.shortName : projectForm.value.name ? projectForm.value.name : ''}}</div>
+                    <div class="view-title text-truncate">Project: {{fv.shortName ? fv.shortName : fv.name ? fv.name : ''}}</div>
                 </div>
                 <div class="col-md-4 d-flex justify-content-end">
                     <ng-container *ngIf="isView">
@@ -32,7 +32,7 @@
         <form [formGroup]="projectForm">
             <div class="row section-title">
                 <div class="col-md-12 text-left">
-                    <div class="text-value" class="view-sub-sub-title">General Information</div>
+                    <div class="text-value" class="view-sub-title">General Information</div>
                 </div>
             </div>
             <div class="row form-group">
@@ -43,13 +43,13 @@
                     <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && g.shortName.errors">
                         <p *ngIf="submitted && g.shortName.errors.required">Please enter the project's (short) name</p>
                     </div>
-                    <div *ngIf="isView" class="text-value">{{projectData?.shortName ? projectData?.shortName : ''}}</div>
+                    <div *ngIf="isView" class="text-value">{{fv?.shortName ? fv?.shortName : ''}}</div>
                 </div>
                 <div class="col-md-8">
                     <div for="name" class="font-style">Full Name of EU Project<sup *ngIf="!isView">*</sup></div>
                     <textarea cols="30" rows="2" class="form-control" placeholder="Full project name"
                         formControlName="name" *ngIf="!isView" id="name" [ngClass]="{ 'is-invalid': submitted && g.name.errors }"></textarea>
-                    <div *ngIf="isView" class="text-value">{{projectData?.name}}</div>
+                    <div *ngIf="isView" class="text-value">{{fv?.name}}</div>
                 </div>
             </div>
             <div class="row form-group">
@@ -67,7 +67,7 @@
                             </button>
                         </div>
                     </div>
-                    <div *ngIf="isView" class="text-value">{{projectData?.startDate}}</div>
+                    <div *ngIf="isView" class="text-value">{{dateToString(fv?.startDate)}}</div>
                 </div>
                 <div class="col-md-2">
                     <div for="endDate" class="font-style">End date</div>
@@ -83,7 +83,7 @@
                             </button>
                         </div>
                     </div>
-                    <div *ngIf="isView" class="text-value">{{projectData?.endDate}}</div>
+                    <div *ngIf="isView" class="text-value">{{dateToString(fv?.endDate)}}</div>
                 </div>
             </div>
             <div class="row form-group">
@@ -110,9 +110,9 @@
                             </div>
                         </ng-template>
                     </ng-select>
-                    <div *ngIf="isView" class="text-value">{{projectData?.coordinatingInstitution ? (projectData.coordinatingInstitution.name + 
-                            (projectData.coordinatingInstitution.shortName ? ' (' + projectData.coordinatingInstitution.shortName + ')' : '') +
-                            (projectData.coordinatingInstitution.country?.name ? ', ' + projectData.coordinatingInstitution.country.name : '')) : ''}}
+                    <div *ngIf="isView" class="text-value">{{fv?.coordinatingInstitution ? (fv.coordinatingInstitution.name + 
+                            (fv.coordinatingInstitution.shortName ? ' (' + fv.coordinatingInstitution.shortName + ')' : '') +
+                            (fv.coordinatingInstitution.country?.name ? ', ' + fv.coordinatingInstitution.country.name : '')) : ''}}
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -139,13 +139,13 @@
                             </div>
                         </ng-template>
                     </ng-select>
-                    <div class="text-value" *ngIf="isView">{{projectData?.coordinator?.fullName}}{{projectData?.coordinator?.country ? ' (' + projectData.coordinator.country?.name + ')' : ''}}</div>
+                    <div class="text-value" *ngIf="isView">{{fv?.coordinator?.fullName}}{{fv?.coordinator?.country ? ' (' + fv.coordinator.country?.name + ')' : ''}}</div>
                 </div>
             </div>
             <hr>
             <div class="row section-title">
                 <div class="col-md-12 text-left">
-                    <div class="text-value" class="view-sub-sub-title">Project Funding</div>
+                    <div class="text-value" class="view-sub-title">Project Funding</div>
                 </div>
             </div>
             <div class="row form-group">
@@ -171,7 +171,7 @@
                         </ng-template>
                     </ng-select>
                     <div *ngIf="isView" class="tags-container">
-                        <span *ngFor="let fs of projectData?.fundingSources" class="tag" 
+                        <span *ngFor="let fs of fv?.fundingSources" class="tag" 
                             [ngStyle]="{ 'border-color': getTagBorderColor(fs.value), 'background-color': getTagBgColor(fs.value) }">{{fs.value}}</span>
                     </div>
                 </div>
@@ -179,23 +179,23 @@
                     <div for="gaNumber" class="font-style">GA number</div>
                     <input type="text" id="gaNumber" class="form-control" placeholder="e.g. 101136365"
                         formControlName="gaNumber" *ngIf="!isView"/>
-                    <div *ngIf="isView" class="text-value">{{projectData?.gaNumber ? projectData?.gaNumber : ''}}</div>
+                    <div *ngIf="isView" class="text-value">{{fv?.gaNumber ? fv?.gaNumber : ''}}</div>
                 </div>
             </div>
             <hr>
             <div class="row section-title-field">
                 <div class="col-md-12 text-left">
-                    <div class="text-value" class="view-sub-sub-title">Clinical Studies</div>
+                    <div class="text-value" class="view-sub-title">Clinical Studies</div>
                 </div>
             </div>
             <ng-container *ngIf="!isView; else viewStudies">
-                <app-upsert-study [studiesData]="projectData?.studies" [projectId]="id" [isView]="isView" [isEdit]="isEdit"></app-upsert-study>
+                <app-upsert-study [studiesData]="fv?.studies" [project]="fv" [isView]="isView" [isEdit]="isEdit"></app-upsert-study>
             </ng-container>
             <ng-template #viewStudies>
                 <div class="row form-group">
                     <div class="col-md-12">
                         <ul>
-                            <li *ngFor="let study of projectData?.studies" class="text-value">
+                            <li *ngFor="let study of fv?.studies" class="text-value">
                                 <a [routerLink]="['/studies', study.id, 'view']">{{study.shortTitle}}</a>{{study.cEuco ? ', cEuCo: ' + study.cEuco.fullName + ' (' + study.cEuco.country?.name + ')' : ''}}
                             </li>
                         </ul>
@@ -204,17 +204,18 @@
             </ng-template>
             <hr>
             <div class="row section-title">
-                <div class="col-md-12 text-left">
-                    <div class="text-value" class="view-sub-sub-title">Timelines according to Consortium</div>
+                <div class="col-md-12">
+                    <div class="text-value" class="view-sub-title">Timelines according to Consortium</div>
                 </div>
             </div>
-            <div>
-                Coming soon!
+            <div class="col-md-12">
+                <app-upsert-reporting-period [reportingPeriodsData]="fv?.reportingPeriods" 
+                    [projectId]="id" [isView]="isView" [isEdit]="isEdit"></app-upsert-reporting-period>
             </div>
             <hr>
             <div class="row section-title">
                 <div class="col-md-12 text-left">
-                    <div class="text-value" class="view-sub-sub-title">Publication Information</div>
+                    <div class="text-value" class="view-sub-title">Publication Information</div>
                 </div>
             </div>
             <div class="row form-group">
@@ -222,7 +223,7 @@
                     <div for="publicSummary" class="font-style">Public summary (including ECRIN role)</div>
                     <textarea cols="30" rows="3" class="form-control" placeholder="Project's public summary (including ECRIN role)"
                         formControlName="publicSummary" *ngIf="!isView" id="publicSummary"></textarea>
-                    <div *ngIf="isView" class="text-value">{{projectData?.publicSummary}}</div>
+                    <div *ngIf="isView" class="text-value">{{fv?.publicSummary}}</div>
                 </div>
             </div>
             <div class="row form-group">
@@ -230,8 +231,8 @@
                     <div for="url" class="font-style">Project website</div>
                     <input type="text" id="url" class="form-control" placeholder="Link the the project's website"
                         formControlName="url" *ngIf="!isView" />
-                    <a href="{{getHttpLink(projectData?.url)}}" target="_blank">
-                        <div *ngIf="isView" class="text-value">{{projectData?.url}}</div>
+                    <a href="{{getHttpLink(fv?.url)}}" target="_blank">
+                        <div *ngIf="isView" class="text-value">{{fv?.url}}</div>
                     </a>
                 </div>
             </div>

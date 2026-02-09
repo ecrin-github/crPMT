@@ -11,6 +11,10 @@ export class SubmissionService {
 
   constructor(private http: HttpClient) { }
 
+    /* Submission CRUD */
+    addSubmissionFromStudyCountry(scId, payload) {
+      return this.http.post(`${base}/core/study-countries/${scId}/submissions`, payload);
+    }
     getSubmission(id) {
       return this.http.get(`${base}/core/submissions/${id}`);
     }

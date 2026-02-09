@@ -1,18 +1,14 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, ValidatorFn, Validators } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
-import { SubmissionInterface } from 'src/app/_rms/interfaces/study/submission.interface';
-import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { Observable, combineLatest, of } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
+import { SubmissionInterface } from 'src/app/_rms/interfaces/core/submission.interface';
+import { SubmissionService } from 'src/app/_rms/services/entities/submission/submission.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { Observable, combineLatest, of } from 'rxjs';
-import { catchError, mergeMap } from 'rxjs/operators';
-import { Router } from '@angular/router';
-import { NgxSpinnerService } from 'ngx-spinner';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
-import { SubmissionService } from 'src/app/_rms/services/entities/submission/submission.service';
-import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';
 
 @Component({
   selector: 'app-upsert-submission',
@@ -29,15 +25,15 @@ export class UpsertSubmissionComponent implements OnInit {
   isEdit: boolean = false;
   isView: boolean = false;
   isAdd: boolean = false;
+  maxCharsBeforeTruncate: number = 100;
 
+  truncate: boolean[] = [];
   submissions: SubmissionInterface[] = [];
 
   constructor(
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private router: Router,
-    private spinner: NgxSpinnerService,
-    private studyCountryService: StudyCountryService,
     private submissionService: SubmissionService,
     private toastr: ToastrService) {
       this.form = this.fb.group({
@@ -85,6 +81,10 @@ export class UpsertSubmissionComponent implements OnInit {
       this.getSubmissionsForm().at(0).patchValue({authority: "Ethics Committee"});
       this.getSubmissionsForm().at(1).patchValue({authority: "National Competent Authority"});
     }
+
+    for (let i=0; i < this.g.length; i++) {
+      this.setInitialTruncate(i);
+    }
   }
 
   patchArray(): UntypedFormArray {
@@ -124,15 +124,15 @@ export class UpsertSubmissionComponent implements OnInit {
   }
 
   deleteSubmission(i: number) {
-    const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
-    removeModal.componentInstance.itemType = "submission";
+    const sId = this.getSubmissionsForm().value[i].id;
+    if (!sId) { // Submission has been locally added only
+      this.getSubmissionsForm().removeAt(i);
+    } else {  // Existing submission
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      removeModal.componentInstance.setDefaultDeleteMessage("submission");
 
-    removeModal.result.then((remove) => {
-      if (remove) {
-        const sId = this.getSubmissionsForm().value[i].id;
-        if (!sId) { // Submission has been locally added only
-          this.getSubmissionsForm().removeAt(i);
-        } else {  // Existing submission
+      removeModal.result.then((remove) => {
+        if (remove) {
           this.submissionService.deleteSubmission(sId).subscribe((res: any) => {
             if (res.status === 204) {
               this.getSubmissionsForm().removeAt(i);
@@ -141,11 +141,34 @@ export class UpsertSubmissionComponent implements OnInit {
               this.toastr.error('Error when deleting submission', res.statusText);
             }
           }, error => {
-            this.toastr.error(error.error.title);
-          })
+            this.toastr.error(error);
+          });
         }
-      }
-    }, error => {});
+      }, error => {this.toastr.error(error)});
+    }
+  }
+
+  setInitialTruncate(i) {
+    if (this.form.value?.submissions[i]?.comment?.length > this.maxCharsBeforeTruncate) {
+      this.truncate[i] = true;
+    } else {
+      this.truncate[i] = false;
+    }
+  }
+  
+  setTruncate(i) {
+    if (!this.truncate[i]) {
+      this.truncate[i] = true;
+    } else {
+      this.truncate[i] = false;
+    }
+  }
+
+  displayText(i, text) {
+    if (this.truncate[i]) {
+      return text.slice(0, this.maxCharsBeforeTruncate) + "...";
+    }
+    return text;
   }
 
   // TODO?
@@ -187,7 +210,7 @@ export class UpsertSubmissionComponent implements OnInit {
     for (const [i, item] of payload.submissions.entries()) {
       this.updatePayload(item, scId, i);
       if (!item.id) { // Add
-        saveObs$.push(this.studyCountryService.addSubmissionFromStudyCountry(scId, item).pipe(
+        saveObs$.push(this.submissionService.addSubmissionFromStudyCountry(scId, item).pipe(
           mergeMap((res: any) => {
             if (res.statusCode === 201) {
               return of(true);

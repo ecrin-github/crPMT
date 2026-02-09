@@ -28,12 +28,6 @@ export class AuthComponent implements OnInit {
     this.msalGuardConfig = MSALGuardConfigFactory();
   }
 
-  ngAfterViewInit(): void {
-    if (environment.production) {
-      document.getElementById('matomo-opt-out-icon').style.bottom = "12vh";
-    }
-  }
-
   login() {
     if (this.msalGuardConfig.authRequest) {
       this.msalService.loginRedirect({ ...this.msalGuardConfig.authRequest } as RedirectRequest);

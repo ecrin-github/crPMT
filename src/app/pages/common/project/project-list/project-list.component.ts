@@ -1,21 +1,20 @@
-import { Component, HostListener, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { NavigationEnd, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgxPermissionsService } from 'ngx-permissions';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
-import { ListService } from 'src/app/_rms/services/entities/list/list.service';
-import { Subject, combineLatest, fromEvent } from 'rxjs';
-import { NgxPermissionsService } from 'ngx-permissions';
-import { NavigationEnd, Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
+import { ProjectListEntryInterface } from 'src/app/_rms/interfaces/core/project-listentry.interface';
+import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
+import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
 import { resolvePath } from 'src/assets/js/util';
-import { ProjectListEntryInterface } from 'src/app/_rms/interfaces/project/project-listentry.interface';
-import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
+import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 
 @Component({
   selector: 'app-project-list',
@@ -52,7 +51,6 @@ export class ProjectListComponent implements OnInit {
   constructor(private statesService: StatesService,
               private reuseService: ReuseService,
               private scrollService: ScrollService, 
-              private listService: ListService, 
               private projectService: ProjectService,
               private spinner: NgxSpinnerService, 
               private toastr: ToastrService, 
@@ -90,7 +88,7 @@ export class ProjectListComponent implements OnInit {
 
   getProjectList() {
     this.spinner.show();
-    this.listService.getProjectList().subscribe((res: any) => {
+    this.projectService.getProjectList().subscribe((res: any) => {
       if (res) {
         this.getSortedProjects(res);
         this.dataSource = new MatTableDataSource<ProjectListEntryInterface>(res);
@@ -110,7 +108,8 @@ export class ProjectListComponent implements OnInit {
 
   deleteRecord(id) {
     const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-    deleteModal.componentInstance.itemType = 'project';
+    deleteModal.componentInstance.setDefaultDeleteMessage("project");
+    
     deleteModal.result.then((data: any) => {
       if (data) {
         this.spinner.show();
