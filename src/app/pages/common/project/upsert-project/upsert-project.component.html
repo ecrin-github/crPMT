@@ -142,7 +142,7 @@
                     <div class="text-value" *ngIf="isView">{{fv?.coordinator?.fullName}}{{fv?.coordinator?.country ? ' (' + fv.coordinator.country?.name + ')' : ''}}</div>
                 </div>
             </div>
-            <hr>
+            <hr class="hr-m2">
             <div class="row section-title">
                 <div class="col-md-12 text-left">
                     <div class="text-value" class="view-sub-title">Project Funding</div>
@@ -202,7 +202,7 @@
                     </div>
                 </div>
             </ng-template>
-            <hr>
+            <hr class="hr-m2">
             <div class="row section-title">
                 <div class="col-md-12">
                     <div class="text-value" class="view-sub-title">Timelines according to Consortium</div>
@@ -212,7 +212,7 @@
                 <app-upsert-reporting-period [reportingPeriodsData]="fv?.reportingPeriods" 
                     [projectId]="id" [isView]="isView" [isEdit]="isEdit"></app-upsert-reporting-period>
             </div>
-            <hr>
+            <hr class="hr-m2">
             <div class="row section-title">
                 <div class="col-md-12 text-left">
                     <div class="text-value" class="view-sub-title">Publication Information</div>
