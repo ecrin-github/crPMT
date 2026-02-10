@@ -134,9 +134,9 @@
                                 <div class="text-value">{{submission.value.amendmentReason}}</div>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row" *ngIf="submission.value.comment">
                             <div class="col-md-12">
-                                <div for="comment" class="font-style" *ngIf="submission.value.comment">Comment</div>
+                                <div for="comment" class="font-style">Comment</div>
                                 <div class="text-value" #commentDiv>{{displayText(i, submission.value.comment)}}
                                     <a (click)="setTruncate(i)" *ngIf="submission.value?.comment?.length > maxCharsBeforeTruncate" class="more-less-link">{{truncate[i] ? 'more' : 'less'}}</a>
                                 </div>
