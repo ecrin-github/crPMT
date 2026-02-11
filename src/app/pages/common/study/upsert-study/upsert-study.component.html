@@ -455,7 +455,7 @@
                     <ng-template #viewStudyCountries>
                         <div class="row form-group">
                             <div class="col-md-12">
-                                <div class="font-style f-bold fs-3 mt-4">Study Countries</div>
+                                <div class="font-style f-bold fs-3 mt-4">Study countries</div>
                                 <ul>
                                     <li *ngFor="let sc of study.value.studyCountries; let j = index" [ngClass]="j > 0 ? 'mt-5' : 'mt-0'">
                                         <span class="text-value"><a [routerLink]="['/study-countries', sc.id, 'view']" class="li-text-1">{{getCountryFlagFromIso2(sc.country?.iso2)}} {{sc.country?.name}}</a> ({{getCountrySitesString(sc)}})</span>
