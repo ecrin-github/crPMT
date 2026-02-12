@@ -1,4 +1,4 @@
-<div class="row">
+<!-- <div class="row">
     <div class="col-12">
         <app-project-list></app-project-list>
     </div>
@@ -8,4 +8,38 @@
     <div class="col-12">
         <app-study-list></app-study-list>
     </div>
+</div> -->
+<div class="kpi-container">
+
+  <div class="kpi-header-block">
+    <h1 class="kpi-title">KPI Dashboard</h1>
+    <p class="kpi-subtitle">
+      Overview of ECRIN clinical research projects and key performance indicators
+    </p>
+  </div>
+
+  <div class="row g-4">
+
+    <div class="col-12 col-md-6 col-xl-3" *ngFor="let card of dashboardCards">
+      <div class="kpi-card" [ngClass]="card.color">
+
+        <div class="kpi-card-top">
+          <div class="kpi-label">
+            {{ card.label }}
+          </div>
+
+          <div class="kpi-icon">
+            <i class="{{ card.icon }}"></i>
+          </div>
+        </div>
+
+        <div class="kpi-value">
+          {{ card.value }}
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
 </div>
