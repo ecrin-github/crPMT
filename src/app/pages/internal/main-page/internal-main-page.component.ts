@@ -3,6 +3,8 @@ import { StudyService } from 'src/app/_rms/services/entities/study/study.service
 import { StudyCtuService } from 'src/app/_rms/services/entities/study-ctu/study-ctu.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { NgxSpinnerService } from 'ngx-spinner';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-main-page-internal',
@@ -10,7 +12,6 @@ import { catchError } from 'rxjs/operators';
   styleUrls: ['./internal-main-page.component.scss'],
 })
 export class InternalMainPageComponent implements OnInit {
-
   dashboardCards = [
     { key:'trial', label:'ECRIN Mentioned in Trial Registration', value:0, icon:'fa-solid fa-file-lines', color:'bg-blue' },
     { key:'running', label:'Running Studies', value:0, icon:'fa-solid fa-circle-play', color:'bg-green' },
@@ -24,7 +25,8 @@ export class InternalMainPageComponent implements OnInit {
 
   constructor(
     private studyService: StudyService,
-    private studyCtuService: StudyCtuService
+    private studyCtuService: StudyCtuService,
+    private spinner: NgxSpinnerService
   ) {}
 
   ngOnInit(): void {
@@ -41,43 +43,50 @@ export class InternalMainPageComponent implements OnInit {
   }
 
   private loadData() {
-    this.studyService.getStudyList().subscribe((studies: any[]) => {
-      const safeStudies = Array.isArray(studies) ? studies : [];
+    this.spinner.show();
 
-      this.setValue('trial', safeStudies.filter(s => !!s?.trialId).length);
-      this.setValue('running', safeStudies.filter(s => s?.status === 'RUNNING').length);
-      this.setValue('startup', safeStudies.filter(s => s?.status === 'STARTUP').length);
+    this.studyService.getStudyList()
+      .pipe(finalize(() => this.spinner.hide()))
+      .subscribe({
+        next: (studies: any[]) => {
+          const safeStudies = Array.isArray(studies) ? studies : [];
 
-      const calls = safeStudies
-        .filter(s => !!s?.id)
-        .map(s =>
-          this.studyCtuService.getStudyCTUs(s.id).pipe(
-            catchError(() => of([]))
-          )
-        );
+          this.setValue('trial', safeStudies.filter(s => !!s?.trialId).length);
+          this.setValue('running', safeStudies.filter(s => s?.status === 'RUNNING').length);
+          this.setValue('startup', safeStudies.filter(s => s?.status === 'STARTUP').length);
 
+          const calls = safeStudies
+            .filter(s => !!s?.id)
+            .map(s => this.studyCtuService.getStudyCTUs(s.id).pipe(catchError(() => of([]))));
 
-      if (!calls.length) {
-        this.setValue('lead', 0);
-        this.setValue('sas', 0);
-        return;
-      }
+          if (!calls.length) {
+            this.setValue('lead', 0);
+            this.setValue('sas', 0);
+            return;
+          }
 
-      forkJoin(calls).subscribe((results: any[][]) => {
-        const all: any[] = this.flatten(results);
+          this.spinner.show();
+          forkJoin(calls)
+            .pipe(finalize(() => this.spinner.hide()))
+            .subscribe((results: any[][]) => {
+              const all: any[] = this.flatten(results);
 
-        this.setValue('lead', all.filter(sc => sc?.leadCtu === true).length);
+              this.setValue('lead', all.filter(sc => sc?.leadCtu === true).length);
 
-        const uniqueCtu = new Map<number, any>();
-        all.forEach(sc => {
-          const id = sc?.ctu?.id;
-          if (id != null) uniqueCtu.set(id, sc.ctu);
-        });
+              const uniqueCtu = new Map<number, any>();
+              all.forEach(sc => {
+                const id = sc?.ctu?.id;
+                if (id != null) uniqueCtu.set(id, sc.ctu);
+              });
 
-        const ctus = Array.from(uniqueCtu.values());
-        this.setValue('sas', ctus.filter(c => c?.sasVerification === false).length);
+              const ctus = Array.from(uniqueCtu.values());
+              this.setValue('sas', ctus.filter(c => c?.sasVerification === false).length);
+            });
+        },
+        error: () => {
 
+        }
       });
-    });
   }
+
 }
