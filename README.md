@@ -18,6 +18,17 @@ For deployment on server:
 
 ## Changelog
 
+## [0.7.2dev] - 2026-02-23
+- Fix "New" button text consistency ("New" everywhere instead of "Add" sometimes)
+- Remove underline on "study countries" label in Study page
+- Add more spacing around page sections
+- Remove empty comment rows in Notification and Submission if there are no comments
+
+## [0.7.1dev] - 2026-02-10
+- Fix some imports
+- Fix person modal already having blank country selected
+- Fix saving on Study Country Page (redirection + CTIS Study Country sub-components)
+
 ## [0.7.0dev] - 2026-02-06
 ### Global
 - Modified delete buttons to not ask for confirmation (for now, only if the item to be deleted has only been locally added for components where deleting an item like this is permanent)
