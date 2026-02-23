@@ -19,7 +19,7 @@ import KTLayoutHeader from '../../../../../assets/js/layout/base/header';
 import KTLayoutHeaderMenu from '../../../../../assets/js/layout/base/header-menu';
 import { KTUtil } from '../../../../../assets/js/components/util';
 import { Subscription, Observable, BehaviorSubject } from 'rxjs';
-import {environment} from '../../../../../environments/environment';
+import { environment } from '../../../../../environments/environment';
 import { UserInterface } from 'src/app/_rms/interfaces/user/user.interface';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
 import { MsalService } from '@azure/msal-angular';
@@ -53,7 +53,7 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private authService: MsalService,
-    private layout: LayoutService, 
+    private layout: LayoutService,
     private statesService: StatesService,
     private router: Router) {
     this.loader$ = this.loaderSubject;
@@ -105,14 +105,14 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getLogoURL(): string {
-    let result = 'crPMT.png';
+    let result = 'ecrin-logo-no-text.png';
 
     if (this.headerSelfTheme && this.headerSelfTheme === 'light') {
-      result = 'crPMT.png';
+      result = 'ecrin-logo-no-text.png';
     }
 
     if (this.headerSelfTheme && this.headerSelfTheme === 'dark') {
-      result = 'crPMT.png';
+      result = 'ecrin-logo-no-text.png';
     }
 
     return `./assets/media/logos/${result}`;
