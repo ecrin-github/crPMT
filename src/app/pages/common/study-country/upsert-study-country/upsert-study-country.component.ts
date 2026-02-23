@@ -357,7 +357,7 @@ export class UpsertStudyCountryComponent implements OnInit {
       this.g[i].reset();
       this.getStudyCountriesForm().at(i).patchValue(this.newStudyCountry().value);
       this.getStudyCountriesForm().at(i).patchValue({ study: study, country: country });
-  
+
       // Setting SNs
       if (this.studyUsesCtisForSafetyNotifications && this.contextService.isCtisCountry(this.g[i].value?.country)) {
         // TODO: doesn't work on SCPage
@@ -379,11 +379,11 @@ export class UpsertStudyCountryComponent implements OnInit {
     } else {
       wasCountryWhereCtisFlagChecked = false;
     }
-    
+
     // Check if it's the last CTIS-SC, in that case we need to re-assign checked country/change ctis check
     if (this.studyUsesCtisForSafetyNotifications && wasCountryWhereCtisFlagChecked) {
       let lastCtisSc: boolean = true;
-      
+
       // TODO: doesnt work on SCPage
       for (const [i, sc] of this.g.entries()) {
         if (this.contextService.isCtisCountry(sc.value?.country)) {
@@ -694,30 +694,29 @@ export class UpsertStudyCountryComponent implements OnInit {
           if ((!sc.id && res.statusCode === 201) || (sc.id && res.statusCode === 200)) {
             let subObs$: Observable<Boolean>[] = [];
 
-            if (this.isSCPage) {
-              this.id = res.id; // For redirection after saving
-            }
-
             // Saving all "subcomponents" (except safety notifications)
             for (let [component, itemType] of regularSubcomponentsAndItems) {
               let onSaveObs$;
 
-              if (component === this.studyCTUComponents) {
-                onSaveObs$ = component.get(i).onSave(res.id, sc.study);
-              } else {
-                onSaveObs$ = component.get(i).onSave(res.id);
+              if (component.get(i)) {
+                if (component === this.studyCTUComponents) {
+                  onSaveObs$ = component.get(i).onSave(res.id, sc.study);
+                } else {
+                  onSaveObs$ = component.get(i).onSave(res.id);
+                }
+  
+                subObs$.push(
+                  onSaveObs$.pipe(
+                    mergeMap((successArr: boolean[]) => {
+                      const success: boolean = successArr.every(b => b);
+                      if (!success) {
+                        this.toastr.error(`Failed to add ${itemType}`);
+                      }
+                      return of(success);
+                    })
+                  )
+                );
               }
-
-              subObs$.push(
-                onSaveObs$.pipe(
-                  mergeMap((successArr: boolean[]) => {
-                    const success: boolean = successArr.every(b => b);
-                    if (!success) {
-                      this.toastr.error(`Failed to add ${itemType}`);
-                    }
-                    return of(success);
-                  })
-                ));
             }
 
             if (subObs$.length == 0) {
@@ -742,9 +741,8 @@ export class UpsertStudyCountryComponent implements OnInit {
     const softDeletedScs: Array<StudyCountryInterface> = this.studyCountries.filter((initialSc) => formScIds.indexOf(initialSc.id) < 0);
 
     const seenSnIds: Set<string> = new Set<string>(); // Prevents same SNs deletion if study previously had ctis check with multiple CTIS SCs
-    
+
     softDeletedScs.forEach((sc) => {
-      console.log(sc?.country?.name);
       // Deleting SNs linked to SC if study ctis flag is false or SC is not a CTIS country
       if (!this.studyUsesCtisForSafetyNotifications || !this.contextService.isCtisCountry(sc.country)) {
         for (const sn of sc.safetyNotifications) {
@@ -816,7 +814,7 @@ export class UpsertStudyCountryComponent implements OnInit {
 
   onSaveStudyCountry() {
     this.spinner.show();
-    
+
     if (this.isFormValid()) {
       const studyId = this.form.value?.studyCountries[0]?.study?.id;
       if (studyId) {
@@ -848,23 +846,23 @@ export class UpsertStudyCountryComponent implements OnInit {
       confirmationModal.componentInstance.title = "Safety notification - CTIS change";
       confirmationModal.componentInstance.buttonClass = "btn-primary";
       confirmationModal.componentInstance.buttonMessage = "Apply";
-  
+
       const countryName = this.g[i].value?.country?.name;
       if (!this.studyUsesCtisForSafetyNotifications) {
         confirmationModal.componentInstance.message = `This will replace all other study countries' (that are CTIS countries) safety notifications with the data from this study country (${countryName}). Continue?`;
       } else {
         confirmationModal.componentInstance.message = `This will unlink all other study countries' (that are CTIS countries) safety notifications from this study country (${countryName}). Continue?`;
       }
-  
+
       confirmationModal.result.then((proceed) => {
         if (proceed) {
           this.changeStudyUsesCtisForSafetyNotifications();
-  
+
           if (this.studyUsesCtisForSafetyNotifications) { // Box ticked
             // Saving SC where box was ticked, to use the safety notifications from this SC
             this.countryWhereCtisFlagChecked = this.getStudyCountriesForm().at(i).value.country;
             this.snFormSharedIndex = i;
-  
+
             // Replacing other CTIS SC SNs forms with the SNs from the SC where box was ticked
             // TODO: doesnt work on SCPage
             for (const [index, sc] of this.form.value.studyCountries?.entries()) {
@@ -872,10 +870,10 @@ export class UpsertStudyCountryComponent implements OnInit {
                 this.setSharedSnForms(index);
               }
             }
-  
+
           } else {  // Box unticked
             this.countryWhereCtisFlagChecked = this.getStudyCountriesForm().at(i).value.country;
-  
+
             // Replacing other CTIS SC SNs forms with new ones
             // TODO: doesnt work on SCPage
             for (const [index, sc] of this.form.value.studyCountries?.entries()) {
@@ -883,13 +881,13 @@ export class UpsertStudyCountryComponent implements OnInit {
                 this.setEmptySnForms(index);
               }
             }
-  
+
             this.countryWhereCtisFlagChecked = null;  // Setting this to null after unlinking SNs
           }
         }
-  
+
         $event.target.checked = this.studyUsesCtisForSafetyNotifications;
-  
+
       }, error => { this.toastr.error(error) });
     }
   }

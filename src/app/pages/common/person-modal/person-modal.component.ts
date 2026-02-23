@@ -13,7 +13,7 @@ export class PersonModalComponent implements OnInit {
   fullName: String = '';
   email: String = '';
   position: String = '';
-  countryId: String = '';
+  countryId: String = null;
   isEuco: boolean = false;
   isAdd = true;
   countries: CountryInterface[] = [];

@@ -60,9 +60,9 @@
                                 <span class="text-value">{{dateToString(notification.value.notificationDate)}}</span>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row" *ngIf="notification.value.comment">
                             <div class="col-md-12">
-                                <div for="comment" class="font-style" *ngIf="notification.value.comment">Comment</div>
+                                <div for="comment" class="font-style">Comment</div>
                                 <div class="text-value" #commentDiv>{{displayComment(i, notification.value.comment)}}
                                     <a (click)="setTruncate(i)" *ngIf="notification.value?.comment?.length > maxCharsBeforeTruncate" class="more-less-link">{{truncate[i] ? 'more' : 'less'}}</a>
                                 </div>
