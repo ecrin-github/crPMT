@@ -1,13 +1,8 @@
 <div class="card">
     <div class="card-header">
-        <div class="row" [ngClass]="sticky ? '' : ''"  id="navbar">
+        <div class="row" [ngClass]="sticky ? '' : ''" id="navbar">
             <div class="col-md-6 d-inline-flex">
                 <div class="view-title d-flex align-items-center">Studies</div>
-            </div>
-            <div class="col-md-6 d-flex justify-content-end">
-                <a [routerLink]="['/studies', 'add']" class="btn btn-success">
-                    <i class="fa fa-plus"></i> New study
-                </a>
             </div>
         </div>
     </div>
@@ -24,7 +19,8 @@
             </div>
             <div class="col-md-9">
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Search study..." [(ngModel)]="searchText" (keyup)="onInputChange($event)"/>
+                    <input type="text" class="form-control" placeholder="Search study..." [(ngModel)]="searchText"
+                        (keyup)="onInputChange($event)" />
                 </div>
             </div>
         </div>
@@ -32,8 +28,8 @@
         <mat-table [dataSource]="dataSource">
             <ng-container matColumnDef="shortTitle">
                 <mat-header-cell *matHeaderCellDef>Short Title</mat-header-cell>
-                <mat-cell *matCellDef="let row"> 
-                    <a [routerLink]="['/studies', row.id, 'view']">{{row.shortTitle}}</a> 
+                <mat-cell *matCellDef="let row">
+                    <a [routerLink]="['/studies', row.id, 'view']">{{row.shortTitle}}</a>
                 </mat-cell>
             </ng-container>
 
@@ -49,8 +45,8 @@
 
             <ng-container matColumnDef="project">
                 <mat-header-cell *matHeaderCellDef>Project</mat-header-cell>
-                <mat-cell *matCellDef="let row"> 
-                    <a [routerLink]="['/projects', row.project?.id, 'view']">{{row.project?.shortName}}</a> 
+                <mat-cell *matCellDef="let row">
+                    <a [routerLink]="['/projects', row.project?.id, 'view']">{{row.project?.shortName}}</a>
                 </mat-cell>
             </ng-container>
 
@@ -72,7 +68,8 @@
             <mat-row *matRowDef="let row; columns: displayedColumns;">
             </mat-row>
         </mat-table>
-        <mat-paginator #studyPaginator [pageSizeOptions]="[10, 25, 50, 100]" [length]="studyLength" [pageSize]="25"></mat-paginator>
+        <mat-paginator #studyPaginator [pageSizeOptions]="[10, 25, 50, 100]" [length]="studyLength"
+            [pageSize]="25"></mat-paginator>
     </div>
 </div>
 
