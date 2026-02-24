@@ -421,30 +421,44 @@
                     <ng-template #viewStudyCountries>
                         <div class="row form-group">
                             <div class="col-md-12">
-                                <div class="font-style f-bold fs-3 mt-4">Study countries</div>
-                                <ul>
-                                    <li *ngFor="let sc of study.value.studyCountries; let j = index" [ngClass]="j > 0 ? 'mt-5' : 'mt-0'">
-                                        <span class="text-value"><a [routerLink]="['/study-countries', sc.id, 'view']" class="li-text-1">{{getCountryFlagFromIso2(sc.country?.iso2)}}
-                                                {{sc.country?.name}}</a> ({{getCountrySitesString(sc)}})</span>
-                                        <ul>
-                                            <li *ngFor="let sctu of sc.studyCtus; let k = index" class="text-value" [ngClass]="k > 0 ? 'mt-4' : 'mt-1'">
-                                                <span class="text-value"><a [routerLink]="['/study-ctus', sctu.id, 'view']" class="text-value">{{sctu.ctu.name}}</a></span>
-                                                <ul>
-                                                    <li *ngFor="let site of sctu.centres" class="text-value-small">
-                                                        {{site.hospital?.name}}, {{site.hospital?.city}}
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
+                                <div class="font-style f-bold fs-3 mt-1 pb-2 ">Study countries</div>
+                                
+                                <div class="sc-list">
+                                    <a
+                                        *ngFor="let sc of study.value.studyCountries"
+                                        class="sc-card"
+                                        [routerLink]="['/study-countries', sc.id, 'view']"
+                                    >
+                                        <div class="sc-left">
+                                        <div class="sc-title">
+                                            <span class="sc-flag">{{ getCountryFlagFromIso2(sc.country?.iso2) }}</span>
+                                            <span class="sc-country">{{ sc.country?.name }}</span>
+                                            <span class="sc-sites">({{ getCountrySitesString(sc) }})</span>
+                                        </div>
+
+                                        <div class="sc-preview" *ngIf="sc.studyCtus?.length">
+                                            <div class="sc-ctu" *ngFor="let sctu of sc.studyCtus | slice:0:2">
+                                            <span class="sc-ctu-name">{{ sctu.ctu?.name }}</span>
+                                            <span class="sc-ctu-sites" *ngIf="sctu.centres?.length">
+                                                — {{ sctu.centres[0]?.hospital?.name }}, {{ sctu.centres[0]?.hospital?.city }}
+                                            </span>
+                                            </div>
+
+                                            <div class="sc-more" *ngIf="sc.studyCtus.length > 2">
+                                            +{{ sc.studyCtus.length - 2 }} more CTU(s)
+                                            </div>
+                                        </div>
+                                        </div>
+
+                                        <div class="sc-right">
+                                        <i class="fa fa-chevron-right"></i>
+                                        </div>
+                                    </a>
+                                </div>
+
                             </div>
                         </div>
-                        <!-- <div class="row mt-5 pb-4">
-                            <div class="col-2 text-left">
-                                <div class="view-sub-sub-sub-title underline">Study countries</div>
-                            </div>
-                        </div> -->
+
                     </ng-template>
                     <div class="row form-group">
                         <div class="col-md-4">
