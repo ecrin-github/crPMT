@@ -9,6 +9,7 @@ import { NotificationInterface } from 'src/app/_rms/interfaces/core/notification
 import { NotificationService } from 'src/app/_rms/services/entities/notification/notification.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
+import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
 
 @Component({
   selector: 'app-upsert-notification',
@@ -25,6 +26,10 @@ export class UpsertNotificationComponent implements OnInit {
   isAdd: boolean = false;
   maxCharsBeforeTruncate: number = 60;
 
+  AuthorityCodes = AuthorityCodes;
+  EC_TEXT = EC_TEXT;
+  NCA_TEXT = NCA_TEXT;
+
   truncate: boolean[] = [];
   notifications: NotificationInterface[] = [];
 
@@ -34,9 +39,9 @@ export class UpsertNotificationComponent implements OnInit {
     private router: Router,
     private notificationService: NotificationService,
     private toastr: ToastrService) {
-      this.form = this.fb.group({
-        notifications: this.fb.array([])
-      });
+    this.form = this.fb.group({
+      notifications: this.fb.array([])
+    });
   }
 
   ngOnInit(): void {
@@ -70,11 +75,11 @@ export class UpsertNotificationComponent implements OnInit {
     if (this.getNotificationsForm().length == 0) { // Adding EC and NCA if None have been found in study country (if isAdd for example)
       this.addNotification();
       this.addNotification();
-      this.getNotificationsForm().at(0).patchValue({authority: "Ethics Committee"});
-      this.getNotificationsForm().at(1).patchValue({authority: "National Competent Authority"});
+      this.getNotificationsForm().at(0).patchValue({ authority: AuthorityCodes.EC });
+      this.getNotificationsForm().at(1).patchValue({ authority: AuthorityCodes.NCA });
     }
 
-    for (let i=0; i < this.g.length; i++) {
+    for (let i = 0; i < this.g.length; i++) {
       this.setInitialTruncate(i);
     }
   }
@@ -114,7 +119,7 @@ export class UpsertNotificationComponent implements OnInit {
     if (!nId) { // Notification has been locally added only
       this.getNotificationsForm().removeAt(i);
     } else {  // Existing notification
-      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
       removeModal.componentInstance.setDefaultDeleteMessage("notification");
 
       removeModal.result.then((remove) => {
@@ -130,7 +135,7 @@ export class UpsertNotificationComponent implements OnInit {
             this.toastr.error(error);
           });
         }
-      }, error => {this.toastr.error(error)});
+      }, error => { this.toastr.error(error) });
     }
   }
 
@@ -141,7 +146,7 @@ export class UpsertNotificationComponent implements OnInit {
       this.truncate[i] = false;
     }
   }
-  
+
   setTruncate(i) {
     if (!this.truncate[i]) {
       this.truncate[i] = true;
@@ -160,7 +165,7 @@ export class UpsertNotificationComponent implements OnInit {
   // TODO?
   formValid() {
     // this.submitted = true;
-    
+
     // // Manually checking CTU field (shouldn't be empty)
     // for (const i in this.form.get("notifications")['controls']) {
     //   if (this.form.get("notifications")['controls'][i].value.ctu == null) {
@@ -186,7 +191,7 @@ export class UpsertNotificationComponent implements OnInit {
     let saveObs$: Array<Observable<boolean>> = [];
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
-  
+
     for (const [i, item] of payload.notifications.entries()) {
       this.updatePayload(item, scId, i);
       if (!item.id) { // Add
@@ -215,6 +220,16 @@ export class UpsertNotificationComponent implements OnInit {
     }
 
     return combineLatest(saveObs$);
+  }
+
+  displayAuthority(authCode) {
+    if (authCode === AuthorityCodes.EC) return EC_TEXT;
+    if (authCode === AuthorityCodes.NCA) return NCA_TEXT;
+    return authCode;
+  }
+
+  isFixedAuthorityCode(authCode) {
+    return authCode === AuthorityCodes.EC || authCode === AuthorityCodes.NCA;
   }
 
   dateToString(date) {

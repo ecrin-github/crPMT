@@ -2,6 +2,7 @@ export const TIME_UNITS: String[] = ["Hours", "Days", "Weeks", "Months"];
 
 export const EC_TEXT: String = "Ethics Committee";
 export const CA_TEXT: String = "Competent Authority";
+export const NCA_TEXT: String = "National Competent Authority";
 export const REGULATORY_FRAMEWORKS: String[] = ['CTR', 'MDR/IVDR', 'COMBINED', 'OTHER'];
 export const STUDY_STATUSES: String[] = [
     "Start-up phase",
@@ -16,7 +17,8 @@ export const STUDY_STATUSES: String[] = [
 
 export enum AuthorityCodes {
     EC = "EC",
-    CA = "CA"
+    CA = "CA",
+    NCA = "NCA"
 }
 export enum SafetyNotificationTypeCodes {
     AnnualProgressReport = "ANNUAL",
