@@ -95,6 +95,7 @@
                     <ng-template #viewStudyCTUs>
                         <div class="row form-group">
                             <div class="col-md-12">
+
                                 <ul>
                                     <li *ngFor="let sctu of sc.value.studyCTUs; let j = index;" class="text-value" [ngClass]="j > 0 ? 'mt-5' : ''">
                                         <a [routerLink]="['/study-ctus', sctu.id, 'view']" class="li-text-1">{{sctu.ctu?.shortName ? sctu.ctu.shortName + ' - ' : '' }}{{sctu.ctu?.name}}</a>
@@ -115,6 +116,7 @@
                                         </ul>
                                     </li>
                                 </ul>
+                                
                             </div>
                         </div>
                     </ng-template>

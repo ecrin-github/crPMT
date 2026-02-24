@@ -16,3 +16,67 @@
     border-radius: 0.42rem !important;
     box-shadow: none !important;
 }
+
+.sc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; // 12px
+}
+
+.sc-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 1rem 1.25rem; // 16px 20px
+  border: 1px solid #e5e7eb; // gray-200
+  border-radius: 0.5rem;     // rounded-lg
+  background: #fff;
+
+  text-decoration: none;
+  color: inherit;
+
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.sc-card:hover {
+  border-color: #60a5fa;   // blue-400
+  background: #eff6ff;     // blue-50
+}
+
+.sc-left {
+  min-width: 0;
+}
+
+.sc-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.sc-country {
+  color: #000091; // ton bleu “clickable”
+}
+
+.sc-sites {
+  font-weight: 600;
+  color: #374151;
+}
+
+.sc-preview {
+  margin-top: 0.4rem;
+  color: #4b5563;
+  font-weight: 500;
+}
+
+.sc-ctu {
+  margin-top: 0.25rem;
+}
+
+.sc-right {
+  flex-shrink: 0;
+  color: #6b7280;
+}
