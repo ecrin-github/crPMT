@@ -342,6 +342,28 @@ export class UpsertStudyCountryComponent implements OnInit {
 
     if (existingSC) { // Existing SC found, patching form
       delete existingSC["order"];
+
+      // Separating initial submissions, amendments, and other notifications in the UI
+      // TODO: refactor this, same code as when setting all SCs data
+      let amendments = [];
+      let otherNotifications = [];
+      let submissions = [];
+      if (existingSC.submissions) {
+        for (const sub of existingSC.submissions) {
+          if (sub.isAmendment) {
+            amendments.push(sub);
+          } else if (sub.isOtherNotification) {
+            otherNotifications.push(sub);
+          } else {
+            submissions.push(sub);
+          }
+        }
+      }
+
+      existingSC["amendments"] = amendments;
+      existingSC["otherNotifications"] = otherNotifications;
+      existingSC["submissions"] = submissions;
+
       this.getStudyCountriesForm().at(i).setValue(existingSC);
 
       // Setting SNs
@@ -704,7 +726,7 @@ export class UpsertStudyCountryComponent implements OnInit {
                 } else {
                   onSaveObs$ = component.get(i).onSave(res.id);
                 }
-  
+
                 subObs$.push(
                   onSaveObs$.pipe(
                     mergeMap((successArr: boolean[]) => {
