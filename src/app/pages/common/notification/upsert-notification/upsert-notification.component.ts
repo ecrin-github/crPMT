@@ -83,6 +83,7 @@ export class UpsertNotificationComponent implements OnInit {
 
     for (let i = 0; i < this.fc.length; i++) {
       this.setInitialTruncate(i);
+      this.onChangeNotApplicable(i);
     }
   }
 
