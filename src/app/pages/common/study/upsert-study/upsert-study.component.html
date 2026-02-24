@@ -85,7 +85,7 @@
                     </div>
                     <div class="row form-group mt-8">
                         <div class="col-md-2">
-                            <div for="shortTitle" class="font-style">Short name</div>
+                            <div for="shortTitle" class="font-style">Short name<sup *ngIf="!isView">*</sup></div>
                             <input type="text" id="shortTitle" class="form-control" placeholder="e.g. RECOVERY" formControlName="shortTitle" *ngIf="!isView" />
                             <div *ngIf="isView" class="text-value">{{study.value.shortTitle}}</div>
                         </div>

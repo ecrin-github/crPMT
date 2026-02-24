@@ -817,17 +817,20 @@ export class UpsertStudyCountryComponent implements OnInit {
     const payload = JSON.parse(JSON.stringify(this.form.value));
     const studyCountries: StudyCountryInterface[] = payload.studyCountries;
 
-    return of(studyCountries)
-      .pipe(
-        mergeMap((studyCountries: StudyCountryInterface[]) => this.getSafetyNotificationsForSC(studyCountries)),  // Save SNs and populates sc.safetyNotifications (except for ctis countries with shared SNs)
-        map((studyCountries: StudyCountryInterface[]) => this.setSharedSafetyNotifications(studyCountries)),  // Populate sc.safetyNotifications for ctis countries with shared SNs
-        map((studyCountries: StudyCountryInterface[]) => this.updateFullPayload(studyCountries, studyId)),
-        mergeMap((studyCountries: StudyCountryInterface[]) => forkJoin(this.getScSaveObs$(studyCountries))),  // Save SCs + other subcomponents
-        catchError((err) => {
-          this.toastr.error(err, "Failed to save study country", { timeOut: 20000, extendedTimeOut: 20000 });
-          return of([false]);
-        })
-      );
+    if (studyCountries?.length > 0) {
+      return of(studyCountries)
+        .pipe(
+          mergeMap((studyCountries: StudyCountryInterface[]) => this.getSafetyNotificationsForSC(studyCountries)),  // Save SNs and populates sc.safetyNotifications (except for ctis countries with shared SNs)
+          map((studyCountries: StudyCountryInterface[]) => this.setSharedSafetyNotifications(studyCountries)),  // Populate sc.safetyNotifications for ctis countries with shared SNs
+          map((studyCountries: StudyCountryInterface[]) => this.updateFullPayload(studyCountries, studyId)),
+          mergeMap((studyCountries: StudyCountryInterface[]) => forkJoin(this.getScSaveObs$(studyCountries))),  // Save SCs + other subcomponents
+          catchError((err) => {
+            this.toastr.error(err, "Failed to save study country", { timeOut: 20000, extendedTimeOut: 20000 });
+            return of([false]);
+          })
+        );
+    }
+    return of([true]);
   }
 
   isCountryWhereCtisFlagChecked(c: CountryInterface) {

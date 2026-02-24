@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -190,7 +190,7 @@ export class UpsertStudyComponent implements OnInit {
   newStudy(): UntypedFormGroup {
     return this.fb.group({
       id: null,
-      shortTitle: null,
+      shortTitle: [null, Validators.required],
       title: null,
       sponsorOrganisation: null,
       leadCtu: null,
@@ -280,7 +280,7 @@ export class UpsertStudyComponent implements OnInit {
     this.studies.forEach((s, index) => {
       formArray.push(this.fb.group({
         id: s.id,
-        shortTitle: s.shortTitle,
+        shortTitle: [s.shortTitle, Validators.required],
         title: s.title,
         sponsorOrganisation: s.sponsorOrganisation,
         leadCtu: s.leadCtu,
@@ -448,77 +448,40 @@ export class UpsertStudyComponent implements OnInit {
 
     for (const [i, item] of payload.studies.entries()) {
       this.updatePayload(item, projectId, i);
+
+      let itemObs$: Observable<Object> = null;
+
       if (!item.id) {  // Add
-        let success = this.studyService.addStudy(item).pipe(
-          mergeMap((res: any) => {
-            if (this.isStudyPage && this.isAdd) {  // Need id for redirection is single study add
+        itemObs$ = this.studyService.addStudy(item);
+      } else {
+        itemObs$ = this.studyService.editStudy(item.id, item);
+      }
+
+      saveObs$.push(itemObs$.pipe(
+        mergeMap((res: any) => {
+          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+            if (this.isStudyPage && this.isAdd) {  // Need id for redirection if single study add
               this.id = res.id;
             }
 
-            if (res.statusCode === 201) {
-              // this.reuseService.notifyComponents();
+            if (this.studyCountryComponents.get(i)) { // Saving study countries
               return this.studyCountryComponents.get(i).onSave(res.id).pipe(
-                mergeMap((success) => {
-                  if (success) {
-                    return of(true);
-                  }
-                  return of(false);
+                mergeMap((successArr: boolean[]) => {
+                  return of(successArr.every(b => b));
                 })
               );
-            } else {
-              this.toastr.error(res.message, "Study adding error", { timeOut: 60000, extendedTimeOut: 60000 });
-              return of(false);
             }
-          }), catchError(err => {
-            this.toastr.error(err.message, 'Error adding study', { timeOut: 60000, extendedTimeOut: 60000 });
-            return of(false);
-          })
-        );
-        saveObs$.push(success);
+            return of(true);
+          }
 
-      } else {  // Edit
-        const scObs$ = this.studyCountryComponents.get(i).onSave(item.id).pipe(
-          mergeMap((successArr: boolean[]) => {
-            const success: boolean = successArr.every(b => b);
-            if (!success) {
-              this.toastr.error('Failed to update study countries');
-            }
-            return of(success);
-          })
-        );
-
-        saveObs$.push(scObs$);
-
-        // TODO: don't do editObs if scObs$ false?
-
-        const editObs$ = this.studyService.editStudy(item.id, item).pipe(
-          mergeMap((res: any) => {
-            if (res.statusCode === 200) {
-              // this.reuseService.notifyComponents();
-              return of(true);
-            } else {
-              this.toastr.error(res.messages[0]);
-              return of(false);
-            }
-          }), catchError(err => {
-            this.toastr.error(err.error.title);
-            return of(false);
-          })
-        );
-
-        saveObs$.push(editObs$);
-      }
+          this.toastr.error(res.message, "Failed to save study", { timeOut: 60000, extendedTimeOut: 60000 });
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err.message, 'Failed to save study', { timeOut: 60000, extendedTimeOut: 60000 });
+          return of(false);
+        })
+      ));
     }
-
-    // if (saveObs$.length > 0) {
-    //   return combineLatest(saveObs$).pipe(
-    //     map(arr => arr.reduce((acc: boolean, one: boolean) => {
-    //       return acc && one;
-    //     }, true))
-    //   );
-    // }
-
-    // return of(true);
 
     if (saveObs$.length == 0) {
       saveObs$.push(of(true));
