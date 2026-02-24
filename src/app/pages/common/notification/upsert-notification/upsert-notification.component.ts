@@ -50,10 +50,11 @@ export class UpsertNotificationComponent implements OnInit {
     this.isAdd = this.router.url.includes('add');
   }
 
-  get g() { return this.form.get('notifications')["controls"]; }
+  get fc() { return this.form.get('notifications')["controls"]; }
+  get fv() { return this.form.get('notifications')?.value; }
 
   getControls(i) {
-    return this.g[i].controls;
+    return this.fc[i].controls;
   }
 
   getNotificationsForm(): UntypedFormArray {
@@ -64,6 +65,7 @@ export class UpsertNotificationComponent implements OnInit {
     return this.fb.group({
       id: null,
       authority: null,
+      notApplicable: false,
       notificationDate: null,
       comment: null,
       studyCountry: null,
@@ -79,16 +81,17 @@ export class UpsertNotificationComponent implements OnInit {
       this.getNotificationsForm().at(1).patchValue({ authority: AuthorityCodes.NCA });
     }
 
-    for (let i = 0; i < this.g.length; i++) {
+    for (let i = 0; i < this.fc.length; i++) {
       this.setInitialTruncate(i);
     }
   }
 
   patchArray(): UntypedFormArray {
     const formArray = new UntypedFormArray([]);
-    this.notifications.forEach((notification) => {
+    this.notifications.forEach((notification: NotificationInterface) => {
       formArray.push(this.fb.group({
         id: notification.id,
+        notApplicable: notification.notApplicable,
         authority: notification.authority,
         notificationDate: notification.notificationDate ? stringToDate(notification.notificationDate) : null,
         comment: notification.comment,
@@ -220,6 +223,16 @@ export class UpsertNotificationComponent implements OnInit {
     }
 
     return combineLatest(saveObs$);
+  }
+
+  onChangeNotApplicable(i) {
+    if (this.fv[i]?.notApplicable) {
+      this.getControls(i)?.notificationDate?.disable();
+      this.getControls(i)?.comment?.disable();
+    } else {
+      this.getControls(i)?.notificationDate?.enable();
+      this.getControls(i)?.comment?.enable();
+    }
   }
 
   displayAuthority(authCode) {

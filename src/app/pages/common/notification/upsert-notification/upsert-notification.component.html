@@ -32,6 +32,10 @@
                             </div>
                             <span class="text-value" *ngIf="isView">{{dateToString(notification.value.notificationDate)}}</span>
                         </div>
+                        <div class="col-md-2" *ngIf="!isView && notification.value.authority !== AuthorityCodes.EC">
+                            <div for="notApplicable" class="font-style">Not applicable</div>
+                            <input *ngIf="!isView" type="checkbox" id="notApplicable" class="form-check-input checkbox" formControlName="notApplicable" (change)="onChangeNotApplicable(i)" />
+                        </div>
                         <div class="col-md-1 d-flex justify-content-center align-items-center">
                             <div class="row">
                                 <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView && !isFixedAuthorityCode(notification.value.authority)" (click)="deleteNotification(i)"></i>
@@ -58,20 +62,29 @@
                             </div>
                         </div>
                         <hr class="hr-submission">
-                        <div class="row form-group">
-                            <div class="col-md-6">
-                                <div for="notificationDate" class="font-style">Notification date</div>
-                                <span class="text-value">{{dateToString(notification.value.notificationDate)}}</span>
-                            </div>
-                        </div>
-                        <div class="row" *ngIf="notification.value.comment">
-                            <div class="col-md-12">
-                                <div for="comment" class="font-style">Comment</div>
-                                <div class="text-value" #commentDiv>{{displayComment(i, notification.value.comment)}}
-                                    <a (click)="setTruncate(i)" *ngIf="notification.value?.comment?.length > maxCharsBeforeTruncate" class="more-less-link">{{truncate[i] ? 'more' : 'less'}}</a>
+                        <ng-container *ngIf="notification.value.notApplicable; else regularNotification">
+                            <div class="row form-group">
+                                <div class="col-md-6">
+                                    <span class="text-value">Not applicable</span>
                                 </div>
                             </div>
-                        </div>
+                        </ng-container>
+                        <ng-template #regularNotification>
+                            <div class="row form-group">
+                                <div class="col-md-6">
+                                    <div for="notificationDate" class="font-style">Notification date</div>
+                                    <span class="text-value">{{dateToString(notification.value.notificationDate)}}</span>
+                                </div>
+                            </div>
+                            <div class="row" *ngIf="notification.value.comment">
+                                <div class="col-md-12">
+                                    <div for="comment" class="font-style">Comment</div>
+                                    <div class="text-value" #commentDiv>{{displayComment(i, notification.value.comment)}}
+                                        <a (click)="setTruncate(i)" *ngIf="notification.value?.comment?.length > maxCharsBeforeTruncate" class="more-less-link">{{truncate[i] ? 'more' : 'less'}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
                     </div>
                 </div>
             </div>

@@ -48,6 +48,10 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-2" *ngIf="!isView && !isAmendments && submission.value.authority !== AuthorityCodes.EC">
+                            <div for="notApplicable" class="font-style">Not applicable</div>
+                            <input *ngIf="!isView" type="checkbox" id="notApplicable" class="form-check-input checkbox" formControlName="notApplicable" (change)="onChangeNotApplicable(i)" />
+                        </div>
                         <div class="col-md-1 d-flex justify-content-center align-items-center">
                             <div class="row">
                                 <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView && !isFixedAuthorityCode(submission.value.authority)" (click)="deleteSubmission(i)"></i>
@@ -105,40 +109,49 @@
                             </div>
                         </div>
                         <hr class="hr-submission">
-                        <div class="row form-group">
-                            <div class="col-md-6">
-                                <div for="submissionDate" class="font-style">Submission date</div>
-                                <span class="text-value">{{dateToString(submission.value.submissionDate)}}</span>
-                            </div>
-                            <div class="col-md-6">
-                                <div for="approvalDate" class="font-style">Approval date</div>
-                                <span class="text-value">{{dateToString(submission.value.approvalDate)}}</span>
-                            </div>
-                        </div>
-                        <div class="row form-group">
-                            <div class="col-md-6">
-                                <div for="protocolApprovalDate" class="font-style">Date of approved protocol</div>
-                                <span class="text-value">{{dateToString(submission.value.protocolApprovalDate)}}</span>
-                            </div>
-                            <div class="col-md-6">
-                                <div for="protocolApprovedVersion" class="font-style">Version of approved protocol</div>
-                                <span class="text-value">{{submission.value.protocolApprovedVersion}}</span>
-                            </div>
-                        </div>
-                        <div class="row form-group" *ngIf="this.isAmendments">
-                            <div class="col-md-12">
-                                <div for="amendmentReason" class="font-style">Amendment reason</div>
-                                <div class="text-value">{{submission.value.amendmentReason}}</div>
-                            </div>
-                        </div>
-                        <div class="row" *ngIf="submission.value.comment">
-                            <div class="col-md-12">
-                                <div for="comment" class="font-style">Comment</div>
-                                <div class="text-value" #commentDiv>{{displayText(i, submission.value.comment)}}
-                                    <a (click)="setTruncate(i)" *ngIf="submission.value?.comment?.length > maxCharsBeforeTruncate" class="more-less-link">{{truncate[i] ? 'more' : 'less'}}</a>
+                        <ng-container *ngIf="submission.value.notApplicable; else regularSubmission">
+                            <div class="row form-group">
+                                <div class="col-md-6">
+                                    <span class="text-value">Not applicable</span>
                                 </div>
                             </div>
-                        </div>
+                        </ng-container>
+                        <ng-template #regularSubmission>
+                            <div class="row form-group">
+                                <div class="col-md-6">
+                                    <div for="submissionDate" class="font-style">Submission date</div>
+                                    <span class="text-value">{{dateToString(submission.value.submissionDate)}}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <div for="approvalDate" class="font-style">Approval date</div>
+                                    <span class="text-value">{{dateToString(submission.value.approvalDate)}}</span>
+                                </div>
+                            </div>
+                            <div class="row form-group">
+                                <div class="col-md-6">
+                                    <div for="protocolApprovalDate" class="font-style">Date of approved protocol</div>
+                                    <span class="text-value">{{dateToString(submission.value.protocolApprovalDate)}}</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <div for="protocolApprovedVersion" class="font-style">Version of approved protocol</div>
+                                    <span class="text-value">{{submission.value.protocolApprovedVersion}}</span>
+                                </div>
+                            </div>
+                            <div class="row form-group" *ngIf="this.isAmendments">
+                                <div class="col-md-12">
+                                    <div for="amendmentReason" class="font-style">Amendment reason</div>
+                                    <div class="text-value">{{submission.value.amendmentReason}}</div>
+                                </div>
+                            </div>
+                            <div class="row" *ngIf="submission.value.comment">
+                                <div class="col-md-12">
+                                    <div for="comment" class="font-style">Comment</div>
+                                    <div class="text-value" #commentDiv>{{displayText(i, submission.value.comment)}}
+                                        <a (click)="setTruncate(i)" *ngIf="submission.value?.comment?.length > maxCharsBeforeTruncate" class="more-less-link">{{truncate[i] ? 'more' : 'less'}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
                     </div>
                 </div>
             </div>

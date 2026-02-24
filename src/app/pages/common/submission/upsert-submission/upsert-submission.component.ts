@@ -52,10 +52,11 @@ export class UpsertSubmissionComponent implements OnInit {
     this.isAdd = this.router.url.includes('add');
   }
 
-  get g() { return this.form.get('submissions')["controls"]; }
+  get fc() { return this.form.get('submissions')["controls"]; }
+  get fv() { return this.form.get('submissions')?.value; }
 
   getControls(i) {
-    return this.g[i].controls;
+    return this.fc[i].controls;
   }
 
   getSubmissionsForm(): UntypedFormArray {
@@ -66,6 +67,7 @@ export class UpsertSubmissionComponent implements OnInit {
     return this.fb.group({
       id: null,
       authority: null,
+      notApplicable: false,
       submissionDate: null,
       approvalDate: null,
       protocolApprovalDate: null,
@@ -87,17 +89,18 @@ export class UpsertSubmissionComponent implements OnInit {
       this.getSubmissionsForm().at(1).patchValue({ authority: AuthorityCodes.NCA });
     }
 
-    for (let i = 0; i < this.g.length; i++) {
+    for (let i = 0; i < this.fc.length; i++) {
       this.setInitialTruncate(i);
     }
   }
 
   patchArray(): UntypedFormArray {
     const formArray = new UntypedFormArray([]);
-    this.submissions.forEach((submission) => {
+    this.submissions.forEach((submission: SubmissionInterface) => {
       formArray.push(this.fb.group({
         id: submission.id,
         authority: submission.authority,
+        notApplicable: submission.notApplicable,
         submissionDate: submission.submissionDate ? stringToDate(submission.submissionDate) : null,
         approvalDate: submission.approvalDate ? stringToDate(submission.approvalDate) : null,
         protocolApprovalDate: submission.protocolApprovalDate ? stringToDate(submission.protocolApprovalDate) : null,
@@ -240,6 +243,22 @@ export class UpsertSubmissionComponent implements OnInit {
     }
 
     return combineLatest(saveObs$);
+  }
+
+  onChangeNotApplicable(i) {
+    if (this.fv[i]?.notApplicable) {
+      this.getControls(i)?.submissionDate?.disable();
+      this.getControls(i)?.approvalDate?.disable();
+      this.getControls(i)?.protocolApprovalDate?.disable();
+      this.getControls(i)?.protocolApprovedVersion?.disable();
+      this.getControls(i)?.comment?.disable();
+    } else {
+      this.getControls(i)?.submissionDate?.enable();
+      this.getControls(i)?.approvalDate?.enable();
+      this.getControls(i)?.protocolApprovalDate?.enable();
+      this.getControls(i)?.protocolApprovedVersion?.enable();
+      this.getControls(i)?.comment?.enable();
+    }
   }
 
   displayAuthority(authCode) {
