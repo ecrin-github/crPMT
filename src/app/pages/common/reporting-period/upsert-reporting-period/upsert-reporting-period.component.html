@@ -25,8 +25,7 @@
                         </div>
                         <div class="col-md-2">
                             <div class="input-group" *ngIf="!isView">
-                                <input class="form-control" placeholder="yyyy-mm-dd" name="start"
-                                    ngbDatepicker #start="ngbDatepicker" formControlName="start" container='body'>
+                                <input class="form-control" placeholder="yyyy-mm-dd" name="start" ngbDatepicker #start="ngbDatepicker" formControlName="start" container='body'>
                                 <div class="input-group-append">
                                     <button class="btn btn-primary" (click)="start.toggle()" type="button">
                                         <i class="fa fa-calendar"></i>
@@ -37,8 +36,7 @@
                         </div>
                         <div class="col-md-2">
                             <div class="input-group" *ngIf="!isView">
-                                <input class="form-control" placeholder="yyyy-mm-dd" name="end"
-                                    ngbDatepicker #end="ngbDatepicker" formControlName="end" container='body'>
+                                <input class="form-control" placeholder="yyyy-mm-dd" name="end" ngbDatepicker #end="ngbDatepicker" formControlName="end" container='body'>
                                 <div class="input-group-append">
                                     <button class="btn btn-primary" (click)="end.toggle()" type="button">
                                         <i class="fa fa-calendar"></i>
@@ -48,14 +46,12 @@
                             <span class="text-value" *ngIf="isView">{{fv.end ? dateToString(fv.end) : '' }}</span>
                         </div>
                         <div class="col-md-5">
-                            <textarea cols="30" rows="1" class="form-control" placeholder="Notes when editing reporting period"
-                                formControlName="comment" *ngIf="!isView" id="comment" [ngClass]="{ 'is-invalid': submitted && fc.comment?.errors }"></textarea>
+                            <textarea cols="30" rows="1" class="form-control" placeholder="Notes when editing reporting period" formControlName="comment" *ngIf="!isView" id="comment" [ngClass]="{ 'is-invalid': submitted && fc.comment?.errors }"></textarea>
                             <div *ngIf="isView" class="text-value">{{fv.comment}}</div>
                         </div>
                         <div class="col-md-1 d-flex justify-content-left align-items-center">
                             <div class="row">
-                                <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;"
-                                    *ngIf="!isView" (click)="deleteReportingPeriod(i)"></i>
+                                <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="deleteReportingPeriod(i)"></i>
                             </div>
                         </div>
                     </div>
@@ -67,7 +63,12 @@
 <ng-template #reportingPeriodsView>
     <div class="row">
         <div class="col-md-8">
-            <app-timeline [data]="fv"></app-timeline>
+            <ng-container *ngIf="getReportingPeriodsForm()?.length > 0; else noReportingPeriods">
+                <app-timeline [data]="fv"></app-timeline>
+            </ng-container>
+            <ng-template #noReportingPeriods>
+                <span class="text-value" *ngIf="isView">No reporting periods yet</span>
+            </ng-template>
         </div>
     </div>
 </ng-template>
