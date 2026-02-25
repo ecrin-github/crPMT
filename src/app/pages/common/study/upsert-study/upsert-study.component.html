@@ -421,7 +421,7 @@
                     <ng-template #viewStudyCountries>
                         <div class="row form-group">
                             <div class="col-md-12">
-                                <div class="font-style f-bold fs-3 mt-4">Study countries</div>
+                                <div class="font-style f-bold fs-3 mt-1 pb-2 ">Study countries</div>
                                 
                                 <div class="sc-list">
                                     <a
@@ -436,7 +436,6 @@
                                             <span class="sc-sites">({{ getCountrySitesString(sc) }})</span>
                                         </div>
 
-                                        <!-- Optionnel : preview des CTU / centres (non cliquable, juste info) -->
                                         <div class="sc-preview" *ngIf="sc.studyCtus?.length">
                                             <div class="sc-ctu" *ngFor="let sctu of sc.studyCtus | slice:0:2">
                                             <span class="sc-ctu-name">{{ sctu.ctu?.name }}</span>
@@ -459,11 +458,7 @@
 
                             </div>
                         </div>
-                        <!-- <div class="row mt-5 pb-4">
-                            <div class="col-2 text-left">
-                                <div class="view-sub-sub-sub-title underline">Study countries</div>
-                            </div>
-                        </div> -->
+
                     </ng-template>
                     <div class="row form-group">
                         <div class="col-md-4">

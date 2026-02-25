@@ -96,26 +96,44 @@
                         <div class="row form-group">
                             <div class="col-md-12">
 
-                                <ul>
-                                    <li *ngFor="let sctu of sc.value.studyCTUs; let j = index;" class="text-value" [ngClass]="j > 0 ? 'mt-5' : ''">
-                                        <a [routerLink]="['/study-ctus', sctu.id, 'view']" class="li-text-1">{{sctu.ctu?.shortName ? sctu.ctu.shortName + ' - ' : '' }}{{sctu.ctu?.name}}</a>
-                                        <ul>
-                                            <li *ngIf="sctu.services?.length > 0" class="mt-2">
-                                                <div class="tags-container">
-                                                    <span *ngFor="let service of sctu.services" class="tag" 
-                                                        [ngStyle]="{ 'border-color': getTagBorderColor(service.value), 'background-color': getTagBgColor(service.value) }">{{service.value}}</span>
-                                                </div>
-                                            </li>
-                                            <li *ngIf="sctu.centres?.length > 0" class="mt-2">Sites
-                                                <ul>
-                                                    <li *ngFor="let site of sctu.centres" class="text-value">
-                                                        {{site.hospital?.name}}, {{site.hospital?.city}}
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                </ul>
+                                <div class="ctu-list">
+                                    <div
+                                    *ngFor="let sctu of sc.value.studyCTUs; let j = index"
+                                    class="ctu-card"
+                                    [routerLink]="['/study-ctus', sctu.id, 'view']"
+                                    >
+                                        <div class="ctu-inner">
+                                            <div class="ctu-title">
+                                            {{ sctu.ctu?.shortName ? sctu.ctu.shortName + ' - ' : '' }}
+                                            {{ sctu.ctu?.name }}
+                                            </div>
+
+                                            <div *ngIf="sctu.services?.length" class="tags-container mt-2">
+                                            <span
+                                                *ngFor="let service of sctu.services"
+                                                class="tag"
+                                                [ngStyle]="{
+                                                'border-color': getTagBorderColor(service.value),
+                                                'background-color': getTagBgColor(service.value)
+                                                }"
+                                                (click)="$event.stopPropagation()"
+                                            >
+                                                {{ service.value }}
+                                            </span>
+                                            </div>
+
+                                            <div *ngIf="sctu.centres?.length" class="ctu-sites mt-2">
+                                            <div class="ctu-sites-title">Sites</div>
+                                            <div *ngFor="let site of sctu.centres" class="ctu-site">
+                                                {{ site.hospital?.name }}, {{ site.hospital?.city }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ctu-arrow">
+                                        <i class="fa fa-chevron-right"></i>
+                                    </div>
+                                    </div>
+                                </div>
                                 
                             </div>
                         </div>

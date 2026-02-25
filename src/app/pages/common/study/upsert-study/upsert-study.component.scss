@@ -20,7 +20,7 @@
 .sc-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; // 12px
+  gap: 0.75rem;
 }
 
 .sc-card {
@@ -28,10 +28,10 @@
   align-items: center;
   justify-content: space-between;
 
-  padding: 1rem 1.25rem; // 16px 20px
-  border: 1px solid #e5e7eb; // gray-200
-  border-radius: 0.5rem;     // rounded-lg
-  background: #fff;
+  padding: 1rem 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #eff6ff;
 
   text-decoration: none;
   color: inherit;
@@ -41,8 +41,8 @@
 }
 
 .sc-card:hover {
-  border-color: #60a5fa;   // blue-400
-  background: #eff6ff;     // blue-50
+  border-color: #60a5fa;
+  background: #fff;
 }
 
 .sc-left {
@@ -58,7 +58,7 @@
 }
 
 .sc-country {
-  color: #000091; // ton bleu “clickable”
+  color: #000091;
 }
 
 .sc-sites {
