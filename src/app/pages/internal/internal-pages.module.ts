@@ -1,21 +1,21 @@
 // Angular modules
-import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {RouterModule} from '@angular/router';
-import {MatTableModule} from '@angular/material/table';
-import {MatPaginatorModule} from '@angular/material/paginator';
-import {MatTabsModule} from '@angular/material/tabs';
-import {NgbDatepickerModule} from '@ng-bootstrap/ng-bootstrap';
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatTabsModule } from '@angular/material/tabs';
+import { NgbDatepickerModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 // Pages
-import {InternalMainPageComponent} from './main-page/internal-main-page.component';
-import {ReportsPageInternalComponent} from './reports/reports-page-internal.component';
+import { InternalMainPageComponent } from './main-page/internal-main-page.component';
+import { ReportsPageInternalComponent } from './reports/reports-page-internal.component';
 
 // Additional modules
-import {ReactiveFormsModule} from '@angular/forms';
-import {MatExpansionModule} from '@angular/material/expansion';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatButtonModule} from '@angular/material/button';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
 import { StudyListComponent } from '../common/study/study-list/study-list.component';
 import { ProjectListComponent } from '../common/project/project-list/project-list.component';
 import { UpsertProjectComponent } from '../common/project/upsert-project/upsert-project.component';
@@ -35,6 +35,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
     ],
     imports: [
         NgbDatepickerModule,
+        NgbDropdownModule,
         MatTableModule,
         MatPaginatorModule,
         MatTabsModule,
@@ -51,7 +52,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 path: '',
                 pathMatch: 'full',
                 component: InternalMainPageComponent,
-                data: { 
+                data: {
                     shouldReuse: true,
                     key: 'internalmainpagecomponent'
                 }
@@ -61,7 +62,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 path: 'studies',
                 pathMatch: 'full',
                 component: StudyListComponent,
-                data: { 
+                data: {
                     shouldReuse: true,
                     key: 'summarystudycomponent',
                     reuseRoutesFrom: ['studies/:id/view', 'studies/:id/add', 'studies/:id/edit']
@@ -71,7 +72,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 path: 'studies/add',
                 pathMatch: 'full',
                 component: UpsertStudyComponent,
-                data: { 
+                data: {
                     shouldReuse: false,
                     key: 'upsertstudycomponentadd'
                 },
@@ -81,7 +82,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 path: 'projects/add',
                 pathMatch: 'full',
                 component: UpsertProjectComponent,
-                data: { 
+                data: {
                     shouldReuse: false,
                     key: 'upsertprojectcomponentadd'
                 },
@@ -91,7 +92,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 path: 'projects',
                 pathMatch: 'full',
                 component: ProjectListComponent,
-                data: { 
+                data: {
                     shouldReuse: true,
                     key: 'ProjectListComponent'
                 }
@@ -101,7 +102,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 path: 'people',
                 pathMatch: 'full',
                 component: PersonListComponent,
-                data: { 
+                data: {
                     shouldReuse: true,
                     key: 'summaryusercomponent',
                     reuseRoutesFrom: ['people/:id/view', 'people/:id/add', 'people/:id/edit']
@@ -110,4 +111,4 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
         ]),
     ],
 })
-export class InternalPagesModule {}
+export class InternalPagesModule { }

@@ -143,7 +143,7 @@ export class UpsertStudyCountryComponent implements OnInit {
       safetyNotifications: [[]],  // Used when saving
       submissions: [[]],
       study: this.study,
-      studyCTUs: null
+      studyCtus: null
     });
   }
 
@@ -176,7 +176,7 @@ export class UpsertStudyCountryComponent implements OnInit {
         safetyNotifications: [[]],  // Used when saving
         submissions: [[]],
         study: sc.study,
-        studyCTUs: [sc.studyCtus]
+        studyCtus: [sc.studyCtus]
       };
 
       // Setting global CTIS flag (for single sc or project/study editing)
@@ -333,9 +333,6 @@ export class UpsertStudyCountryComponent implements OnInit {
     for (const sc of this.studyCountries) {
       if (sc?.country?.iso2 === this.g[i].value?.country?.iso2) {
         existingSC = sc;
-        // Fixing studyCTUs field case
-        existingSC['studyCTUs'] = existingSC['studyCtus'];
-        delete existingSC['studyCtus'];
         break;
       }
     }

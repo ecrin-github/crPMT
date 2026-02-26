@@ -180,6 +180,10 @@ export function getTagBgColor(str) {
 	return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
 }
 
+export function getCountryFlagFromIso2(iso2) {
+	return getFlagEmoji(iso2);
+}
+
 // Context functions
 export function searchClassValues(term, item) {
 	term = term.toLocaleLowerCase();

@@ -1,0 +1,12 @@
+<ng-container *ngIf="displayLowerLevels && hasNextItems(item, level+1); else regularDropdown">
+    <a ngbDropdownItem class="dropdown-item-submenu" [routerLink]="[getRouteRoot(level), item.id, 'view']">{{getItemDisplayText(item, level) + ' &raquo;'}}
+        <ul class="dropdown-menu dropdown-submenu">
+            <div *ngFor="let subitem of getNextItems(item, level+1)">
+                <app-breadcrumb-navigation-dropdown [item]="subitem" [level]=(level+1) [displayLowerLevels]="displayLowerLevels"></app-breadcrumb-navigation-dropdown>
+            </div>
+        </ul>
+    </a>
+</ng-container>
+<ng-template #regularDropdown>
+    <a ngbDropdownItem [routerLink]="[getRouteRoot(level), item.id, 'view']">{{getItemDisplayText(item, level)}}</a>
+</ng-template>
