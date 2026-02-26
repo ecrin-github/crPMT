@@ -1,14 +1,16 @@
 <ng-container *ngIf="isView; else notView">
-    <div class="btn-group ms-3 me-3">
-        <div ngbDropdown>
-            <button class="btn btn-outline-primary breadcrumbs-dropdown-button" id="itemsDropdown" ngbDropdownToggle>❯</button>
-            <div ngbDropdownMenu aria-labelledby="itemsDropdown">
-                <div *ngFor="let item of data">
-                    <app-breadcrumb-navigation-dropdown [item]="item" [level]=level [displayLowerLevels]="displayLowerLevels"></app-breadcrumb-navigation-dropdown>
+    <ng-container *ngIf="data?.length > 0">
+        <div class="btn-group ms-3 me-3">
+            <div ngbDropdown>
+                <button class="btn btn-outline-primary breadcrumbs-dropdown-button" id="itemsDropdown" ngbDropdownToggle>❯</button>
+                <div ngbDropdownMenu aria-labelledby="itemsDropdown">
+                    <div *ngFor="let item of data">
+                        <app-breadcrumb-navigation-dropdown [item]="item" [level]=level [displayLowerLevels]="displayLowerLevels"></app-breadcrumb-navigation-dropdown>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </ng-container>
 </ng-container>
 <ng-template #notView>
     <span class="ms-3 me-3">❯</span>
