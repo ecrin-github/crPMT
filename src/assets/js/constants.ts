@@ -15,6 +15,13 @@ export const STUDY_STATUSES: String[] = [
     "On hold"
 ];
 
+export enum Levels {
+    PROJECT = 1,
+    STUDY = 2,
+    STUDY_COUNTRY = 3,
+    STUDY_CTU = 4
+}
+
 export enum AuthorityCodes {
     EC = "EC",
     CA = "CA",

@@ -26,9 +26,11 @@
                             <div id="navbar">
                                 <div class="row upsert-navbar">
                                     <div class="col-md-8 d-inline-flex">
-                                        <div class="view-title text-truncate">
-                                            <a [routerLink]="isView ? ['/projects', study.value.project?.id, 'view'] : ['/projects', study.value.project?.id, 'edit']">{{study.value.project?.shortName}}</a>&nbsp;&nbsp;❯&nbsp;&nbsp;Study:
-                                            {{study.value.shortTitle}}
+                                        <div class="view-title d-inline-flex align-items-center">
+                                            <a [routerLink]="isView ? ['/projects', study.value.project?.id, 'view'] : ['/projects', study.value.project?.id, 'edit']">{{study.value.project?.shortName}}</a>
+                                            <app-breadcrumb-navigation-dropdown-container [data]="study.value.project.studies" [level]=2 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
+                                            <span class="text-truncate">{{study.value.shortTitle}}</span>
+                                            <app-breadcrumb-navigation-dropdown-container [data]="study.value.studyCountries" [level]=3 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
                                         </div>
                                     </div>
                                     <div class="col-md-4 d-flex justify-content-end">
