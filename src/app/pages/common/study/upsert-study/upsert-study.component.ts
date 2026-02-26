@@ -91,6 +91,7 @@ export class UpsertStudyComponent implements OnInit {
       this.id = this.activatedRoute.snapshot.params.id;
       this.isStudyPage = true;
     }
+    
 
     if (this.isStudyPage) {
       setTimeout(() => {
@@ -174,6 +175,11 @@ export class UpsertStudyComponent implements OnInit {
         this.spinner.hide();
       });
     }
+  }
+  goToStudyCtu(event: MouseEvent, studyCtuId: number | string): void {
+  event.preventDefault();
+  event.stopPropagation();
+  this.router.navigate(['/study-ctus', studyCtuId, 'view']);
   }
 
   get fc() { return this.studyForm.get('studies')["controls"]; }
@@ -509,6 +515,7 @@ export class UpsertStudyComponent implements OnInit {
       }
     }
   }
+  
 
   back(): void {
     this.backService.back();
