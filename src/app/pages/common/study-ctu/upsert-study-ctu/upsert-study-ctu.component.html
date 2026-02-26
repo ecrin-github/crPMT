@@ -10,8 +10,7 @@
                             <span class="view-sub-title">CTU {{i+1}} - {{sctu.value.ctu?.shortName ?
                                 sctu.value.ctu.shortName + ' - ' : '' }}{{sctu.value.ctu?.name}}</span>
                             <div class="p-0 m-0 d-flex align-items-center justify-content-center">
-                                <i class="fa fa-trash ms-4 study-delete-icon" style="color:#f24437; cursor: pointer;"
-                                    *ngIf="!isView" (click)="deleteStudyCTU($event, i)">
+                                <i class="fa fa-trash ms-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView" (click)="deleteStudyCTU($event, i)">
                                 </i>
                             </div>
                         </mat-expansion-panel-header>
@@ -25,13 +24,15 @@
                             <div id="navbar">
                                 <div class="row upsert-navbar">
                                     <div class="col-md-10 d-inline-flex">
-                                        <div class="view-title text-truncate">
-                                            <a
-                                                [routerLink]="isView ? ['/projects', sctu.value.study?.project?.id, 'view'] : ['/projects', sctu.value.study?.project?.id, 'edit']">{{sctu.value.study?.project?.shortName}}</a>&nbsp;&nbsp;❯&nbsp;&nbsp;
-                                            <a
-                                                [routerLink]="isView ? ['/studies', sctu.value.study?.id, 'view'] : ['/studies', sctu.value.study?.id, 'edit']">{{sctu.value.study?.shortTitle}}</a>&nbsp;&nbsp;❯&nbsp;&nbsp;
-                                            <a
-                                                [routerLink]="isView ? ['/study-countries', sctu.value.studyCountry?.id, 'view'] : ['/study-countries', sctu.value.studyCountry?.id, 'edit']">{{sctu.value.studyCountry?.country?.name}}</a>&nbsp;&nbsp;❯&nbsp;&nbsp;{{sctu.value.ctu?.name}}
+                                        <div class="view-title d-inline-flex align-items-center max-width-100">
+                                            <a class="flex-shrink-0" [routerLink]="isView ? ['/projects', sctu.value.study?.project?.id, 'view'] : ['/projects', sctu.value.study?.project?.id, 'edit']">{{sctu.value.study?.project?.shortName}}</a>
+                                            <app-breadcrumb-navigation-dropdown-container [data]="sctu.value.study?.project?.studies" [level]=2 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
+                                            <a class="flex-shrink-0" [routerLink]="isView ? ['/studies', sctu.value.study?.id, 'view'] : ['/studies', sctu.value.study?.id, 'edit']">{{sctu.value.study?.shortTitle}}</a>
+                                            <app-breadcrumb-navigation-dropdown-container [data]="sctu.value.study?.studyCountries" [level]=3 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
+                                            <a class="flex-shrink-0" [routerLink]="isView ? ['/study-countries', sctu.value.studyCountry?.id, 'view'] : ['/study-countries', sctu.value.studyCountry?.id, 'edit']">{{sctu.value.studyCountry?.country?.name}}</a>
+                                            <app-breadcrumb-navigation-dropdown-container [data]="sctu.value.studyCountry?.studyCtus" [level]=4 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
+                                            <div class="min-width-0"><span class="text-truncate d-block">{{sctu.value.ctu?.shortName ?
+                                                    sctu.value.ctu.shortName : sctu.value.ctu.name }}</span></div>
                                         </div>
                                     </div>
                                     <div class="col-md-2 d-flex justify-content-end">
@@ -48,8 +49,7 @@
                                             <button class="btn btn-warning" (click)="back()">Back</button>
                                         </ng-container>
                                         <ng-container *ngIf="!isView">
-                                            <button class="btn btn-success me-2"
-                                                (click)="onSaveStudyCtu()">Save</button>
+                                            <button class="btn btn-success me-2" (click)="onSaveStudyCtu()">Save</button>
                                             <button class="btn btn-warning" (click)="back()">Cancel</button>
                                         </ng-container>
                                     </div>
@@ -73,11 +73,7 @@
                         <div class="col-md-12">
                             <div class="row">
                                 <div class="col-md-11">
-                                    <ng-select [items]="ctus" formControlName="ctu" [searchFn]="searchCTUs"
-                                        [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
-                                        notFoundText="No CTUs found" placeholder="Select CTU" (change)="onChangeCTU()"
-                                        appendTo="body" name="ctu"
-                                        [ngClass]="{ 'is-invalid': submitted && getControls(i).ctu.errors?.required }">
+                                    <ng-select [items]="ctus" formControlName="ctu" [searchFn]="searchCTUs" [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds" notFoundText="No CTUs found" placeholder="Select CTU" (change)="onChangeCTU()" appendTo="body" name="ctu" [ngClass]="{ 'is-invalid': submitted && getControls(i).ctu.errors?.required }">
                                         <ng-template ng-label-tmp let-item="item">{{item.shortName ? item.shortName + '
                                             - ' : '' }}{{item.name}}</ng-template>
                                         <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
@@ -99,23 +95,20 @@
                                         [id]="'toggleButton'+studyCountry?.country?.iso2+i" (click)="toggleCTUInfo($event)">❯</button> -->
                             <!-- </div> -->
                         </div>
-                        <div class="col-md-12 invalid-feedback d-block"
-                            *ngIf="submitted && getControls(i).ctu.errors?.required">
+                        <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).ctu.errors?.required">
                             <p>Please select the CTU</p>
                         </div>
                     </div>
                     <div class="row form-group">
                         <div class="col-md-3">
                             <div for="leadCtu" class="font-style">Lead CTU (country specific)</div>
-                            <input type="checkbox" id="leadCtu" class="form-check-input checkbox"
-                                formControlName="leadCtu" *ngIf="!isView" />
+                            <input type="checkbox" id="leadCtu" class="form-check-input checkbox" formControlName="leadCtu" *ngIf="!isView" />
                             <span class="text-value" *ngIf="isView">{{sctu.value.leadCtu ? 'Yes' : 'No'}}</span>
                         </div>
                         <div class="col-md-4">
                             <div for="contactPerson" class="font-style">Contact name</div>
                             <span class="text-value">{{sctu.value.ctu?.contact?.fullName}}
-                                <a [href]="'mailto:' + sctu.value.ctu?.contact?.email"
-                                    *ngIf="sctu.value.ctu?.contact?.email">
+                                <a [href]="'mailto:' + sctu.value.ctu?.contact?.email" *ngIf="sctu.value.ctu?.contact?.email">
                                     <i class="fa-solid fa-envelope" style="color:#0688fa;"></i>
                                 </a>
                             </span>
@@ -124,12 +117,7 @@
                     <div class="row form-group">
                         <div class="col-md-7">
                             <div for="services" class="font-style">List of services</div>
-                            <ng-select [items]="services" formControlName="services" [multiple]="true"
-                                [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true"
-                                [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false"
-                                class="form-control ng-form-control custom" notFoundText="No service found"
-                                placeholder="Start typing to add a new service" *ngIf="!isView" addTagText="Add"
-                                [addTag]="addService" appendTo="body">
+                            <ng-select [items]="services" formControlName="services" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No service found" placeholder="Start typing to add a new service" *ngIf="!isView" addTagText="Add" [addTag]="addService" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>
                                     <span class="ng-value-icon right" (click)="clear(item)">×</span>
@@ -137,18 +125,15 @@
                                 <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                     <div class="row m-0">
                                         <div class="col-md-11 col-11 p-0 m-0">{{item.value}}</div>
-                                        <div
-                                            class="col-md-1 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                            <i class="fa fa-trash" style="color:#f24437; cursor: pointer;"
-                                                (click)="deleteService($event, item)">
+                                        <div class="col-md-1 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                            <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteService($event, item)">
                                             </i>
                                         </div>
                                     </div>
                                 </ng-template>
                             </ng-select>
                             <div *ngIf="isView" class="tags-container">
-                                <span *ngFor="let service of sctu.value.services" class="tag"
-                                    [ngStyle]="{ 'border-color': getTagBorderColor(service.value), 'background-color': getTagBgColor(service.value) }">{{service.value}}</span>
+                                <span *ngFor="let service of sctu.value.services" class="tag" [ngStyle]="{ 'border-color': getTagBorderColor(service.value), 'background-color': getTagBgColor(service.value) }">{{service.value}}</span>
                             </div>
                         </div>
                     </div>
@@ -173,8 +158,7 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-12 justify-content-center">
-                            <app-upsert-centre #centres [centresData]="sctu.value.centres"
-                                [studyCTU]="sctu.value"></app-upsert-centre>
+                            <app-upsert-centre #centres [centresData]="sctu.value.centres" [studyCTU]="sctu.value"></app-upsert-centre>
                         </div>
                     </div>
                     <hr class="hr-m2">
@@ -190,8 +174,7 @@
                         </div>
                         <div class="col-md-3">
                             <div for="sasVerification" class="font-style">SAS verification</div>
-                            <span class="text-value"
-                                [ngClass]="sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'sas-approved' : 'sas-not-approved') : ''">{{sctu.value.ctu
+                            <span class="text-value" [ngClass]="sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'sas-approved' : 'sas-not-approved') : ''">{{sctu.value.ctu
                                 ? (sctu.value.ctu?.sasVerification ? 'Yes' : 'No') : ''}}</span>
                         </div>
                         <div class="col-md-4">
@@ -222,8 +205,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12">
-                            <app-upsert-ctu-agreement #ctuAgreements
-                                [ctuAgreements]="sctu.value.ctuAgreements"></app-upsert-ctu-agreement>
+                            <app-upsert-ctu-agreement #ctuAgreements [ctuAgreements]="sctu.value.ctuAgreements"></app-upsert-ctu-agreement>
                         </div>
                     </div>
                     <hr class="hr-m2">

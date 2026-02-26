@@ -89,6 +89,7 @@ body {
   // border: 1px solid #758092 !important;
   box-shadow: 0 0.25rem 0.75rem 0.15rem rgb(0 0 0 / 8%) !important;
 }
+
 // .form-control:focus {
 //   border-color: #3e6ab8 !important;
 //   box-shadow: 0 0.5rem 1.5rem 0.5rem rgb(0 0 0 / 8%) !important;
@@ -153,6 +154,7 @@ body {
 
 .angular-bootstrap-table {
   overflow-x: auto;
+
   th {
     outline: none;
 
@@ -176,22 +178,23 @@ body {
   }
 }
 
-.ng-dropdown-panel .ng-dropdown-panel-items .ng-option { 
+.ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
   white-space: break-spaces !important;
 }
 
 .ng-form-control {
-  height:auto !important;
+  height: auto !important;
   padding: 0 !important;
 }
 
 .ng-dropdown-panel .ng-dropdown-panel-items {
-  max-height: 25rem !important;  // trying to match form-control
+  max-height: 25rem !important; // trying to match form-control
 }
 
-mat-cell, .mat-cell {
-  display:block; // flex prevents padding from working
-  min-height:auto; // overrides the 'inherit' that set the min height of the row
+mat-cell,
+.mat-cell {
+  display: block; // flex prevents padding from working
+  min-height: auto; // overrides the 'inherit' that set the min height of the row
   padding: 1rem 2rem 1rem 0;
 }
 
@@ -204,7 +207,7 @@ mat-footer-cell:first-of-type {
 .mat-expansion-panel-header[aria-disabled=true] {
   background-color: rgba(202, 202, 202, 0.5);
   opacity: 0.5;
-  
+
   .font-style {
     color: black !important;
   }
@@ -227,7 +230,8 @@ mat-footer-cell:first-of-type {
   width: 100%;
 }
 
-.hop {  // Height Of Parent
+.hop {
+  // Height Of Parent
   height: 100% !important;
 }
 
@@ -253,9 +257,55 @@ mat-footer-cell:first-of-type {
 
 @media (max-width: 991.98px) {
   .sticky {
-      top: 1px !important;
-      width: 100% !important;
+    top: 1px !important;
+    width: 100% !important;
   }
+}
+
+.breadcrumbs-dropdown-button {
+  transition: transform .2s;
+  --bs-btn-padding-x: 0.5rem;
+  --bs-btn-padding-y: 0rem;
+  --bs-btn-font-size: 1.5rem;
+}
+
+.breadcrumbs-dropdown-button:focus {
+  transform: rotate(90deg);
+}
+
+/* Breadcrumbs dropdown submenus */
+.dropdown-menu li {
+  position: relative;
+}
+
+.dropdown-menu .dropdown-submenu {
+  display: none;
+  position: absolute;
+  left: 100%;
+  top: -7px;
+}
+
+.dropdown-menu .dropdown-submenu-left {
+  right: 100%;
+  left: auto;
+}
+
+.dropdown-item-submenu:hover>.dropdown-submenu {
+  display: block;
+}
+
+.dropdown-item,
+.dropdown-item-submenu {
+  position: relative;
+}
+
+.max-width-100 {
+  max-width: 100%;
+}
+
+.min-width-0 {
+  // "Hack" for text truncation in flex container
+  min-width: 0;
 }
 
 .displayPermanentNavbar {
@@ -270,24 +320,31 @@ mat-footer-cell:first-of-type {
   .mat-column-status {
     padding-right: 80px !important;
   }
+
   .mat-column-title {
     padding-right: 80px !important;
   }
+
   .mat-column-type {
     padding-right: 100px !important;
   }
+
   .mat-column-linkedStudy {
     padding-right: 80px !important;
   }
+
   .mat-column-name {
     padding-right: 80px !important;
   }
+
   .mat-column-roleName {
     padding-right: 100px !important;
   }
+
   .mat-column-orgName {
     padding-right: 80px !important;
   }
+
   .text-truncate {
     width: 250px;
     white-space: nowrap;
@@ -625,6 +682,7 @@ mat-footer-cell:first-of-type {
         color: $primary;
       }
     }
+
     .stepper-arrow {
       color: $primary;
 
@@ -773,7 +831,7 @@ mat-footer-cell:first-of-type {
 
 .table-container-view {
   // background-color: rgba(0,0,145,0.05);
-  background-color: #0000ff0d;  // Not ECRIN color
+  background-color: #0000ff0d; // Not ECRIN color
   padding: 0.5rem 0.8rem;
 }
 
@@ -823,8 +881,8 @@ mat-footer-cell:first-of-type {
 }
 
 .checkbox {
-  width: calc(1.5em + 1.3rem + 2px);  // Same formula as Bootstrap 4 .form-control height
-  height: calc(1.5em + 1.3rem + 2px);  // Same formula as Bootstrap 4 .form-control height
+  width: calc(1.5em + 1.3rem + 2px); // Same formula as Bootstrap 4 .form-control height
+  height: calc(1.5em + 1.3rem + 2px); // Same formula as Bootstrap 4 .form-control height
 }
 
 .checkbox-2 {
@@ -957,7 +1015,8 @@ mat-footer-cell:first-of-type {
   margin: 0 5rem !important;
 }
 
-.card-pad {  // Equalize padding with left and right paddings with col
+.card-pad {
+  // Equalize padding with left and right paddings with col
   padding: 1rem 1.25rem;
 }
 
@@ -1011,15 +1070,16 @@ mat-footer-cell:first-of-type {
 
 // ng-select validation
 ng-select.required.ng-invalid.ng-touched {
-  .ng-select-container{
-      border-color: #dc3545;
-      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
+  .ng-select-container {
+    border-color: #dc3545;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
   }
 }
+
 ng-select.required.ng-invalid.ng-untouched {
-  .ng-select-container{
-      border-color: #dc3545;
-      box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
+  .ng-select-container {
+    border-color: #dc3545;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px #fde6e8;
   }
 }
 
@@ -1049,7 +1109,7 @@ ng-select.required.ng-invalid.ng-untouched {
   border-radius: 100%;
   padding: 8px;
   border: 2px solid #000091;
-  background-color: rgba(255,255,255,0.7);
+  background-color: rgba(255, 255, 255, 0.7);
   z-index: 1001 !important;
   color: #000091;
   font-size: 2.5rem;
@@ -1061,7 +1121,7 @@ ng-select.required.ng-invalid.ng-untouched {
   left: 0;
   bottom: 0;
   width: 100%;
-  background-color: rgba(0,0,145,0.9);
+  background-color: rgba(0, 0, 145, 0.9);
   z-index: 1002 !important;
   color: #FFFFFF;
   font-size: 18px;

@@ -49,7 +49,7 @@ export class UpsertProjectComponent implements OnInit {
     private fb: UntypedFormBuilder,
     private router: Router,
     private projectService: ProjectService,
-    private reuseService: ReuseService,
+    private scrollService: ScrollService,
     private activatedRoute: ActivatedRoute,
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
@@ -431,5 +431,9 @@ export class UpsertProjectComponent implements OnInit {
       left: 0,
       behavior: 'smooth'
     });
+  }
+
+  ngOnDestroy() {
+    this.scrollService.unsubscribeScroll();
   }
 }

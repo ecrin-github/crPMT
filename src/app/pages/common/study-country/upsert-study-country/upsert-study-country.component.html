@@ -21,13 +21,17 @@
                         <div class="card-header">
                             <div id="navbar">
                                 <div class="row upsert-navbar">
-                                    <div class="col-md-8 d-inline-flex">
-                                        <div class="view-title text-truncate">
-                                            <a [routerLink]="isView ? ['/projects', sc.value.study?.project?.id, 'view'] : ['/projects', sc.value.study?.project?.id, 'edit']">{{sc.value.study?.project?.shortName}}</a>&nbsp;&nbsp;❯&nbsp;&nbsp;
-                                            <a [routerLink]="isView ? ['/studies', sc.value.study?.id, 'view'] : ['/studies', sc.value.study?.id, 'edit']">{{sc.value.study?.shortTitle}}</a>&nbsp;&nbsp;❯&nbsp;&nbsp;Study Country: {{sc.value.country?.name}}
+                                    <div class="col-md-10 d-inline-flex">
+                                        <div class="view-title d-inline-flex align-items-center">
+                                            <a class="flex-shrink-0" [routerLink]="isView ? ['/projects', sc.value.study?.project?.id, 'view'] : ['/projects', sc.value.study?.project?.id, 'edit']">{{sc.value.study?.project?.shortName}}</a>
+                                            <app-breadcrumb-navigation-dropdown-container [data]="sc.value.study?.project?.studies" [level]=2 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
+                                            <a class="flex-shrink-0" [routerLink]="isView ? ['/studies', sc.value.study?.id, 'view'] : ['/studies', sc.value.study?.id, 'edit']">{{sc.value.study?.shortTitle}}</a>
+                                            <app-breadcrumb-navigation-dropdown-container [data]="sc.value.study?.studyCountries" [level]=3 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
+                                            <span class="text-truncate">{{sc.value.country?.name}}</span>
+                                            <app-breadcrumb-navigation-dropdown-container [data]="sc.value.studyCtus" [level]=4 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
                                         </div>
                                     </div>
-                                    <div class="col-md-4 d-flex justify-content-end">
+                                    <div class="col-md-2 d-flex justify-content-end">
                                         <ng-container *ngIf="isView">
                                             <a [routerLink]="['/study-countries', id, 'edit']" class="btn btn-primary me-2">
                                                 <i class="fa fa-edit"></i> Edit
@@ -85,7 +89,7 @@
                     </div>
                     <div class="row form-group" *ngIf="!isView; else viewStudyCTUs">
                         <div class="col-md-12 justify-content-center mt-2">
-                            <app-upsert-study-ctu #studyCTUs [studyCTUsData]="sc.value.studyCTUs" [studyCountry]="sc.value"></app-upsert-study-ctu>
+                            <app-upsert-study-ctu #studyCTUs [studyCTUsData]="sc.value.studyCtus" [studyCountry]="sc.value"></app-upsert-study-ctu>
                         </div>
                     </div>
                     <ng-template #viewStudyCTUs>
@@ -93,44 +97,35 @@
                             <div class="col-md-12">
 
                                 <div class="ctu-list">
-                                    <div
-                                    *ngFor="let sctu of sc.value.studyCTUs; let j = index"
-                                    class="ctu-card"
-                                    [routerLink]="['/study-ctus', sctu.id, 'view']"
-                                    >
+                                    <div *ngFor="let sctu of sc.value.studyCtus; let j = index" class="ctu-card" [routerLink]="['/study-ctus', sctu.id, 'view']">
                                         <div class="ctu-inner">
                                             <div class="ctu-title">
-                                            {{ sctu.ctu?.shortName ? sctu.ctu.shortName + ' - ' : '' }}
-                                            {{ sctu.ctu?.name }}
+                                                {{ sctu.ctu?.shortName ? sctu.ctu.shortName + ' - ' : '' }}
+                                                {{ sctu.ctu?.name }}
                                             </div>
 
                                             <div *ngIf="sctu.services?.length" class="tags-container mt-2">
-                                            <span
-                                                *ngFor="let service of sctu.services"
-                                                class="tag"
-                                                [ngStyle]="{
+                                                <span *ngFor="let service of sctu.services" class="tag" [ngStyle]="{
                                                 'border-color': getTagBorderColor(service.value),
                                                 'background-color': getTagBgColor(service.value)
-                                                }"
-                                                (click)="$event.stopPropagation()"
-                                            >
-                                                {{ service.value }}
-                                            </span>
+                                                }" (click)="$event.stopPropagation()">
+                                                    {{ service.value }}
+                                                </span>
                                             </div>
 
                                             <div *ngIf="sctu.centres?.length" class="ctu-sites mt-2">
-                                            <div class="ctu-sites-title">Sites</div>
-                                            <div *ngFor="let site of sctu.centres" class="ctu-site">
-                                                {{ site.hospital?.name }}, {{ site.hospital?.city }}
+                                                <div class="ctu-sites-title">Sites</div>
+                                                <div *ngFor="let site of sctu.centres" class="ctu-site">
+                                                    {{ site.hospital?.name }}, {{ site.hospital?.city }}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="ctu-arrow">
-                                        <i class="fa fa-chevron-right"></i>
-                                    </div>
+                                        <div class="ctu-arrow">
+                                            <i class="fa fa-chevron-right"></i>
+                                        </div>
                                     </div>
                                 </div>
-                                
+
                             </div>
                         </div>
                     </ng-template>
