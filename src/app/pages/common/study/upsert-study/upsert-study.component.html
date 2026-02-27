@@ -438,7 +438,7 @@
                                             <span class="sc-sites">({{ getCountrySitesString(sc) }})</span>
                                             </div>
                                             <div class="sc-preview" *ngIf="sc.studyCtus?.length">
-                                                <div class="sc-ctu" *ngFor="let sctu of sc.studyCtus | slice:0:2">
+                                                <div class="sc-ctu" *ngFor="let sctu of sc.studyCtus">
                                                     <span
                                                     class="sc-ctu-name sc-ctu-link"
                                                     (click)="goToStudyCtu($event, sctu.id)"
@@ -446,18 +446,14 @@
                                                     >
                                                     {{ sctu.ctu?.name }}
                                                     </span>
-
-                                                    <span class="sc-ctu-sites" *ngIf="sctu.centres?.length">
-                                                    — {{ sctu.centres[0]?.hospital?.name }}, {{ sctu.centres[0]?.hospital?.city }}
-                                                    </span>
-                                                </div>
-
-                                                <div class="sc-more" *ngIf="sc.studyCtus.length > 2">
-                                                    +{{ sc.studyCtus.length - 2 }} more CTU(s)
+                                                    <div class="sc-ctu-sites" *ngIf="sctu.centres?.length">
+                                                        <div class="sc-centre" *ngFor="let centre of sctu.centres">
+                                                            {{ centre.hospital?.name }}, {{ centre.hospital?.city }}
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div class="sc-right">
                                             <i class="fa fa-chevron-right"></i>
                                         </div>

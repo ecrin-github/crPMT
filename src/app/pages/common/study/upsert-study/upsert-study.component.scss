@@ -20,41 +20,37 @@
 .sc-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 .sc-card {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-
-  padding: 1rem 1.25rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  background: #eff6ff;
-
-  text-decoration: none;
-  color: inherit;
-
+  align-items: flex-start;
+  padding: 16px 18px;
+  border-radius: 10px;
+  border: 1px solid #e6e9f2;
+  background: #f5f9ff;
   transition: all 0.2s ease;
-  cursor: pointer;
 }
 
 .sc-card:hover {
-  border-color: #60a5fa;
+  border-color: #3b82f6;
   background: #fff;
 }
-
 .sc-left {
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sc-title {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1e3a8a;
 }
 
-.sc-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 700;
-  color: #111827;
+.sc-flag {
+  margin-right: 6px;
 }
 
 .sc-country {
@@ -62,8 +58,9 @@
 }
 
 .sc-sites {
-  font-weight: 600;
-  color: #374151;
+  color: #6b7280;
+  font-weight: 400;
+  margin-left: 4px;
 }
 
 .sc-preview {
@@ -73,9 +70,29 @@
 }
 
 .sc-ctu {
-  margin-top: 0.25rem;
+  margin-left: 18px;
+  margin-top: 6px;
 }
 
+.sc-ctu-name {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.sc-ctu-sites {
+  margin-left: 20px;
+  margin-top: 4px;
+}
+.sc-centre {
+  font-size: 14px;
+  color: #6b7280;
+  position: relative;
+}
+.sc-centre::before {
+  content: "▪";
+  margin-right: 6px;
+  color: #9ca3af;
+}
 .sc-right {
   flex-shrink: 0;
   color: #6b7280;
@@ -88,4 +105,9 @@
 
 .sc-ctu-link:hover {
   text-decoration: underline;
+}
+.sc-right {
+  color: #9ca3af;
+  font-size: 16px;
+  align-self: center;
 }
