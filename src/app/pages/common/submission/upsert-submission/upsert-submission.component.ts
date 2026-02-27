@@ -248,17 +248,11 @@ export class UpsertSubmissionComponent implements OnInit {
 
   onChangeNotApplicable(i) {
     if (this.fv[i]?.notApplicable) {
-      this.getControls(i)?.submissionDate?.disable();
-      this.getControls(i)?.approvalDate?.disable();
-      this.getControls(i)?.protocolApprovalDate?.disable();
-      this.getControls(i)?.protocolApprovedVersion?.disable();
-      this.getControls(i)?.comment?.disable();
-    } else {
-      this.getControls(i)?.submissionDate?.enable();
-      this.getControls(i)?.approvalDate?.enable();
-      this.getControls(i)?.protocolApprovalDate?.enable();
-      this.getControls(i)?.protocolApprovedVersion?.enable();
-      this.getControls(i)?.comment?.enable();
+      this.getControls(i)?.submissionDate?.setValue(null);
+      this.getControls(i)?.approvalDate?.setValue(null);
+      this.getControls(i)?.protocolApprovalDate?.setValue(null);
+      this.getControls(i)?.protocolApprovedVersion?.setValue(null);
+      this.getControls(i)?.comment?.setValue(null);
     }
   }
 

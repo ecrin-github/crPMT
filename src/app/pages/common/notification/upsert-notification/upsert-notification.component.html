@@ -20,7 +20,11 @@
                                 </ng-template>
                             </ng-template>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2" *ngIf="!isView && notification.value.authority !== AuthorityCodes.EC">
+                            <div for="notApplicable" class="font-style">Not applicable</div>
+                            <input *ngIf="!isView" type="checkbox" id="notApplicable" class="form-check-input checkbox" formControlName="notApplicable" (change)="onChangeNotApplicable(i)" />
+                        </div>
+                        <div class="col-md-2" *ngIf="!notification.value.notApplicable">
                             <div for="notificationDate" class="font-style">Notification date</div>
                             <div class="input-group" *ngIf="!isView">
                                 <input class="form-control" placeholder="yyyy-mm-dd" name="notificationDate" ngbDatepicker #notificationDate="ngbDatepicker" formControlName="notificationDate" container='body'>
@@ -32,21 +36,15 @@
                             </div>
                             <span class="text-value" *ngIf="isView">{{dateToString(notification.value.notificationDate)}}</span>
                         </div>
-                        <div class="col-md-2" *ngIf="!isView && notification.value.authority !== AuthorityCodes.EC">
-                            <div for="notApplicable" class="font-style">Not applicable</div>
-                            <input *ngIf="!isView" type="checkbox" id="notApplicable" class="form-check-input checkbox" formControlName="notApplicable" (change)="onChangeNotApplicable(i)" />
+                        <div class="col-md-4" *ngIf="!notification.value.notApplicable">
+                            <div for="comment" class="font-style">Comment</div>
+                            <textarea cols="30" rows="1" class="form-control" placeholder="Notification comment" formControlName="comment" *ngIf="!isView" id="comment" [ngClass]="{ 'is-invalid': submitted && getControls(i).comment.errors }">
+                            </textarea>
                         </div>
                         <div class="col-md-1 d-flex justify-content-center align-items-center">
                             <div class="row">
                                 <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView && !isFixedAuthorityCode(notification.value.authority)" (click)="deleteNotification(i)"></i>
                             </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div for="comment" class="font-style">Comment</div>
-                            <textarea cols="30" rows="3" class="form-control" placeholder="Notification comment" formControlName="comment" *ngIf="!isView" id="comment" [ngClass]="{ 'is-invalid': submitted && getControls(i).comment.errors }">
-                            </textarea>
                         </div>
                     </div>
                 </div>

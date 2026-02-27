@@ -20,7 +20,11 @@
                                 </ng-template>
                             </ng-template>
                         </div>
-                        <div class="col-md-5">
+                        <div class="col-md-2" *ngIf="!isView && !isAmendments && submission.value.authority !== AuthorityCodes.EC">
+                            <div for="notApplicable" class="font-style">Not applicable</div>
+                            <input *ngIf="!isView" type="checkbox" id="notApplicable" class="form-check-input checkbox" formControlName="notApplicable" (change)="onChangeNotApplicable(i)" />
+                        </div>
+                        <div class="col-md-5" *ngIf="!submission.value.notApplicable">
                             <div class="row">
                                 <div class="col-md-6">
                                     <div for="submissionDate" class="font-style">Submission date</div>
@@ -48,17 +52,13 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-2" *ngIf="!isView && !isAmendments && submission.value.authority !== AuthorityCodes.EC">
-                            <div for="notApplicable" class="font-style">Not applicable</div>
-                            <input *ngIf="!isView" type="checkbox" id="notApplicable" class="form-check-input checkbox" formControlName="notApplicable" (change)="onChangeNotApplicable(i)" />
-                        </div>
                         <div class="col-md-1 d-flex justify-content-center align-items-center">
                             <div class="row">
                                 <i class="fa fa-trash sc-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView && !isFixedAuthorityCode(submission.value.authority)" (click)="deleteSubmission(i)"></i>
                             </div>
                         </div>
                     </div>
-                    <div class="row form-group">
+                    <div class="row form-group" *ngIf="!submission.value.notApplicable">
                         <div class="col-md-3">
                             <div for="protocolApprovalDate" class="font-style">Date of approved protocol</div>
                             <div class="input-group" *ngIf="!isView">
@@ -88,7 +88,7 @@
                             <div *ngIf="isView" class="text-value">{{submission.value.amendmentReason}}</div>
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row" *ngIf="!submission.value.notApplicable">
                         <div class="col-md-12">
                             <div for="comment" class="font-style">Comment</div>
                             <textarea cols="30" rows="3" class="form-control" [placeholder]="this.isAmendments ? 'Amendment comment' : this.isOthers ? 'Notification comment' : 'Submission comment'" formControlName="comment" *ngIf="!isView" id="comment" [ngClass]="{ 'is-invalid': submitted && getControls(i).comment.errors }">

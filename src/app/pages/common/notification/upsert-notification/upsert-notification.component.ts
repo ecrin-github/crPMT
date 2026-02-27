@@ -228,11 +228,8 @@ export class UpsertNotificationComponent implements OnInit {
 
   onChangeNotApplicable(i) {
     if (this.fv[i]?.notApplicable) {
-      this.getControls(i)?.notificationDate?.disable();
-      this.getControls(i)?.comment?.disable();
-    } else {
-      this.getControls(i)?.notificationDate?.enable();
-      this.getControls(i)?.comment?.enable();
+      this.getControls(i)?.notificationDate.setValue(null);
+      this.getControls(i)?.comment?.setValue(null);
     }
   }
 
