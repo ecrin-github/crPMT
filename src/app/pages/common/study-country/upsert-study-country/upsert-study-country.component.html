@@ -28,7 +28,7 @@
                                             <a class="flex-shrink-0" [routerLink]="isView ? ['/studies', sc.value.study?.id, 'view'] : ['/studies', sc.value.study?.id, 'edit']">{{sc.value.study?.shortTitle}}</a>
                                             <app-breadcrumb-navigation-dropdown-container [data]="sc.value.study?.studyCountries" [level]=3 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
                                             <span class="text-truncate">{{sc.value.country?.name}}</span>
-                                            <app-breadcrumb-navigation-dropdown-container [data]="sc.value.studyCtus" [level]=4 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
+                                            <app-breadcrumb-navigation-dropdown-container *ngIf="isView" [data]="sc.value.studyCtus" [level]=4 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
                                         </div>
                                     </div>
                                     <div class="col-md-2 d-flex justify-content-end">

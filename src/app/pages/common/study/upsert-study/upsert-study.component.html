@@ -30,7 +30,7 @@
                                             <a [routerLink]="isView ? ['/projects', study.value.project?.id, 'view'] : ['/projects', study.value.project?.id, 'edit']">{{study.value.project?.shortName}}</a>
                                             <app-breadcrumb-navigation-dropdown-container [data]="study.value.project.studies" [level]=2 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
                                             <span class="text-truncate">{{study.value.shortTitle}}</span>
-                                            <app-breadcrumb-navigation-dropdown-container [data]="study.value.studyCountries" [level]=3 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
+                                            <app-breadcrumb-navigation-dropdown-container *ngIf="isView" [data]="study.value.studyCountries" [level]=3 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
                                         </div>
                                     </div>
                                     <div class="col-md-4 d-flex justify-content-end">
