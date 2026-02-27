@@ -178,18 +178,37 @@
             <ng-container *ngIf="!isView; else viewStudies">
                 <app-upsert-study [studiesData]="fv?.studies" [project]="fv" [isView]="isView" [isEdit]="isEdit"></app-upsert-study>
             </ng-container>
+
             <ng-template #viewStudies>
                 <div class="row form-group">
                     <div class="col-md-12">
-                        <ul>
-                            <li *ngFor="let study of fv?.studies" class="text-value">
-                                <a [routerLink]="['/studies', study.id, 'view']">{{study.shortTitle}}</a>{{study.cEuco ?
-                                ', cEuCo: ' + study.cEuco.fullName + ' (' + study.cEuco.country?.name + ')' : ''}}
-                            </li>
-                        </ul>
+                    <div class="study-list">
+                        <a
+                        *ngFor="let study of fv?.studies"
+                        class="study-item"
+                        [routerLink]="['/studies', study.id, 'view']"
+                        >
+                        <div class="study-badge">
+                         {{ study.shortTitle }}
+                        </div>
+
+                        <div class="study-content">
+                            <div class="study-title">
+                            <span *ngIf="study.cEuco" class="study-meta">
+                                 cEuCo: {{ study.cEuco.fullName }} ({{ study.cEuco.country?.name }})
+                            </span>
+                            </div>
+
+                            <!-- <div *ngIf="study.cEuco" class="study-subtitle">
+                            {{ study.cEuco.fullName }} ({{ study.cEuco.country?.name }})
+                            </div> -->
+                        </div>
+                        </a>
+                    </div>
                     </div>
                 </div>
             </ng-template>
+
             <hr class="hr-m2">
             <div class="row section-title">
                 <div class="col-md-12">
