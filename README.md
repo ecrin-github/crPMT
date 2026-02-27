@@ -18,16 +18,34 @@ For deployment on server:
 
 ## Changelog
 
+## [0.8.0] - 2026-02-27
+### Global
+- Replaced "smiley logo" with the ECRIN logo
+- Renamed "Studies" to "Clinical Studies" where applicable
+- Added navigation buttons in breadcrumbs for quick navigation to any lower level
+### Project
+- Hid timelines chart if no reporting periods
+### Study
+- Removed new study button on studies list component
+- Fixed study short name not being mandatory
+- Fixed infinite loading when saving a study with no study countries
+- Inverted "Agreement (Sponsor - ECRIN)" and "Coordinating Investigator" fields order
+- Clicking an option in the first dropdown of the "Regulatory framework" field now clears all values in the second dropdown
+### Study country
+- "Ethics Committee" and "National Competent Authority" names in the "Initial regulatory submission" and the "End of trial notifications" sections now cannot be edited, and the items cannot be deleted either
+- Added N/A checkbox that hides the other fields in the "Initial regulatory submission" and the "End of trial notifications" sections, however for now the checkboxes are not linked between sections. "Not applicable" is displayed instead of the view page
+- Other bugfixes related to "reusing" an existing study country
+
 ## [0.7.2dev] - 2026-02-23
-- Fix "New" button text consistency ("New" everywhere instead of "Add" sometimes)
-- Remove underline on "study countries" label in Study page
-- Add more spacing around page sections
-- Remove empty comment rows in Notification and Submission if there are no comments
+- Fixed "New" button text consistency ("New" everywhere instead of "Add" sometimes)
+- Removed underline on "study countries" label in Study page
+- Added more spacing around page sections
+- Removed empty comment rows in Notification and Submission if there are no comments
 
 ## [0.7.1dev] - 2026-02-10
-- Fix some imports
-- Fix person modal already having blank country selected
-- Fix saving on Study Country Page (redirection + CTIS Study Country sub-components)
+- Fixed some imports
+- Fixed person modal already having blank country selected
+- Fixed saving on Study Country Page (redirection + CTIS Study Country sub-components)
 
 ## [0.7.0dev] - 2026-02-06
 ### Global
