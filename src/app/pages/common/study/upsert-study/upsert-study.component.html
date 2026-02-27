@@ -12,8 +12,7 @@
                             <span class="view-sub-title">Study{{this.id ? '' : ' ' + (i+1)}}{{study.value.shortTitle ?
                                 ": " + study.value.shortTitle : "" }}</span>
                             <div class="p-0 m-0 d-flex align-items-center justify-content-center">
-                                <i class="fa fa-trash ms-4 study-delete-icon" style="color:#f24437; cursor: pointer;"
-                                    *ngIf="!isView && !id" (click)="deleteStudy($event, i)">
+                                <i class="fa fa-trash ms-4 study-delete-icon" style="color:#f24437; cursor: pointer;" *ngIf="!isView && !id" (click)="deleteStudy($event, i)">
                                 </i>
                             </div>
                         </mat-expansion-panel-header>
@@ -27,10 +26,11 @@
                             <div id="navbar">
                                 <div class="row upsert-navbar">
                                     <div class="col-md-8 d-inline-flex">
-                                        <div class="view-title text-truncate">
-                                            <a
-                                                [routerLink]="isView ? ['/projects', study.value.project?.id, 'view'] : ['/projects', study.value.project?.id, 'edit']">{{study.value.project?.shortName}}</a>&nbsp;&nbsp;❯&nbsp;&nbsp;Study:
-                                            {{study.value.shortTitle}}
+                                        <div class="view-title d-inline-flex align-items-center">
+                                            <a [routerLink]="isView ? ['/projects', study.value.project?.id, 'view'] : ['/projects', study.value.project?.id, 'edit']">{{study.value.project?.shortName}}</a>
+                                            <app-breadcrumb-navigation-dropdown-container [data]="study.value.project.studies" [level]=2 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
+                                            <span class="text-truncate">{{study.value.shortTitle}}</span>
+                                            <app-breadcrumb-navigation-dropdown-container [data]="study.value.studyCountries" [level]=3 [displayLowerLevels]="true"></app-breadcrumb-navigation-dropdown-container>
                                         </div>
                                     </div>
                                     <div class="col-md-4 d-flex justify-content-end">
@@ -70,10 +70,7 @@
                     <div class="row form-group" *ngIf="isStudyPage && !isView">
                         <div class="col-md-4">
                             <div for="project" class="font-style">European project</div>
-                            <ng-select [items]="projects" formControlName="project" [searchFn]="searchProjects"
-                                [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control"
-                                notFoundText="No project found"
-                                placeholder="Please select a project to link this study to" appendTo="body">
+                            <ng-select [items]="projects" formControlName="project" [searchFn]="searchProjects" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No project found" placeholder="Please select a project to link this study to" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.shortName}}</span>
                                 </ng-template>
@@ -90,18 +87,14 @@
                     </div>
                     <div class="row form-group mt-8">
                         <div class="col-md-2">
-                            <div for="shortTitle" class="font-style">Short name</div>
-                            <input type="text" id="shortTitle" class="form-control" placeholder="e.g. RECOVERY"
-                                formControlName="shortTitle" *ngIf="!isView" />
+                            <div for="shortTitle" class="font-style">Short name<sup *ngIf="!isView">*</sup></div>
+                            <input type="text" id="shortTitle" class="form-control" placeholder="e.g. RECOVERY" formControlName="shortTitle" *ngIf="!isView" />
                             <div *ngIf="isView" class="text-value">{{study.value.shortTitle}}</div>
                         </div>
                         <div class="col-md-10">
                             <div for="title" class="font-style">Name</div>
-                            <textarea cols="30" rows="2" class="form-control" placeholder="Full study title"
-                                formControlName="title" *ngIf="!isView" id="title"
-                                [ngClass]="{ 'is-invalid': submitted && getControls(i).title.errors }"></textarea>
-                            <div class="col-md-12 invalid-feedback d-block"
-                                *ngIf="submitted && getControls(i).title.errors">
+                            <textarea cols="30" rows="2" class="form-control" placeholder="Full study title" formControlName="title" *ngIf="!isView" id="title" [ngClass]="{ 'is-invalid': submitted && getControls(i).title.errors }"></textarea>
+                            <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).title.errors">
                                 <p *ngIf="submitted && getControls(i).title.errors.required">Please enter the study
                                     title</p>
                             </div>
@@ -112,11 +105,7 @@
                         <div class="col-md-4">
                             <div for="sponsorOrganisation" class="font-style">Name of Sponsor Organisation/Institution
                             </div>
-                            <ng-select [items]="organisations" formControlName="sponsorOrganisation"
-                                [searchFn]="searchOrganisations" [compareWith]="compareIds" [virtualScroll]="false"
-                                class="form-control ng-form-control" notFoundText="No organisation found"
-                                placeholder="Start typing to add a new organisation" *ngIf="!isView" addTagText="Add"
-                                [addTag]="addOrganisation" appendTo="body">
+                            <ng-select [items]="organisations" formControlName="sponsorOrganisation" [searchFn]="searchOrganisations" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No organisation found" placeholder="Start typing to add a new organisation" *ngIf="!isView" addTagText="Add" [addTag]="addOrganisation" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.name}}{{item.shortName ? ' (' + item.shortName +
                                         ')' : ''}}{{item.country?.name ? ', ' + item.country.name : ''}}</span>
@@ -129,10 +118,8 @@
                                                 item.country.name : ''}}</div>
                                         </div>
                                         <div class="col-md-1 col-1 p-0 m-0 d-flex">
-                                            <div
-                                                class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;"
-                                                    (click)="deleteOrganisation($event, item)">
+                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteOrganisation($event, item)">
                                                 </i>
                                             </div>
                                         </div>
@@ -143,10 +130,7 @@
                         </div>
                         <div class="col-md-4">
                             <div for="sponsorCountry" class="font-style">Sponsor Country</div>
-                            <ng-select [items]="countries" formControlName="sponsorCountry" [searchFn]="searchCountries"
-                                [multiple]="false" [virtualScroll]="true" [compareWith]="compareCountries"
-                                notFoundText="No countries found" placeholder="Select sponsor country" *ngIf="!isView"
-                                appendTo="body" name="sponsorCountry">
+                            <ng-select [items]="countries" formControlName="sponsorCountry" [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true" [compareWith]="compareCountries" notFoundText="No countries found" placeholder="Select sponsor country" *ngIf="!isView" appendTo="body" name="sponsorCountry">
                                 <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
                                 <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                     <div class="row m-0">
@@ -154,17 +138,35 @@
                                     </div>
                                 </ng-template>
                             </ng-select>
-                            <div class="text-value" *ngIf="isView">
-                                {{getCountryFlagFromIso2(study.value.sponsorCountry?.iso2)}}
+                            <div class="text-value" *ngIf="isView">{{getCountryFlagFromIso2(study.value.sponsorCountry?.iso2)}}
                                 {{study.value.sponsorCountry?.name}}</div>
                         </div>
                         <div class="col-md-4">
+                            <div for="agreementSigned" class="font-style">Agreement (Sponsor - ECRIN)</div>
+                            <div class="row" *ngIf="!isView">
+                                <div class="col-md-4 pe-0 d-flex align-items-center">
+                                    <div class="text-value me-2">Signed:</div>
+                                    <input *ngIf="!isView" type="checkbox" id="agreementSigned" class="form-check-input checkbox" (change)="onChangeAgreementSigned(i)" formControlName="agreementSigned" />
+                                </div>
+                                <div class="col-md-8 ps-0" *ngIf="isAgreementSigned[i]">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd" name="agreementSignedDate" ngbDatepicker #agreementSignedDate="ngbDatepicker" [ngClass]="{ 'is-invalid': submitted && getControls(i).agreementSignedDate.errors }" formControlName="agreementSignedDate" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" (click)="agreementSignedDate.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isView" class="text-value">{{study.value.agreementSigned ? ('Signed ' +
+                                dateToString(study.value.agreementSignedDate)) : 'Not signed'}}</div>
+                        </div>
+                    </div>
+                    <div class="row form-group mt-8">
+                        <div class="col-md-4">
                             <div for="coordinatingInvestigator" class="font-style">Coordinating Investigator</div>
-                            <ng-select [items]="persons" formControlName="coordinatingInvestigator"
-                                [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false"
-                                class="form-control ng-form-control" notFoundText="No people found"
-                                placeholder="Start typing to add a new person" *ngIf="!isView" [clearSearchOnAdd]="true"
-                                addTagText="Add" [addTag]="addPerson" appendTo="body">
+                            <ng-select [items]="persons" formControlName="coordinatingInvestigator" [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addPerson" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.fullName}}</span>
                                 </ng-template>
@@ -176,75 +178,34 @@
                                             </div>
                                         </div>
                                         <div class="col-md-1 col-1 p-0 m-0 d-flex">
-                                            <div
-                                                class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;"
-                                                    (click)="deletePerson($event, item)">
+                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deletePerson($event, item)">
                                                 </i>
                                             </div>
                                         </div>
                                     </div>
                                 </ng-template>
                             </ng-select>
-                            <div class="text-value" *ngIf="isView">
-                                {{study.value.coordinatingInvestigator?.fullName}}{{study.value.coordinatingInvestigator?.country
+                            <div class="text-value" *ngIf="isView">{{study.value.coordinatingInvestigator?.fullName}}{{study.value.coordinatingInvestigator?.country
                                 ? ' (' + study.value.coordinatingInvestigator.country.name + ')' : ''}}</div>
-                        </div>
-                    </div>
-                    <div class="row form-group mt-8">
-                        <div class="col-md-4">
-                            <div for="agreementSigned" class="font-style">Agreement (Sponsor - ECRIN)</div>
-                            <div class="row" *ngIf="!isView">
-                                <div class="col-md-4 pe-0 d-flex align-items-center">
-                                    <div class="text-value me-2">Signed:</div>
-                                    <input *ngIf="!isView" type="checkbox" id="agreementSigned"
-                                        class="form-check-input checkbox" (change)="onChangeAgreementSigned(i)"
-                                        formControlName="agreementSigned" />
-                                </div>
-                                <div class="col-md-8 ps-0" *ngIf="isAgreementSigned[i]">
-                                    <div class="input-group" *ngIf="!isView">
-                                        <input class="form-control" placeholder="yyyy-mm-dd" name="agreementSignedDate"
-                                            ngbDatepicker #agreementSignedDate="ngbDatepicker"
-                                            [ngClass]="{ 'is-invalid': submitted && getControls(i).agreementSignedDate.errors }"
-                                            formControlName="agreementSignedDate" container='body'>
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" (click)="agreementSignedDate.toggle()"
-                                                type="button">
-                                                <i class="fa fa-calendar"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div *ngIf="isView" class="text-value">{{study.value.agreementSigned ? ('Signed ' +
-                                dateToString(study.value.agreementSignedDate)) : 'Not signed'}}</div>
                         </div>
                         <div class="col-md-8">
                             <div for="leadCtu" class="font-style">Lead CTU (Clinical Study)</div>
                             <div class="row">
                                 <ng-container *ngIf="!isView; else displayLeadCTU">
                                     <div class="col-md-6">
-                                        <ng-select [items]="ctus" formControlName="leadCtu" [searchFn]="searchCTUs"
-                                            [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds"
-                                            notFoundText="No CTUs found" placeholder="Start typing to add a new CTU"
-                                            addTagText="Add" [addTag]="addCTU" appendTo="body" name="leadCtu"
-                                            [ngClass]="{ 'is-invalid': submitted && getControls(i).leadCtu.errors?.required }">
-                                            <ng-template ng-label-tmp
-                                                let-item="item">{{getCountryFlagFromIso2(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName
+                                        <ng-select [items]="ctus" formControlName="leadCtu" [searchFn]="searchCTUs" [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds" notFoundText="No CTUs found" placeholder="Start typing to add a new CTU" addTagText="Add" [addTag]="addCTU" appendTo="body" name="leadCtu" [ngClass]="{ 'is-invalid': submitted && getControls(i).leadCtu.errors?.required }">
+                                            <ng-template ng-label-tmp let-item="item">{{getCountryFlagFromIso2(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName
                                                 ? item.shortName + ' - ' : '' }}{{item.name}}</ng-template>
                                             <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                                 <div class="row m-0">
                                                     <div class="col-md-11 col-11 p-0 m-0">
-                                                        <div class="col-md-12">
-                                                            {{getCountryFlagFromIso2(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName
+                                                        <div class="col-md-12">{{getCountryFlagFromIso2(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName
                                                             ? item.shortName + ' - ' : '' }}{{item.name}}</div>
                                                     </div>
                                                     <div class="col-md-1 col-1 p-0 m-0 d-flex" *ngIf="item.manualAdd">
-                                                        <div
-                                                            class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                                            <i class="fa fa-trash"
-                                                                style="color:#f24437; cursor: pointer;"
-                                                                (click)="deleteCTU($event, item)">
+                                                        <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                                            <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteCTU($event, item)">
                                                             </i>
                                                         </div>
                                                     </div>
@@ -255,8 +216,7 @@
                                 </ng-container>
                                 <ng-template #displayLeadCTU>
                                     <div class="col-md-12">
-                                        <div *ngIf="isView" class="text-value">
-                                            {{getCountryFlagFromIso2(study.value?.leadCtu?.country?.iso2)}}&nbsp;{{study.value?.leadCtu?.shortName
+                                        <div *ngIf="isView" class="text-value">{{getCountryFlagFromIso2(study.value?.leadCtu?.country?.iso2)}}&nbsp;{{study.value?.leadCtu?.shortName
                                             ? study.value?.leadCtu?.shortName + ' - ' : ''
                                             }}{{study.value?.leadCtu?.name}}</div>
                                     </div>
@@ -267,11 +227,7 @@
                     <div class="row form-group mt-8">
                         <div class="col-md-4">
                             <div for="medicalFields" class="font-style">Medical fields</div>
-                            <ng-select [items]="medicalFields" formControlName="medicalFields" [multiple]="true"
-                                [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true"
-                                [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false"
-                                class="form-control ng-form-control custom" notFoundText="No medical field found"
-                                placeholder="Medical fields" *ngIf="!isView" appendTo="body">
+                            <ng-select [items]="medicalFields" formControlName="medicalFields" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No medical field found" placeholder="Medical fields" *ngIf="!isView" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>
                                     <span class="ng-value-icon right" (click)="clear(item)">×</span>
@@ -283,17 +239,12 @@
                                 </ng-template>
                             </ng-select>
                             <div *ngIf="isView" class="tags-container">
-                                <span *ngFor="let mf of study.value.medicalFields" class="tag"
-                                    [ngStyle]="{ 'border-color': getTagBorderColor(mf.value), 'background-color': getTagBgColor(mf.value) }">{{mf.value}}</span>
+                                <span *ngFor="let mf of study.value.medicalFields" class="tag" [ngStyle]="{ 'border-color': getTagBorderColor(mf.value), 'background-color': getTagBgColor(mf.value) }">{{mf.value}}</span>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div for="populations" class="font-style">Population(s)</div>
-                            <ng-select [items]="populations" formControlName="populations" [multiple]="true"
-                                [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true"
-                                [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false"
-                                class="form-control ng-form-control custom" notFoundText="No population found"
-                                placeholder="Populations" *ngIf="!isView" appendTo="body">
+                            <ng-select [items]="populations" formControlName="populations" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No population found" placeholder="Populations" *ngIf="!isView" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>
                                     <span class="ng-value-icon right" (click)="clear(item)">×</span>
@@ -305,14 +256,12 @@
                                 </ng-template>
                             </ng-select>
                             <div *ngIf="isView" class="tags-container">
-                                <span *ngFor="let population of study.value.populations" class="tag"
-                                    [ngStyle]="{ 'border-color': getTagBorderColor(population.value), 'background-color': getTagBgColor(population.value) }">{{population.value}}</span>
+                                <span *ngFor="let population of study.value.populations" class="tag" [ngStyle]="{ 'border-color': getTagBorderColor(population.value), 'background-color': getTagBgColor(population.value) }">{{population.value}}</span>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div for="rareDiseases" class="font-style">Rare diseases</div>
-                            <input *ngIf="!isView" type="checkbox" id="rareDiseases" class="form-check-input checkbox"
-                                formControlName="rareDiseases" />
+                            <input *ngIf="!isView" type="checkbox" id="rareDiseases" class="form-check-input checkbox" formControlName="rareDiseases" />
                             <div *ngIf="isView" class="text-value">{{study.value.rareDiseases ? 'Yes' : 'No'}}</div>
                         </div>
                     </div>
@@ -321,21 +270,11 @@
                             <div for="regulatoryFramework" class="font-style">Regulatory framework</div>
                             <div class="row" *ngIf="!isView">
                                 <div class="col-md-5 pe-0">
-                                    <ng-select [items]="REGULATORY_FRAMEWORKS" formControlName="regulatoryFramework"
-                                        (change)="onChangeRegulatoryFramework(i)" [multiple]="false"
-                                        [virtualScroll]="false" class="form-control ng-form-control"
-                                        notFoundText="No regulatory frameworks found" placeholder="" *ngIf="!isView"
-                                        appendTo="body">
+                                    <ng-select [items]="REGULATORY_FRAMEWORKS" formControlName="regulatoryFramework" (change)="onChangeRegulatoryFramework(i)" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No regulatory frameworks found" placeholder="" *ngIf="!isView" appendTo="body">
                                     </ng-select>
                                 </div>
                                 <div class="col-md-7 ps-0" *ngIf="hasRegulatoryFrameworkDetails[i]">
-                                    <ng-select [items]="filteredRegulatoryFrameworkDetails"
-                                        formControlName="regulatoryFrameworkDetails" [multiple]="true"
-                                        [searchFn]="searchClassValues" [compareWith]="compareIds"
-                                        [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false"
-                                        [virtualScroll]="false" class="form-control ng-form-control custom"
-                                        notFoundText="No regulatory framework found" placeholder="Details"
-                                        *ngIf="!isView" appendTo="body">
+                                    <ng-select [items]="filteredRegulatoryFrameworkDetails" formControlName="regulatoryFrameworkDetails" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No regulatory framework found" placeholder="Details" *ngIf="!isView" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.value}}</span>
                                             <span class="ng-value-icon right" (click)="clear(item)">×</span>
@@ -354,8 +293,7 @@
                             <ng-template #displayRFD>
                                 <div *ngIf="isView" class="tags-container align-items-center">
                                     <div class="text-value" *ngIf="isView">{{study.value.regulatoryFramework}}:</div>
-                                    <span *ngFor="let rfd of study.value.regulatoryFrameworkDetails" class="tag"
-                                        [ngStyle]="{ 'border-color': getTagBorderColor(rfd.value), 'background-color': getTagBgColor(rfd.value) }">{{rfd.value}}</span>
+                                    <span *ngFor="let rfd of study.value.regulatoryFrameworkDetails" class="tag" [ngStyle]="{ 'border-color': getTagBorderColor(rfd.value), 'background-color': getTagBgColor(rfd.value) }">{{rfd.value}}</span>
                                 </div>
                             </ng-template>
                         </div>
@@ -363,18 +301,10 @@
                             <div for="complexTrialDesign" class="font-style">Complex trial design</div>
                             <div class="row" *ngIf="!isView">
                                 <div class="col-md-2 pe-0">
-                                    <input *ngIf="!isView" type="checkbox" id="complexTrialDesign"
-                                        class="form-check-input checkbox" (change)="onChangeComplexTrialDesign(i)"
-                                        formControlName="complexTrialDesign" />
+                                    <input *ngIf="!isView" type="checkbox" id="complexTrialDesign" class="form-check-input checkbox" (change)="onChangeComplexTrialDesign(i)" formControlName="complexTrialDesign" />
                                 </div>
                                 <div class="col-md-10 ps-0" *ngIf="isComplexTrial[i]">
-                                    <ng-select [items]="complexTrialTypes" formControlName="complexTrialType"
-                                        [searchFn]="searchClassValues" [compareWith]="compareIds"
-                                        [virtualScroll]="false" class="form-control ng-form-control"
-                                        notFoundText="No complex trial type found"
-                                        placeholder="Start typing to add a new type" *ngIf="!isView"
-                                        [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addComplexTrialType"
-                                        appendTo="body">
+                                    <ng-select [items]="complexTrialTypes" formControlName="complexTrialType" [searchFn]="searchClassValues" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No complex trial type found" placeholder="Start typing to add a new type" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addComplexTrialType" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.value}}</span>
                                         </ng-template>
@@ -384,10 +314,8 @@
                                                     <div class="col-md-12 p-0 m-0">{{item.value}}</div>
                                                 </div>
                                                 <div class="col-md-1 col-1 p-0 m-0 d-flex">
-                                                    <div
-                                                        class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                                        <i class="fa fa-trash" style="color:#f24437; cursor: pointer;"
-                                                            (click)="deleteComplexTrialType($event, item)">
+                                                    <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                                        <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteComplexTrialType($event, item)">
                                                         </i>
                                                     </div>
                                                 </div>
@@ -403,22 +331,17 @@
                     <div class="row form-group mt-8">
                         <div class="col-md-4">
                             <div for="trialRegistrationNumber" class="font-style">Trial registration number</div>
-                            <input type="text" id="trialRegistrationNumber" class="form-control" placeholder=""
-                                formControlName="trialRegistrationNumber" *ngIf="!isView" />
+                            <input type="text" id="trialRegistrationNumber" class="form-control" placeholder="" formControlName="trialRegistrationNumber" *ngIf="!isView" />
                             <div *ngIf="isView" class="text-value">{{study.value.trialRegistrationNumber}}</div>
                         </div>
                     </div>
                     <div class="row form-group mt-8">
                         <div class="col-md-12">
                             <div for="summary" class="font-style">Summary</div>
-                            <textarea [maxlength]="summaryMaxChars" cols="30" rows="3" class="form-control"
-                                placeholder="Study summary" (keyup)="changeRemainingChars($event, i)"
-                                formControlName="summary" *ngIf="!isView" id="summary"
-                                [ngClass]="{ 'is-invalid': submitted && getControls(i).summary.errors }">
+                            <textarea [maxlength]="summaryMaxChars" cols="30" rows="3" class="form-control" placeholder="Study summary" (keyup)="changeRemainingChars($event, i)" formControlName="summary" *ngIf="!isView" id="summary" [ngClass]="{ 'is-invalid': submitted && getControls(i).summary.errors }">
                             </textarea>
                             <div class="float-right mt-1" *ngIf="!isView">{{summaryRemainingChars[i]}}</div>
-                            <div class="col-md-12 invalid-feedback d-block"
-                                *ngIf="submitted && getControls(i).summary.errors">
+                            <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).summary.errors">
                                 <p *ngIf="submitted && getControls(i).summary.errors.required">Please enter the study
                                     summary</p>
                             </div>
@@ -436,11 +359,7 @@
                             <div for="cEuco" class="font-style">Coordinating EuCo</div>
                             <div class="row">
                                 <div class="col-md-10">
-                                    <ng-select [items]="eucos" formControlName="cEuco" [searchFn]="searchPersons"
-                                        [compareWith]="compareIds" [virtualScroll]="false"
-                                        class="form-control ng-form-control" notFoundText="No people found"
-                                        placeholder="Start typing to add a new EuCo" *ngIf="!isView" addTagText="Add"
-                                        [addTag]="addPerson" appendTo="body">
+                                    <ng-select [items]="eucos" formControlName="cEuco" [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new EuCo" *ngIf="!isView" addTagText="Add" [addTag]="addPerson" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.fullName}}
                                                 ({{item.country?.name}})</span>
@@ -454,19 +373,14 @@
                                     </ng-select>
                                 </div>
                             </div>
-                            <div class="text-value" *ngIf="isView">
-                                {{study.value.cEuco?.fullName}}{{study.value.cEuco?.country ? ' (' +
+                            <div class="text-value" *ngIf="isView">{{study.value.cEuco?.fullName}}{{study.value.cEuco?.country ? ' (' +
                                 study.value.cEuco?.country?.name + ')' : ''}}</div>
                         </div>
                         <div class="col-md-4">
                             <div for="cEuco" class="font-style">Coordinating country of Clinical Study</div>
                             <div class="row">
                                 <div class="col-md-10">
-                                    <ng-select [items]="countries" formControlName="coordinatingCountry"
-                                        [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true"
-                                        [compareWith]="compareCountries" notFoundText="No countries found"
-                                        placeholder="Select coordinating country" *ngIf="!isView" appendTo="body"
-                                        name="coordinatingCountry">
+                                    <ng-select [items]="countries" formControlName="coordinatingCountry" [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true" [compareWith]="compareCountries" notFoundText="No countries found" placeholder="Select coordinating country" *ngIf="!isView" appendTo="body" name="coordinatingCountry">
                                         <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
                                         <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                             <div class="row m-0">
@@ -476,20 +390,14 @@
                                     </ng-select>
                                 </div>
                             </div>
-                            <div class="text-value" *ngIf="isView">
-                                {{getCountryFlagFromIso2(study.value.coordinatingCountry?.iso2)}}
+                            <div class="text-value" *ngIf="isView">{{getCountryFlagFromIso2(study.value.coordinatingCountry?.iso2)}}
                                 {{study.value.coordinatingCountry?.name}}</div>
                         </div>
                     </div>
                     <div class="row form-group">
                         <div class="col-md-7">
                             <div for="services" class="font-style">ECRIN services</div>
-                            <ng-select [items]="services" formControlName="services" [multiple]="true"
-                                [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true"
-                                [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false"
-                                class="form-control ng-form-control custom" notFoundText="No service found"
-                                placeholder="Start typing to add a new service" *ngIf="!isView" addTagText="Add"
-                                [addTag]="addService" appendTo="body">
+                            <ng-select [items]="services" formControlName="services" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No service found" placeholder="Start typing to add a new service" *ngIf="!isView" addTagText="Add" [addTag]="addService" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>
                                     <span class="ng-value-icon right" (click)="clear(item)">×</span>
@@ -497,41 +405,32 @@
                                 <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                     <div class="row m-0">
                                         <div class="col-md-11 col-11 p-0 m-0">{{item.value}}</div>
-                                        <div
-                                            class="col-md-1 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                            <i class="fa fa-trash" style="color:#f24437; cursor: pointer;"
-                                                (click)="deleteService($event, item)">
+                                        <div class="col-md-1 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
+                                            <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteService($event, item)">
                                             </i>
                                         </div>
                                     </div>
                                 </ng-template>
                             </ng-select>
                             <div *ngIf="isView" class="tags-container">
-                                <span *ngFor="let service of study.value.services" class="tag"
-                                    [ngStyle]="{ 'border-color': getTagBorderColor(service.value), 'background-color': getTagBgColor(service.value) }">{{service.value}}</span>
+                                <span *ngFor="let service of study.value.services" class="tag" [ngStyle]="{ 'border-color': getTagBorderColor(service.value), 'background-color': getTagBgColor(service.value) }">{{service.value}}</span>
                             </div>
                         </div>
                     </div>
                     <ng-container *ngIf="!isView; else viewStudyCountries">
-                        <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries"
-                            [study]="study.value"></app-upsert-study-country>
+                        <app-upsert-study-country #studyCountries [studyCountriesData]="study.value.studyCountries" [study]="study.value"></app-upsert-study-country>
                     </ng-container>
                     <ng-template #viewStudyCountries>
                         <div class="row form-group">
                             <div class="col-md-12">
                                 <div class="font-style f-bold fs-3 mt-4">Study countries</div>
                                 <ul>
-                                    <li *ngFor="let sc of study.value.studyCountries; let j = index"
-                                        [ngClass]="j > 0 ? 'mt-5' : 'mt-0'">
-                                        <span class="text-value"><a [routerLink]="['/study-countries', sc.id, 'view']"
-                                                class="li-text-1">{{getCountryFlagFromIso2(sc.country?.iso2)}}
+                                    <li *ngFor="let sc of study.value.studyCountries; let j = index" [ngClass]="j > 0 ? 'mt-5' : 'mt-0'">
+                                        <span class="text-value"><a [routerLink]="['/study-countries', sc.id, 'view']" class="li-text-1">{{getCountryFlagFromIso2(sc.country?.iso2)}}
                                                 {{sc.country?.name}}</a> ({{getCountrySitesString(sc)}})</span>
                                         <ul>
-                                            <li *ngFor="let sctu of sc.studyCtus; let k = index" class="text-value"
-                                                [ngClass]="k > 0 ? 'mt-4' : 'mt-1'">
-                                                <span class="text-value"><a
-                                                        [routerLink]="['/study-ctus', sctu.id, 'view']"
-                                                        class="text-value">{{sctu.ctu.name}}</a></span>
+                                            <li *ngFor="let sctu of sc.studyCtus; let k = index" class="text-value" [ngClass]="k > 0 ? 'mt-4' : 'mt-1'">
+                                                <span class="text-value"><a [routerLink]="['/study-ctus', sctu.id, 'view']" class="text-value">{{sctu.ctu.name}}</a></span>
                                                 <ul>
                                                     <li *ngFor="let site of sctu.centres" class="text-value-small">
                                                         {{site.hospital?.name}}, {{site.hospital?.city}}
@@ -554,8 +453,7 @@
                             <div for="totalPatientsExpected" class="font-style">Total No. of Patients (expected)</div>
                             <div class="row">
                                 <div class="col-md-4">
-                                    <input type="text" id="totalPatientsExpected" class="form-control"
-                                        formControlName="totalPatientsExpected" *ngIf="!isView" />
+                                    <input type="text" id="totalPatientsExpected" class="form-control" formControlName="totalPatientsExpected" *ngIf="!isView" />
                                     <div *ngIf="isView" class="text-value">{{study.value.totalPatientsExpected}}</div>
                                 </div>
                             </div>
@@ -572,14 +470,10 @@
                             <div for="recruitmentPeriod" class="font-style">Recruitment period</div>
                             <div class="row">
                                 <div class="col-md-3 pe-0">
-                                    <input type="text" id="recruitmentPeriod" class="form-control"
-                                        formControlName="recruitmentPeriod" *ngIf="!isView" />
+                                    <input type="text" id="recruitmentPeriod" class="form-control" formControlName="recruitmentPeriod" *ngIf="!isView" />
                                 </div>
                                 <div class="col-md-6 ps-0">
-                                    <ng-select [items]="TIME_UNITS" formControlName="recruitmentPeriodUnit"
-                                        [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control"
-                                        notFoundText="No units found" placeholder="Select unit" *ngIf="!isView"
-                                        appendTo="body">
+                                    <ng-select [items]="TIME_UNITS" formControlName="recruitmentPeriodUnit" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
                                     </ng-select>
                                 </div>
                             </div>
@@ -593,14 +487,10 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-3 pe-0">
-                                    <input type="text" id="treatmentDurationPerPatient" class="form-control"
-                                        formControlName="treatmentDurationPerPatient" *ngIf="!isView" />
+                                    <input type="text" id="treatmentDurationPerPatient" class="form-control" formControlName="treatmentDurationPerPatient" *ngIf="!isView" />
                                 </div>
                                 <div class="col-md-6 ps-0">
-                                    <ng-select [items]="TIME_UNITS" formControlName="treatmentDurationPerPatientUnit"
-                                        [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control"
-                                        notFoundText="No units found" placeholder="Select unit" *ngIf="!isView"
-                                        appendTo="body">
+                                    <ng-select [items]="TIME_UNITS" formControlName="treatmentDurationPerPatientUnit" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
                                     </ng-select>
                                 </div>
                             </div>
@@ -614,24 +504,16 @@
                                 <div class="col-md-9">
                                     <div class="row">
                                         <div class="col-md-3 pe-0">
-                                            <input type="text" id="treatmentAndFollowUpDurationPerPatient"
-                                                class="form-control"
-                                                formControlName="treatmentAndFollowUpDurationPerPatient"
-                                                *ngIf="!isView" />
+                                            <input type="text" id="treatmentAndFollowUpDurationPerPatient" class="form-control" formControlName="treatmentAndFollowUpDurationPerPatient" *ngIf="!isView" />
                                         </div>
                                         <div class="col-md-6 ps-0">
-                                            <ng-select [items]="TIME_UNITS"
-                                                formControlName="treatmentAndFollowUpDurationPerPatientUnit"
-                                                [multiple]="false" [virtualScroll]="false"
-                                                class="form-control ng-form-control" notFoundText="No units found"
-                                                placeholder="Select unit" *ngIf="!isView" appendTo="body">
+                                            <ng-select [items]="TIME_UNITS" formControlName="treatmentAndFollowUpDurationPerPatientUnit" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
                                             </ng-select>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="isView" class="text-value">
-                                {{study.value.treatmentAndFollowUpDurationPerPatient}}
+                            <div *ngIf="isView" class="text-value">{{study.value.treatmentAndFollowUpDurationPerPatient}}
                                 {{study.value.treatmentAndFollowUpDurationPerPatientUnit}}</div>
                         </div>
                     </div>
@@ -641,13 +523,9 @@
                             <div class="row">
                                 <div class="col-md-9">
                                     <div class="input-group" *ngIf="!isView">
-                                        <input class="form-control" placeholder="yyyy-mm-dd" name="firstPatientIn"
-                                            ngbDatepicker #firstPatientIn="ngbDatepicker"
-                                            [ngClass]="{ 'is-invalid': submitted && getControls(i).firstPatientIn.errors }"
-                                            formControlName="firstPatientIn" container='body'>
+                                        <input class="form-control" placeholder="yyyy-mm-dd" name="firstPatientIn" ngbDatepicker #firstPatientIn="ngbDatepicker" [ngClass]="{ 'is-invalid': submitted && getControls(i).firstPatientIn.errors }" formControlName="firstPatientIn" container='body'>
                                         <div class="input-group-append">
-                                            <button class="btn btn-primary" (click)="firstPatientIn.toggle()"
-                                                type="button">
+                                            <button class="btn btn-primary" (click)="firstPatientIn.toggle()" type="button">
                                                 <i class="fa fa-calendar"></i>
                                             </button>
                                         </div>
@@ -661,13 +539,9 @@
                             <div class="row">
                                 <div class="col-md-9">
                                     <div class="input-group" *ngIf="!isView">
-                                        <input class="form-control" placeholder="yyyy-mm-dd" name="lastPatientOut"
-                                            ngbDatepicker #lastPatientOut="ngbDatepicker"
-                                            [ngClass]="{ 'is-invalid': submitted && getControls(i).lastPatientOut.errors }"
-                                            formControlName="lastPatientOut" container='body'>
+                                        <input class="form-control" placeholder="yyyy-mm-dd" name="lastPatientOut" ngbDatepicker #lastPatientOut="ngbDatepicker" [ngClass]="{ 'is-invalid': submitted && getControls(i).lastPatientOut.errors }" formControlName="lastPatientOut" container='body'>
                                         <div class="input-group-append">
-                                            <button class="btn btn-primary" (click)="lastPatientOut.toggle()"
-                                                type="button">
+                                            <button class="btn btn-primary" (click)="lastPatientOut.toggle()" type="button">
                                                 <i class="fa fa-calendar"></i>
                                             </button>
                                         </div>
@@ -686,10 +560,7 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div for="status" class="font-style">Status</div>
-                            <ng-select [items]="STUDY_STATUSES" formControlName="status" [multiple]="false"
-                                [virtualScroll]="false" class="form-control ng-form-control"
-                                notFoundText="No study status found" placeholder="Select study status" *ngIf="!isView"
-                                appendTo="body">
+                            <ng-select [items]="STUDY_STATUSES" formControlName="status" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No study status found" placeholder="Select study status" *ngIf="!isView" appendTo="body">
                             </ng-select>
                             <div class="text-value" *ngIf="isView">{{study.value.status}}</div>
                         </div>

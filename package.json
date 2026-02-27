@@ -1,11 +1,11 @@
 {
   "name": "crpmt",
-  "version": "v0.7.2dev_20260223",
+  "version": "v0.8.0dev_20260226",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build_dev": "ng build",
-    "build_prod": "ng build --configuration production",
+    "build_dev": "ng build --output-hashing=all",
+    "build_prod": "ng build --output-hashing=all --configuration production",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",

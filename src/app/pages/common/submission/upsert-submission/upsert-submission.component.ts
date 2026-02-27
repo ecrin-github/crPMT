@@ -9,6 +9,7 @@ import { SubmissionInterface } from 'src/app/_rms/interfaces/core/submission.int
 import { SubmissionService } from 'src/app/_rms/services/entities/submission/submission.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
+import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
 
 @Component({
   selector: 'app-upsert-submission',
@@ -19,6 +20,10 @@ export class UpsertSubmissionComponent implements OnInit {
   @Input() submissionsData: Array<SubmissionInterface>;
   @Input() isAmendments: boolean = false;
   @Input() isOthers: boolean = false;
+
+  AuthorityCodes = AuthorityCodes;
+  EC_TEXT = EC_TEXT;
+  NCA_TEXT = NCA_TEXT;
 
   form: UntypedFormGroup;
   submitted: boolean = false;
@@ -36,9 +41,9 @@ export class UpsertSubmissionComponent implements OnInit {
     private router: Router,
     private submissionService: SubmissionService,
     private toastr: ToastrService) {
-      this.form = this.fb.group({
-        submissions: this.fb.array([])
-      });
+    this.form = this.fb.group({
+      submissions: this.fb.array([])
+    });
   }
 
   ngOnInit(): void {
@@ -47,10 +52,11 @@ export class UpsertSubmissionComponent implements OnInit {
     this.isAdd = this.router.url.includes('add');
   }
 
-  get g() { return this.form.get('submissions')["controls"]; }
+  get fc() { return this.form.get('submissions')["controls"]; }
+  get fv() { return this.form.get('submissions')?.value; }
 
   getControls(i) {
-    return this.g[i].controls;
+    return this.fc[i].controls;
   }
 
   getSubmissionsForm(): UntypedFormArray {
@@ -61,6 +67,7 @@ export class UpsertSubmissionComponent implements OnInit {
     return this.fb.group({
       id: null,
       authority: null,
+      notApplicable: false,
       submissionDate: null,
       approvalDate: null,
       protocolApprovalDate: null,
@@ -78,21 +85,23 @@ export class UpsertSubmissionComponent implements OnInit {
     if (!this.isAmendments && !this.isOthers && this.getSubmissionsForm().length == 0) { // Adding EC and NCA if None have been found in study country (if isAdd for example)
       this.addSubmission();
       this.addSubmission();
-      this.getSubmissionsForm().at(0).patchValue({authority: "Ethics Committee"});
-      this.getSubmissionsForm().at(1).patchValue({authority: "National Competent Authority"});
+      this.getSubmissionsForm().at(0).patchValue({ authority: AuthorityCodes.EC });
+      this.getSubmissionsForm().at(1).patchValue({ authority: AuthorityCodes.NCA });
     }
 
-    for (let i=0; i < this.g.length; i++) {
+    for (let i = 0; i < this.fc.length; i++) {
       this.setInitialTruncate(i);
+      this.onChangeNotApplicable(i);
     }
   }
 
   patchArray(): UntypedFormArray {
     const formArray = new UntypedFormArray([]);
-    this.submissions.forEach((submission) => {
+    this.submissions.forEach((submission: SubmissionInterface) => {
       formArray.push(this.fb.group({
         id: submission.id,
         authority: submission.authority,
+        notApplicable: submission.notApplicable,
         submissionDate: submission.submissionDate ? stringToDate(submission.submissionDate) : null,
         approvalDate: submission.approvalDate ? stringToDate(submission.approvalDate) : null,
         protocolApprovalDate: submission.protocolApprovalDate ? stringToDate(submission.protocolApprovalDate) : null,
@@ -128,7 +137,7 @@ export class UpsertSubmissionComponent implements OnInit {
     if (!sId) { // Submission has been locally added only
       this.getSubmissionsForm().removeAt(i);
     } else {  // Existing submission
-      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
       removeModal.componentInstance.setDefaultDeleteMessage("submission");
 
       removeModal.result.then((remove) => {
@@ -144,7 +153,7 @@ export class UpsertSubmissionComponent implements OnInit {
             this.toastr.error(error);
           });
         }
-      }, error => {this.toastr.error(error)});
+      }, error => { this.toastr.error(error) });
     }
   }
 
@@ -155,7 +164,7 @@ export class UpsertSubmissionComponent implements OnInit {
       this.truncate[i] = false;
     }
   }
-  
+
   setTruncate(i) {
     if (!this.truncate[i]) {
       this.truncate[i] = true;
@@ -174,7 +183,7 @@ export class UpsertSubmissionComponent implements OnInit {
   // TODO?
   formValid() {
     // this.submitted = true;
-    
+
     // // Manually checking CTU field (shouldn't be empty)
     // for (const i in this.form.get("submissions")['controls']) {
     //   if (this.form.get("submissions")['controls'][i].value.ctu == null) {
@@ -206,7 +215,7 @@ export class UpsertSubmissionComponent implements OnInit {
     let saveObs$: Array<Observable<boolean>> = [];
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
-  
+
     for (const [i, item] of payload.submissions.entries()) {
       this.updatePayload(item, scId, i);
       if (!item.id) { // Add
@@ -235,6 +244,26 @@ export class UpsertSubmissionComponent implements OnInit {
     }
 
     return combineLatest(saveObs$);
+  }
+
+  onChangeNotApplicable(i) {
+    if (this.fv[i]?.notApplicable) {
+      this.getControls(i)?.submissionDate?.setValue(null);
+      this.getControls(i)?.approvalDate?.setValue(null);
+      this.getControls(i)?.protocolApprovalDate?.setValue(null);
+      this.getControls(i)?.protocolApprovedVersion?.setValue(null);
+      this.getControls(i)?.comment?.setValue(null);
+    }
+  }
+
+  displayAuthority(authCode) {
+    if (authCode === AuthorityCodes.EC) return EC_TEXT;
+    if (authCode === AuthorityCodes.NCA) return NCA_TEXT;
+    return authCode;
+  }
+
+  isFixedAuthorityCode(authCode) {
+    return authCode === AuthorityCodes.EC || authCode === AuthorityCodes.NCA;
   }
 
   dateToString(date) {

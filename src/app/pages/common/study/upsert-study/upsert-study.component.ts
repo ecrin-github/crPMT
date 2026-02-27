@@ -1,5 +1,5 @@
 import { Component, Input, OnInit, QueryList, SimpleChanges, ViewChildren } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -69,18 +69,18 @@ export class UpsertStudyComponent implements OnInit {
   summaryRemainingChars: number[] = [];
   studies = [];
 
-  constructor(private fb: UntypedFormBuilder, 
-              private router: Router,
-              private projectService: ProjectService, 
-              private studyService: StudyService, 
-              private contextService: ContextService,
-              private modalService: NgbModal,
-              private scrollService: ScrollService,
-              private activatedRoute: ActivatedRoute,
-              private spinner: NgxSpinnerService, 
-              private toastr: ToastrService, 
-              private jsonGenerator: JsonGeneratorService, 
-              private backService: BackService) {
+  constructor(private fb: UntypedFormBuilder,
+    private router: Router,
+    private projectService: ProjectService,
+    private studyService: StudyService,
+    private contextService: ContextService,
+    private modalService: NgbModal,
+    private scrollService: ScrollService,
+    private activatedRoute: ActivatedRoute,
+    private spinner: NgxSpinnerService,
+    private toastr: ToastrService,
+    private jsonGenerator: JsonGeneratorService,
+    private backService: BackService) {
     this.studyForm = this.fb.group({
       studies: this.fb.array([])
     });
@@ -97,7 +97,7 @@ export class UpsertStudyComponent implements OnInit {
         this.spinner.show();
       });
     }
-    
+
     // this.scrollService.handleScroll([`/studies/${this.id}/view`, `/studies/${this.id}/edit`, `/studies/add`]);
 
     this.isEdit = this.router.url.includes('edit');
@@ -107,7 +107,7 @@ export class UpsertStudyComponent implements OnInit {
     if (this.isStudyPage && this.isAdd) {
       this.addStudy();
     }
-    
+
     let queryFuncs: Array<Observable<any>> = [];
 
     // Note: be careful if you add new observables because of the way their result is retrieved later (combineLatest + pop)
@@ -128,7 +128,7 @@ export class UpsertStudyComponent implements OnInit {
       if (this.isStudyPage && !this.isView) {
         this.setProjects(res.pop());
       }
-      
+
       if (this.id && (this.isEdit || this.isView)) {
         this.setStudyById(res.pop());
       }
@@ -176,10 +176,11 @@ export class UpsertStudyComponent implements OnInit {
     }
   }
 
-  get g() { return this.studyForm.get('studies')["controls"]; }
+  get fc() { return this.studyForm.get('studies')["controls"]; }
+  get fv() { return this.studyForm.get('studies')?.value; }
 
   getControls(i) {
-    return this.g[i].controls;
+    return this.fc[i].controls;
   }
 
   getStudiesForm(): UntypedFormArray {
@@ -189,7 +190,7 @@ export class UpsertStudyComponent implements OnInit {
   newStudy(): UntypedFormGroup {
     return this.fb.group({
       id: null,
-      shortTitle: null,
+      shortTitle: [null, Validators.required],
       title: null,
       sponsorOrganisation: null,
       leadCtu: null,
@@ -247,7 +248,7 @@ export class UpsertStudyComponent implements OnInit {
     if (!studyId) { // Study has been locally added only
       this.getStudiesForm().removeAt(i);
     } else {  // Existing study
-      const removeModal = this.modalService.open(ConfirmationWindowComponent, {size: 'lg', backdrop: 'static'});
+      const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
       removeModal.componentInstance.setDefaultDeleteMessage("study");
 
       removeModal.result.then((remove) => {
@@ -263,7 +264,7 @@ export class UpsertStudyComponent implements OnInit {
             this.toastr.error(error);
           });
         }
-      }, error => {this.toastr.error(error)});
+      }, error => { this.toastr.error(error) });
     }
   }
 
@@ -279,7 +280,7 @@ export class UpsertStudyComponent implements OnInit {
     this.studies.forEach((s, index) => {
       formArray.push(this.fb.group({
         id: s.id,
-        shortTitle: s.shortTitle,
+        shortTitle: [s.shortTitle, Validators.required],
         title: s.title,
         sponsorOrganisation: s.sponsorOrganisation,
         leadCtu: s.leadCtu,
@@ -328,10 +329,10 @@ export class UpsertStudyComponent implements OnInit {
     this.studyForm.setControl('studies', this.getFormArray());
 
     // Setting initial boolean variables to display or not certain fields
-    for (let i=0; i < this.g.length; i++) {
+    for (let i = 0; i < this.fc.length; i++) {
       this.onChangeAgreementSigned(i);
       this.onChangeComplexTrialDesign(i);
-      this.onChangeRegulatoryFramework(i);
+      this.onChangeRegulatoryFramework(i, true);
     }
   }
 
@@ -356,7 +357,7 @@ export class UpsertStudyComponent implements OnInit {
     } else if (!payload.id) {  // Add, else no need to change the order
       let maxOrder = -1;
       if (payload.project?.studies?.length > 0) {
-        maxOrder = payload.project.studies[payload.project.studies.length-1].order;
+        maxOrder = payload.project.studies[payload.project.studies.length - 1].order;
       }
       payload.order = maxOrder + 1;
     }
@@ -365,23 +366,23 @@ export class UpsertStudyComponent implements OnInit {
     payload.agreementSignedDate = dateToString(payload.agreementSignedDate);
     payload.firstPatientIn = dateToString(payload.firstPatientIn);
     payload.lastPatientOut = dateToString(payload.lastPatientOut);
-    
+
     if (payload.cEuco?.id) {
       payload.cEuco = payload.cEuco.id;
     }
-    
+
     if (payload.complexTrialType?.id) {
       payload.complexTrialType = payload.complexTrialType.id;
     }
-    
+
     if (payload.coordinatingCountry?.iso2) {
       payload.coordinatingCountry = payload.coordinatingCountry.iso2;
     }
-    
+
     if (payload.leadCtu?.id) {
       payload.leadCtu = payload.leadCtu.id;
     }
-    
+
     if (payload.medicalFields?.length > 0) {
       for (let i = 0; i < payload.medicalFields.length; i++) {
         if (payload.medicalFields[i]?.id) {
@@ -391,7 +392,7 @@ export class UpsertStudyComponent implements OnInit {
     } else {
       payload.medicalFields = [];
     }
-  
+
     if (payload.coordinatingInvestigator?.id) {
       payload.coordinatingInvestigator = payload.coordinatingInvestigator.id;
     }
@@ -405,7 +406,7 @@ export class UpsertStudyComponent implements OnInit {
     } else {
       payload.populations = [];
     }
-    
+
     // Removing potentially hidden values from the regulatory framework details field if regulatory framework is not CTR/COMBINED
     if (!this.hasRegulatoryFrameworkDetails[i]) {
       payload.regulatoryFrameworkDetails = [];
@@ -420,7 +421,7 @@ export class UpsertStudyComponent implements OnInit {
     } else {
       payload.regulatoryFrameworkDetails = [];
     }
-    
+
     if (payload.services?.length > 0) {
       for (let i = 0; i < payload.services.length; i++) {
         if (payload.services[i]?.id) {
@@ -430,16 +431,16 @@ export class UpsertStudyComponent implements OnInit {
     } else {
       payload.services = [];
     }
-        
+
     if (payload.sponsorCountry?.iso2) {
       payload.sponsorCountry = payload.sponsorCountry.iso2;
     }
-        
+
     if (payload.sponsorOrganisation?.id) {
       payload.sponsorOrganisation = payload.sponsorOrganisation.id;
     }
   }
-  
+
   onSave(projectId: string): Observable<boolean[]> {
     let saveObs$: Array<Observable<boolean>> = [];
 
@@ -447,77 +448,40 @@ export class UpsertStudyComponent implements OnInit {
 
     for (const [i, item] of payload.studies.entries()) {
       this.updatePayload(item, projectId, i);
+
+      let itemObs$: Observable<Object> = null;
+
       if (!item.id) {  // Add
-        let success = this.studyService.addStudy(item).pipe(
-          mergeMap((res: any) => {
-            if (this.isStudyPage && this.isAdd) {  // Need id for redirection is single study add
+        itemObs$ = this.studyService.addStudy(item);
+      } else {
+        itemObs$ = this.studyService.editStudy(item.id, item);
+      }
+
+      saveObs$.push(itemObs$.pipe(
+        mergeMap((res: any) => {
+          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+            if (this.isStudyPage && this.isAdd) {  // Need id for redirection if single study add
               this.id = res.id;
             }
 
-            if (res.statusCode === 201) {
-              // this.reuseService.notifyComponents();
+            if (this.studyCountryComponents.get(i)) { // Saving study countries
               return this.studyCountryComponents.get(i).onSave(res.id).pipe(
-                mergeMap((success) => {
-                  if (success) {
-                    return of(true);
-                  }
-                  return of(false);
+                mergeMap((successArr: boolean[]) => {
+                  return of(successArr.every(b => b));
                 })
               );
-            } else {
-              this.toastr.error(res.message, "Study adding error", { timeOut: 60000, extendedTimeOut: 60000 });
-              return of(false);
             }
-          }), catchError(err => {
-            this.toastr.error(err.message, 'Error adding study', { timeOut: 60000, extendedTimeOut: 60000 });
-            return of(false);
-          })
-        );
-        saveObs$.push(success);
-          
-      } else {  // Edit
-        const scObs$ = this.studyCountryComponents.get(i).onSave(item.id).pipe(
-          mergeMap((successArr: boolean[]) => {
-            const success: boolean = successArr.every(b => b);
-            if (!success) {
-              this.toastr.error('Failed to update study countries');
-            }
-            return of(success);
-          })
-        );
+            return of(true);
+          }
 
-        saveObs$.push(scObs$);
-
-        // TODO: don't do editObs if scObs$ false?
-        
-        const editObs$ = this.studyService.editStudy(item.id, item).pipe(
-          mergeMap((res: any) => {
-            if (res.statusCode === 200) {
-              // this.reuseService.notifyComponents();
-              return of(true);
-            } else {
-              this.toastr.error(res.messages[0]);
-              return of(false);
-            }
-          }), catchError(err => {
-            this.toastr.error(err.error.title);
-            return of(false);
-          })
-        );
-
-        saveObs$.push(editObs$);
-      }
+          this.toastr.error(res.message, "Failed to save study", { timeOut: 60000, extendedTimeOut: 60000 });
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err.message, 'Failed to save study', { timeOut: 60000, extendedTimeOut: 60000 });
+          return of(false);
+        })
+      ));
     }
-    
-    // if (saveObs$.length > 0) {
-    //   return combineLatest(saveObs$).pipe(
-    //     map(arr => arr.reduce((acc: boolean, one: boolean) => {
-    //       return acc && one;
-    //     }, true))
-    //   );
-    // }
-
-    // return of(true);
 
     if (saveObs$.length == 0) {
       saveObs$.push(of(true));
@@ -545,7 +509,7 @@ export class UpsertStudyComponent implements OnInit {
       }
     }
   }
-  
+
   back(): void {
     this.backService.back();
   }
@@ -573,8 +537,8 @@ export class UpsertStudyComponent implements OnInit {
       this.isComplexTrial[i] = false;
     }
   }
-  
-  onChangeRegulatoryFramework(i) {
+
+  onChangeRegulatoryFramework(i, isInit = false) {
     const regFramework = this.studyForm.value?.studies[i].regulatoryFramework?.toLowerCase();
     if (regFramework?.localeCompare("other") == 0) {
       this.isObservational[i] = true;
@@ -594,8 +558,12 @@ export class UpsertStudyComponent implements OnInit {
     } else {
       this.hasRegulatoryFrameworkDetails[i] = false;
     }
+
+    if (!isInit) {
+      this.getControls(i)["regulatoryFrameworkDetails"]?.setValue(null);
+    }
   }
-  
+
   searchClassValues = (term: string, item) => {
     return this.contextService.searchClassValues(term, item);
   }
@@ -747,10 +715,10 @@ export class UpsertStudyComponent implements OnInit {
   }
 
   gotoTop() {
-    window.scroll({ 
-      top: 0, 
-      left: 0, 
-      behavior: 'smooth' 
+    window.scroll({
+      top: 0,
+      left: 0,
+      behavior: 'smooth'
     });
   }
 

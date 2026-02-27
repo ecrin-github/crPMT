@@ -3,6 +3,7 @@ import { StudyCountryInterface } from "./study-country.interface";
 export interface SubmissionInterface {
     id: number;
     authority: string;
+    notApplicable: boolean;
     submissionDate: string;
     approvalDate: string;
     protocolApprovalDate: string;

@@ -143,7 +143,7 @@ export class UpsertStudyCountryComponent implements OnInit {
       safetyNotifications: [[]],  // Used when saving
       submissions: [[]],
       study: this.study,
-      studyCTUs: null
+      studyCtus: null
     });
   }
 
@@ -176,7 +176,7 @@ export class UpsertStudyCountryComponent implements OnInit {
         safetyNotifications: [[]],  // Used when saving
         submissions: [[]],
         study: sc.study,
-        studyCTUs: [sc.studyCtus]
+        studyCtus: [sc.studyCtus]
       };
 
       // Setting global CTIS flag (for single sc or project/study editing)
@@ -333,15 +333,34 @@ export class UpsertStudyCountryComponent implements OnInit {
     for (const sc of this.studyCountries) {
       if (sc?.country?.iso2 === this.g[i].value?.country?.iso2) {
         existingSC = sc;
-        // Fixing studyCTUs field case
-        existingSC['studyCTUs'] = existingSC['studyCtus'];
-        delete existingSC['studyCtus'];
         break;
       }
     }
 
     if (existingSC) { // Existing SC found, patching form
       delete existingSC["order"];
+
+      // Separating initial submissions, amendments, and other notifications in the UI
+      // TODO: refactor this, same code as when setting all SCs data
+      let amendments = [];
+      let otherNotifications = [];
+      let submissions = [];
+      if (existingSC.submissions) {
+        for (const sub of existingSC.submissions) {
+          if (sub.isAmendment) {
+            amendments.push(sub);
+          } else if (sub.isOtherNotification) {
+            otherNotifications.push(sub);
+          } else {
+            submissions.push(sub);
+          }
+        }
+      }
+
+      existingSC["amendments"] = amendments;
+      existingSC["otherNotifications"] = otherNotifications;
+      existingSC["submissions"] = submissions;
+
       this.getStudyCountriesForm().at(i).setValue(existingSC);
 
       // Setting SNs
@@ -704,7 +723,7 @@ export class UpsertStudyCountryComponent implements OnInit {
                 } else {
                   onSaveObs$ = component.get(i).onSave(res.id);
                 }
-  
+
                 subObs$.push(
                   onSaveObs$.pipe(
                     mergeMap((successArr: boolean[]) => {
@@ -795,17 +814,20 @@ export class UpsertStudyCountryComponent implements OnInit {
     const payload = JSON.parse(JSON.stringify(this.form.value));
     const studyCountries: StudyCountryInterface[] = payload.studyCountries;
 
-    return of(studyCountries)
-      .pipe(
-        mergeMap((studyCountries: StudyCountryInterface[]) => this.getSafetyNotificationsForSC(studyCountries)),  // Save SNs and populates sc.safetyNotifications (except for ctis countries with shared SNs)
-        map((studyCountries: StudyCountryInterface[]) => this.setSharedSafetyNotifications(studyCountries)),  // Populate sc.safetyNotifications for ctis countries with shared SNs
-        map((studyCountries: StudyCountryInterface[]) => this.updateFullPayload(studyCountries, studyId)),
-        mergeMap((studyCountries: StudyCountryInterface[]) => forkJoin(this.getScSaveObs$(studyCountries))),  // Save SCs + other subcomponents
-        catchError((err) => {
-          this.toastr.error(err, "Failed to save study country", { timeOut: 20000, extendedTimeOut: 20000 });
-          return of([false]);
-        })
-      );
+    if (studyCountries?.length > 0) {
+      return of(studyCountries)
+        .pipe(
+          mergeMap((studyCountries: StudyCountryInterface[]) => this.getSafetyNotificationsForSC(studyCountries)),  // Save SNs and populates sc.safetyNotifications (except for ctis countries with shared SNs)
+          map((studyCountries: StudyCountryInterface[]) => this.setSharedSafetyNotifications(studyCountries)),  // Populate sc.safetyNotifications for ctis countries with shared SNs
+          map((studyCountries: StudyCountryInterface[]) => this.updateFullPayload(studyCountries, studyId)),
+          mergeMap((studyCountries: StudyCountryInterface[]) => forkJoin(this.getScSaveObs$(studyCountries))),  // Save SCs + other subcomponents
+          catchError((err) => {
+            this.toastr.error(err, "Failed to save study country", { timeOut: 20000, extendedTimeOut: 20000 });
+            return of([false]);
+          })
+        );
+    }
+    return of([true]);
   }
 
   isCountryWhereCtisFlagChecked(c: CountryInterface) {

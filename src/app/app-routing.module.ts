@@ -1,11 +1,12 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule, RouteReuseStrategy } from '@angular/router';
 import { LayoutComponent } from './pages/_layout/layout.component';
-import {AuthGuard} from './_rms/guards/auth/auth.guard';
+import { AuthGuard } from './_rms/guards/auth/auth.guard';
 import { CustomRouteReuseStrategy } from "./_rms/route-strategy";
 
 // MsalGuard is required to protect routes and require authentication before accessing protected routes
 import { MsalGuard, MsalRedirectComponent } from '@azure/msal-angular';
+import { SamePathRouteReuseStrategy } from './_rms/same-path-route-strategy';
 
 
 export const routes: Routes = [
@@ -36,8 +37,9 @@ export const routes: Routes = [
 @NgModule({
   imports: [RouterModule.forRoot(routes, {
     scrollPositionRestoration: "enabled",
+    onSameUrlNavigation: 'reload'
   })],
   exports: [RouterModule],
-  providers: [{ provide: RouteReuseStrategy, useClass: CustomRouteReuseStrategy }]
+  providers: [{ provide: RouteReuseStrategy, useClass: SamePathRouteReuseStrategy }]
 })
 export class AppRoutingModule { }
