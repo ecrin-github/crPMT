@@ -18,6 +18,11 @@ For deployment on server:
 
 ## Changelog
 
+## [0.9.0] - 2026-02-27
+### Global
+- Improved links UI to lower levels (now visually better and more visible)
+- Small improvements for navigation separators in breadcrumbs
+
 ## [0.8.0] - 2026-02-27
 ### Global
 - Replaced "smiley logo" with the ECRIN logo
