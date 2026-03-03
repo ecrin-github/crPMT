@@ -49,7 +49,26 @@
 // .header-menu-dark {
 //     @import "./assets/sass/themes/layout/header/menu/dark.scss";
 // }
+// general style
+:root {
+  --ecrin-blue: #000091;
+  --ecrin-yellow: #fff500;
 
+  --header-h: 64px;
+  --sidebar-w: 64px;
+
+  --border: #eef0f3;
+  --muted: #98a2b3;
+  --bg: #f6f7fb;
+}
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
 // Brand themes
 .brand-dark {
   @import "./assets/sass/themes/layout/brand/dark.scss";
@@ -1015,7 +1034,6 @@ mat-footer-cell:first-of-type {
 }
 
 .card-pad {
-  // Equalize padding with left and right paddings with col
   padding: 1rem 1.25rem;
 }
 

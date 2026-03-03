@@ -130,7 +130,7 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
     //     ignoreNonceAfterRefresh: true,
     //   },
     // }),
-    NgxPermissionsModule.forRoot()
+    NgxPermissionsModule.forRoot(),
   ],
   exports: [
     NgxSpinnerModule
