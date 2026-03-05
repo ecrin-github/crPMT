@@ -1,0 +1,37 @@
+<header class="header">
+  <div class="brand">
+    <a class="brand__logo" routerLink="/" aria-label="Accueil" title="Accueil">
+      <img
+        src="assets/media/logos/ecrin-logo-no-text.png"
+        alt="ECRIN"
+        class="brand__logo-img"
+      />
+    </a>
+
+    <div class="brand__titles">
+      <div class="brand__name">ECRIN PMT</div>
+      <div class="brand__version">{{ appVersion }}</div>
+    </div>
+  </div>
+
+  <div class="right">
+    <!-- <button class="icon-btn" type="button" aria-label="Logout" title="Logout" (click)="logout()">
+      <i class="fas fa-sign-out-alt"></i>
+    </button> -->
+
+    <div class="divider" aria-hidden="true"></div>
+
+    <button class="user" type="button" (click)="toggleDropdown()" [attr.aria-expanded]="dropdownOpen">
+      <div class="user__avatar" aria-hidden="true">{{ displayName?.[0] || 'U' }}</div>
+      <span class="user__name">{{ displayName }}</span>
+      <span class="user__chev" aria-hidden="true">▾</span>
+
+      <div class="user__dropdown" *ngIf="dropdownOpen" (click)="$event.stopPropagation()">
+        <div class="user__label">Signed in as</div>
+        <div class="user__value">{{ email }}</div>
+
+        <button class="user__logout" type="button" (click)="logout()">Log out</button>
+      </div>
+    </button>
+  </div>
+</header>

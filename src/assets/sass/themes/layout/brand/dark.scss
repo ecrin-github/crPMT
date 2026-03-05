@@ -18,7 +18,6 @@ $header-mobile-icon-color-hover: $primary;
 // Desktop Mode
 @include media-breakpoint-up(lg) {
 	.brand {
-	    background-color: $brand-bg;
     	box-shadow: none;
 
 		// Button
