@@ -18,6 +18,11 @@ For deployment on server:
 
 ## Changelog
 
+## [0.10.0] - 2026-03-05
+- Revamped aside menu
+- Revamped global header, now not sticky
+- Added sticky headers to non-global headers
+
 ## [0.9.0] - 2026-02-27
 ### Global
 - Improved links UI to lower levels (now visually better and more visible)
