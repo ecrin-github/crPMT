@@ -22,11 +22,6 @@ export class HeaderComponent {
       null;
   }
 
-  get formattedVersion(): string {
-    const match = this.appVersion.match(/^v?\d+\.\d+\.\d+/);
-    return match ? match[0] : this.appVersion;
-  }
-
   get displayName(): string {
     return this.account?.name || this.account?.username || 'User';
   }

@@ -1,19 +1,23 @@
 <header class="header">
   <div class="brand">
-    <div class="brand__logo">
-      <img src="assets/media/logos/ecrin-logo-no-text.png" alt="ECRIN" class="brand__logo-img" />
-    </div>
+    <a class="brand__logo" routerLink="/" aria-label="Accueil" title="Accueil">
+      <img
+        src="assets/media/logos/ecrin-logo-no-text.png"
+        alt="ECRIN"
+        class="brand__logo-img"
+      />
+    </a>
 
     <div class="brand__titles">
       <div class="brand__name">ECRIN PMT</div>
-      <div class="brand__version">{{ formattedVersion }}</div>
+      <div class="brand__version">{{ appVersion }}</div>
     </div>
   </div>
 
   <div class="right">
-    <button class="icon-btn" type="button" aria-label="Logout" title="Logout" (click)="logout()">
+    <!-- <button class="icon-btn" type="button" aria-label="Logout" title="Logout" (click)="logout()">
       <i class="fas fa-sign-out-alt"></i>
-    </button>
+    </button> -->
 
     <div class="divider" aria-hidden="true"></div>
 

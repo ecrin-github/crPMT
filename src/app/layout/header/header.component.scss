@@ -1,17 +1,15 @@
 .header {
-  position: fixed;
-  top: 0;
-  left: var(--sidebar-w);
-  right: 0;
+  position: relative;
+  z-index: 2000;
   height: var(--header-h);
   background: #fff;
   border-bottom: 1px solid var(--border);
-  z-index: 900;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 32px;
+  padding: 0PX 32px 0PX 90PX;
+  box-sizing: border-box;
+
 }
 
 .brand { display: flex; align-items: center; gap: 5px; }
