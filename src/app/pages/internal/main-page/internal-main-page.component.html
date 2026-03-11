@@ -15,6 +15,7 @@
     <h1 class="kpi-title">Dashboard</h1>
     <p class="kpi-subtitle">
       Overview of ECRIN clinical research projects and performance indicators
+
     </p>
   </div>
 
@@ -26,6 +27,7 @@
         [ngClass]="card.color"
         (click)="openKpiModal(card, studiesModal)"
       >
+
         <div class="kpi-card-top">
           <div class="kpi-label">
             {{ card.label }}
@@ -93,35 +95,3 @@
     </div>
   </div>
 </ng-template>
-<!-- <ng-template #studiesModal let-modal>
-  <div class="modal-header">
-    <h5 class="modal-title">{{ selectedKpiTitle }}</h5>
-    <button type="button" class="btn-close" aria-label="Close" (click)="closeModal()"></button>
-  </div>
-
-  <div class="modal-body">
-    <div *ngIf="!selectedStudies.length" class="text-muted">
-      No studies found for this KPI.
-    </div>
-
-    <div *ngIf="selectedStudies.length" class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th>Acronym</th>
-            <th>Status</th>
-            <th>Lead CTU</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let study of selectedStudies" (click)="redirectToStudyDetail(study?.id)" style="cursor: pointer;">
-            <td>{{ study?.shortTitle || '—' }}</td>
-            <td>{{ study?.status || '—' }}</td>
-            <td>{{ study?.leadCtu?.shortName || study?.leadCtu?.name || '—' }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-</ng-template> -->
