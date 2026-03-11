@@ -27,14 +27,11 @@ import { NgxEchartsModule } from 'ngx-echarts';
 // import echarts core
 import * as echarts from 'echarts/core';
 // import necessary echarts components
-import { BarChart, LineChart } from 'echarts/charts';
-import { DataZoomComponent, GraphicComponent, GridComponent, MarkLineComponent, TitleComponent, ToolboxComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
+import { BarChart, LineChart, PieChart } from 'echarts/charts';
+import {DataZoomComponent, GraphicComponent,GridComponent,LegendComponent,MarkLineComponent,TitleComponent, ToolboxComponent,TooltipComponent,VisualMapComponent} from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 // All used echarts components
-echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer, 
-  LineChart, TitleComponent, ToolboxComponent, DataZoomComponent, VisualMapComponent, GraphicComponent, MarkLineComponent]);
-
-
+echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer, LineChart, TitleComponent, ToolboxComponent, DataZoomComponent, VisualMapComponent, GraphicComponent, MarkLineComponent, LegendComponent, PieChart]);
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication({
     auth: {
