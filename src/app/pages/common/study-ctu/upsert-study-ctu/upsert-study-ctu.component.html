@@ -80,7 +80,7 @@
                                             <div class="row m-0">
                                                 <div class="col-md-12 col-12 p-0 m-0">
                                                     <div class="col-md-12">
-                                                        {{getCountryFlagFromIso2(item.country.iso2)}}&nbsp;&nbsp;{{item.shortName
+                                                        {{getCountryFlagFromIso2(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName
                                                         ? item.shortName + ' - ' : '' }}{{item.name}}</div>
                                                     <!-- <div class="col-md-12" style="font-size: 83%; color: gray;">{{item.addressInfo}}</div> -->
                                                 </div>
@@ -174,8 +174,7 @@
                         </div>
                         <div class="col-md-3">
                             <div for="sasVerification" class="font-style">SAS verification</div>
-                            <span class="text-value" [ngClass]="sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'sas-approved' : 'sas-not-approved') : ''">{{sctu.value.ctu
-                                ? (sctu.value.ctu?.sasVerification ? 'Yes' : 'No') : ''}}</span>
+                            <span class="text-value" [ngClass]="sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'sas-approved' : 'sas-not-approved') : ''">Data from SharePoint coming soon!</span>
                         </div>
                         <div class="col-md-4">
                             <div for="ctuEvaluation" class="font-style">CTU Evaluation (CTU Services)</div>
