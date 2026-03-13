@@ -17,14 +17,14 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 })
 export class InternalMainPageComponent implements OnInit {
   dashboardCards = [
-    { key: 'trial',     label: 'ECRIN Mentioned in Trial Registration', value: 0, icon: 'fa-solid fa-file-lines',            color: 'bg-blue' },
-    { key: 'running',   label: 'Running Studies',                        value: 0, icon: 'fa-solid fa-circle-play',          color: 'bg-green' },
-    { key: 'startup',   label: 'Studies in Start-Up Phase',              value: 0, icon: 'fa-solid fa-wave-square',         color: 'bg-yellow' },
-    { key: 'dm',        label: 'Data Management Services',               value: 0, icon: 'fa-solid fa-database',            color: 'bg-cyan' },
-    { key: 'certified', label: 'Certified Data Centre',                  value: 0, icon: 'fa-solid fa-shield-halved',       color: 'bg-mint' },
-    { key: 'lead',      label: 'ECRIN Lead CTU',                         value: 0, icon: 'fa-solid fa-building',            color: 'bg-orange' },
-    { key: 'vigilance', label: 'Central Vigilance Services',             value: 0, icon: 'fa-solid fa-shield-heart',        color: 'bg-purple' },
-    { key: 'sas',       label: 'CTUs Without Valid SAS',                 value: 0, icon: 'fa-solid fa-triangle-exclamation', color: 'bg-pink' },
+  { key: 'trial', label: 'ECRIN Mentioned in Trial Registration', value: 0, icon: 'fa-solid fa-file-lines', color: 'bg-blue', chartOptions: {}, legend: [] },
+    { key: 'running', label: 'Running Studies', value: 0, icon: 'fa-solid fa-circle-play', color: 'bg-green', chartOptions: {}, legend: [] },
+    { key: 'startup', label: 'Studies in Start-Up Phase', value: 0, icon: 'fa-solid fa-wave-square', color: 'bg-yellow', chartOptions: {}, legend: [] },
+    { key: 'dm', label: 'Data Management Services', value: 0, icon: 'fa-solid fa-database', color: 'bg-cyan', chartOptions: {}, legend: [] },
+    { key: 'certified', label: 'Certified Data Centre', value: 0, icon: 'fa-solid fa-shield-halved', color: 'bg-mint', chartOptions: {}, legend: [] },
+    { key: 'lead', label: 'ECRIN Lead CTU', value: 0, icon: 'fa-solid fa-building', color: 'bg-orange', chartOptions: {}, legend: [] },
+    { key: 'vigilance', label: 'Central Vigilance Services', value: 0, icon: 'fa-solid fa-shield-heart', color: 'bg-purple', chartOptions: {}, legend: [] },
+    { key: 'sas', label: 'CTUs Without Valid SAS', value: 0, icon: 'fa-solid fa-triangle-exclamation', color: 'bg-pink', chartOptions: {}, legend: [] },
   ];
 
   studyStatusChartOptions: EChartsOption = {};
@@ -137,16 +137,15 @@ export class InternalMainPageComponent implements OnInit {
           avoidLabelOverlap: true,
           itemStyle: {
             borderRadius: 8,
-            borderColor: 'transparent',  
-            borderWidth: 0 
+            borderColor: 'transparent', 
+            borderWidth: 0
           },
           label: {
             show: true,
             formatter: '{b}\n{c} ({d}%)'
           },
           emphasis: {
-            scale: true,
-            scaleSize: 6
+            scale: false,  
           },
           data
         }
@@ -191,6 +190,7 @@ export class InternalMainPageComponent implements OnInit {
       scrollable: true
     });
   }
+
   redirectToStudyDetail(studyId: number): void {
     this.modalRef?.close();  
     this.router.navigate(['/studies', studyId, 'view']);
@@ -198,251 +198,6 @@ export class InternalMainPageComponent implements OnInit {
 
   closeModal(): void {
     this.modalRef?.close();
-  }
-  getChartOptionsForCard(key: string): EChartsOption {
-    const studiesForKpi = this.getStudiesForKpi(key);
-
-    switch (key) {
-      case 'trial':
-        const withRegistration = studiesForKpi.filter(s => s?.trialRegistrationNumber).length;
-        const withoutRegistration = studiesForKpi.filter(s => !s?.trialRegistrationNumber).length;
-        const totalTrialStudies = withRegistration + withoutRegistration;
-
-        return {
-          series: [
-            {
-              type: 'pie',
-              radius: ['50%', '70%'],
-              data: [
-                { name: 'With Registration', value: withRegistration },
-                { name: 'Without Registration', value: withoutRegistration }
-              ],
-              label: {
-                show: true,
-                formatter: '{b}\n{c} ({d}%)'
-              },
-              itemStyle: {
-              borderRadius: 8,
-              borderColor: 'transparent', 
-              borderWidth: 0  
-            },emphasis: {
-              scale: true,  
-              scaleSize: 6 
-            }
-            }
-          ]
-        };
-
-      case 'running':
-        const runningStudies = studiesForKpi.filter(s => s?.status === 'running').length;
-        const completedStudies = studiesForKpi.filter(s => s?.status === 'completed').length;
-
-        return {
-          series: [
-            {
-              type: 'pie',
-              radius: ['50%', '70%'],
-              data: [
-                { name: 'Running', value: runningStudies },
-                { name: 'Completed', value: completedStudies }
-              ],
-              label: {
-                show: true,
-                formatter: '{b}\n{c} ({d}%)'
-              },
-              itemStyle: {
-              borderRadius: 8,
-              borderColor: 'transparent', 
-              borderWidth: 0  
-            },emphasis: {
-              scale: true,  
-              scaleSize: 6 
-            }
-            }
-          ]
-        };
-
-      case 'startup':
-        const startupStudies = studiesForKpi.filter(s => s?.status === 'start-up phase').length;
-        const totalStartupStudies = studiesForKpi.length;
-
-        return {
-          series: [
-            {
-              type: 'pie',
-              radius: ['50%', '70%'],
-              data: [
-                { name: 'Start-Up', value: startupStudies },
-                { name: 'Other', value: totalStartupStudies - startupStudies }
-              ],
-              label: {
-                show: true,
-                formatter: '{b}\n{c} ({d}%)'
-              },
-              itemStyle: {
-              borderRadius: 8,
-              borderColor: 'transparent',
-              borderWidth: 0
-            },
-            emphasis: {
-              scale: true,
-              scaleSize: 6 
-            }
-            }
-          ]
-        };
-
-      case 'dm':
-        const dmStudies = studiesForKpi.filter(s => this.hasService(s, ['data management'])).length;
-        const totalDmStudies = studiesForKpi.length;
-
-        return {
-          series: [
-            {
-              type: 'pie',
-              radius: ['50%', '70%'],
-              data: [
-                { name: 'Data Management', value: dmStudies },
-                { name: 'Other', value: totalDmStudies - dmStudies }
-              ],
-              label: {
-                show: true,
-                formatter: '{b}\n{c} ({d}%)'
-              },
-              itemStyle: {
-              borderRadius: 8,
-              borderColor: 'transparent',  
-              borderWidth: 0  
-            },emphasis: {
-              scale: true,
-              scaleSize: 6 
-            }
-            }
-          ]
-        };
-
-      case 'certified':
-        const certifiedStudies = studiesForKpi.filter(s => this.hasService(s, ['ecrin certified'])).length;
-        const totalCertifiedStudies = studiesForKpi.length;
-
-        return {
-          series: [
-            {
-              type: 'pie',
-              radius: ['50%', '70%'],
-              data: [
-                { name: 'Certified', value: certifiedStudies },
-                { name: 'Other', value: totalCertifiedStudies - certifiedStudies }
-              ],
-              label: {
-                show: true,
-                formatter: '{b}\n{c} ({d}%)'
-              },
-              itemStyle: {
-              borderRadius: 8,
-              borderColor: 'transparent',  
-              borderWidth: 0  
-            },emphasis: {
-              scale: true,  
-              scaleSize: 6 
-            }
-            }
-          ]
-        };
-
-      case 'lead':
-        const leadStudies = studiesForKpi.filter(s => !!s?.leadCtu?.id).length;
-        const totalLeadStudies = studiesForKpi.length;
-
-        return {
-          series: [
-            {
-              type: 'pie',
-              radius: ['50%', '70%'],
-              data: [
-                { name: 'ECRIN Lead', value: leadStudies },
-                { name: 'Other', value: totalLeadStudies - leadStudies }
-              ],
-              label: {
-                show: true,
-                formatter: '{b}\n{c} ({d}%)'
-              },
-              itemStyle: {
-              borderRadius: 8,
-              borderColor: 'transparent',
-              borderWidth: 0
-            },
-            emphasis: {
-              scale: true,
-              scaleSize: 6
-            }
-            }
-          ]
-        };
-
-      case 'vigilance':
-        const vigilanceStudies = studiesForKpi.filter(s => this.hasService(s, ['pharmacovigilance', 'vigilance'])).length;
-        const totalVigilanceStudies = studiesForKpi.length;
-
-        return {
-          series: [
-            {
-              type: 'pie',
-              radius: ['50%', '70%'],
-              data: [
-                { name: 'Vigilance', value: vigilanceStudies },
-                { name: 'Other', value: totalVigilanceStudies - vigilanceStudies }
-              ],
-              label: {
-                show: true,
-                formatter: '{b}\n{c} ({d}%)'
-              },
-              itemStyle: {
-              borderRadius: 8,
-              borderColor: 'transparent', 
-              borderWidth: 0 
-            },
-            emphasis: {
-              scale: true,  
-              scaleSize: 6 
-            }
-            }
-          ]
-        };
-
-      case 'sas':
-        const sasStudies = studiesForKpi.filter(s =>
-          (s?.studyCtus ?? []).some((sc: any) => sc?.ctu?.sasVerification === false)
-        ).length;
-
-        return {
-          series: [
-            {
-              type: 'pie',
-              radius: ['50%', '70%'],
-              data: [
-                { name: 'Valid SAS', value: studiesForKpi.length - sasStudies },
-                { name: 'Invalid SAS', value: sasStudies }
-              ],
-              label: {
-                show: true,
-                formatter: '{b}\n{c} ({d}%)'
-              },
-              itemStyle: {
-              borderRadius: 8,
-              borderColor: 'transparent',
-              borderWidth: 0  
-            },emphasis: {
-              scale: true,  
-              scaleSize: 6 
-            }
-            }
-          ]
-        };
-
-      default:
-        return {};
-    }
   }
 
   private getStudiesForKpi(key: string): any[] {
@@ -477,6 +232,7 @@ export class InternalMainPageComponent implements OnInit {
         return this.allStudies.filter(s =>
           this.hasService(s, ['pharmacovigilance', 'vigilance'])
         );
+
       case 'sas':
         return this.allStudies.filter(s =>
           (s?.studyCtus ?? []).some((sc: any) => sc?.ctu?.sasVerification === false)
@@ -486,7 +242,192 @@ export class InternalMainPageComponent implements OnInit {
         return [];
     }
   }
+  private buildKpiDonutChart(
+    data: { name: string; value: number }[],
+    title = 'Studies'
+  ): EChartsOption {
+    const palette = ['#4F6BED', '#B7D63D', '#7C8AA5', '#F59E0B', '#10B981', '#8B5CF6'];
+    const safeData = data
+      .filter(item => item.value > 0)
+      .map((item, index) => ({
+        ...item,
+        itemStyle: {
+          color: palette[index % palette.length],
+          borderRadius: 6,
+          borderColor: 'transparent',
+          borderWidth: 0
+        }
+      }));
 
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: '{b}: {c} ({d}%)'
+      },
+      animation: true,
+      series: [
+        {
+          name: title,
+          type: 'pie',
+          radius: ['58%', '78%'],
+          center: ['50%', '50%'],
+          avoidLabelOverlap: false,
+          label: {
+            show: false
+          },
+          labelLine: {
+            show: false
+          },
+          emphasis: {
+            scale: true,
+            scaleSize: 6
+          },
+          data: safeData.length
+            ? safeData
+            : [
+                {
+                  name: 'No data',
+                  value: 1,
+                  itemStyle: { color: '#E5E7EB' }
+                }
+              ]
+        }
+      ]
+    };
+  }
+  private buildLegend(data: { name: string; value: number }[]) {
+    const palette = ['#4F6BED', '#B7D63D', '#7C8AA5', '#F59E0B', '#10B981', '#8B5CF6'];
+
+    return data
+      .filter(item => item.value > 0)
+      .map((item, index) => ({
+        ...item,
+        color: palette[index % palette.length]
+      }));
+  }
+  private getStatusGroupedData(studies: any[]): { name: string; value: number }[] {
+    const counts: Record<string, number> = {
+      'Start-up': 0,
+      'Running': 0,
+      'Completion & termination': 0,
+      'Completed': 0,
+      'Stopped': 0,
+      'Unknown': 0,
+      'Other': 0,
+    };
+
+    studies.forEach((study: any) => {
+      const group = this.mapStudyStatus(study?.status);
+      counts[group] = (counts[group] || 0) + 1;
+    });
+
+    return Object.entries(counts)
+      .filter(([, value]) => value > 0)
+      .map(([name, value]) => ({ name, value }));
+  }
+
+  private updateCardCharts(): void {
+    this.dashboardCards.forEach(card => {
+      let data: { name: string; value: number }[] = [];
+
+      switch (card.key) {
+        case 'trial': {
+          const withRegistration = this.allStudies.filter(s => !!s?.trialRegistrationNumber).length;
+          const withoutRegistration = this.allStudies.filter(s => !s?.trialRegistrationNumber).length;
+          data = [
+            { name: 'With registration', value: withRegistration },
+            { name: 'Without registration', value: withoutRegistration }
+          ];
+          break;
+        }
+
+        case 'running': {
+          const running = this.allStudies.filter(s =>
+            this.normalize(s?.status).includes('running')
+          ).length;
+          const other = this.allStudies.length - running;
+          data = [
+            { name: 'Running', value: running },
+            { name: 'Other studies', value: other }
+          ];
+          break;
+        }
+
+        case 'startup': {
+          const startup = this.allStudies.filter(s =>
+            this.normalize(s?.status) === 'start-up phase'
+          ).length;
+          const other = this.allStudies.length - startup;
+          data = [
+            { name: 'Start-up phase', value: startup },
+            { name: 'Other studies', value: other }
+          ];
+          break;
+        }
+
+        case 'dm': {
+          const dm = this.allStudies.filter(s =>
+            this.hasService(s, ['data management'])
+          ).length;
+          const other = this.allStudies.length - dm;
+          data = [
+            { name: 'Data management', value: dm },
+            { name: 'Other studies', value: other }
+          ];
+          break;
+        }
+
+        case 'certified': {
+          const certified = this.allStudies.filter(s =>
+            this.hasService(s, ['ecrin certified'])
+          ).length;
+          const other = this.allStudies.length - certified;
+          data = [
+            { name: 'Certified', value: certified },
+            { name: 'Other studies', value: other }
+          ];
+          break;
+        }
+
+        case 'lead': {
+          const lead = this.allStudies.filter(s => !!s?.leadCtu?.id).length;
+          const other = this.allStudies.length - lead;
+          data = [
+            { name: 'With lead CTU', value: lead },
+            { name: 'Without lead CTU', value: other }
+          ];
+          break;
+        }
+
+        case 'vigilance': {
+          const vigilance = this.allStudies.filter(s =>
+            this.hasService(s, ['pharmacovigilance', 'vigilance'])
+          ).length;
+          const other = this.allStudies.length - vigilance;
+          data = [
+            { name: 'Vigilance service', value: vigilance },
+            { name: 'Other studies', value: other }
+          ];
+          break;
+        }
+
+        case 'sas': {
+          const withoutValidSas = this.allStudies.filter(s =>
+            (s?.studyCtus ?? []).some((sc: any) => sc?.ctu?.sasVerification === false)
+          ).length;
+          const other = this.allStudies.length - withoutValidSas;
+          data = [
+            { name: 'Without valid SAS', value: withoutValidSas },
+            { name: 'Other studies', value: other }
+          ];
+          break;
+        }
+      }
+
+      card.chartOptions = this.buildKpiDonutChart(data, card.label);
+      card.legend = this.buildLegend(data);
+    });
+  }
   private loadData(): void {
     this.spinner.show();
 
@@ -530,6 +471,7 @@ export class InternalMainPageComponent implements OnInit {
           );
 
           this.buildStudyStatusChart(safeStudies);
+          this.updateCardCharts();
 
           const calls = safeStudies
             .filter(s => !!s?.id)
@@ -571,6 +513,7 @@ export class InternalMainPageComponent implements OnInit {
                 });
 
                 this.allStudies = safeStudies;
+                this.updateCardCharts();
               },
               error: (err) => {
                 console.error('[KPI] getStudyCTUs error', err);
@@ -582,6 +525,7 @@ export class InternalMainPageComponent implements OnInit {
         error: (err) => {
           console.error('[KPI] getStudyList error', err);
           this.resetDashboard();
+          this.updateCardCharts();
         }
       });
   }

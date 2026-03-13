@@ -18,35 +18,49 @@
 
     </p>
   </div>
-
   <div class="row g-4">
-    <div class="col-12 col-md-6 col-xl-3" *ngFor="let card of dashboardCards">
+    <div class="col-12 col-md-6 col-xl-4" *ngFor="let card of dashboardCards">
       <button
         type="button"
         class="kpi-card kpi-card--button"
         [ngClass]="card.color"
         (click)="openKpiModal(card, studiesModal)"
       >
+        <div class="kpi-card-content">
+          <div class="kpi-card-text">
+            <div class="kpi-label">
+              {{ card.label }}
+            </div>
 
-        <div class="kpi-card-top">
-          <div class="kpi-label">
-            {{ card.label }}
+            <div class="kpi-value">
+              {{ card.value }}
+            </div>
+
+            <div class="kpi-mini-legend" *ngIf="card.legend?.length">
+              <div class="kpi-mini-legend__item" *ngFor="let item of card.legend">
+                <span
+                  class="kpi-mini-legend__dot"
+                  [style.background]="item.color"
+                ></span>
+                <span class="kpi-mini-legend__text">
+                  {{ item.name }} ({{ item.value }})
+                </span>
+              </div>
+            </div>
           </div>
 
-          <div class="kpi-icon">
-            <i class="{{ card.icon }}"></i>
+          <div class="kpi-chart-wrap">
+            <div
+              echarts
+              [options]="card.chartOptions"
+              class="kpi-donut-chart"
+            ></div>
           </div>
         </div>
-
-        <div class="kpi-value">
-          {{ card.value }}
-        </div>
-         
-        <div echarts [options]="getChartOptionsForCard(card.key)" class="kpi-donut-chart"></div>
       </button>
     </div>
 
-    <div class="col-12">
+    <!-- <div class="col-12">
       <div class="dashboard-panel">
         <div class="dashboard-panel__header">
           <h2 class="dashboard-panel__title">Studies by status</h2>
@@ -61,7 +75,7 @@
           class="dashboard-chart">
         </div>
       </div>
-    </div>
+    </div> -->
   </div>
 </div>
 <ng-template #studiesModal let-modal>
