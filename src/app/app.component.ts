@@ -13,6 +13,8 @@ import { TableExtendedService } from './_rms/shared/crud-table';
 
 // Required for MSAL
 import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
+import { filter } from 'rxjs/operators';
+import { EventMessage, EventType } from '@azure/msal-browser';
 
 
 @Component({
@@ -81,6 +83,22 @@ export class AppComponent implements OnInit, OnDestroy {
     //   this.tokenExpiration=  (msg.payload as any).expiresOn;
     //   localStorage.setItem('tokenExpiration', this.tokenExpiration);
     // });
+
+    // Logging MSAL events
+    this.msalBroadcastService.msalSubject$
+      // .pipe(filter((msg: EventMessage) =>
+      //   msg.eventType === EventType.LOGIN_FAILURE ||
+      //   msg.eventType === EventType.ACQUIRE_TOKEN_FAILURE
+      // ))
+      .subscribe((msg: EventMessage) => {
+        console.log(msg.eventType);
+        if (msg.error) {
+          console.log(msg.error);
+        }
+        // console.error('MSAL error', msg.error);
+        // Optional: force explicit login when recoverable
+        // this.msalService.loginRedirect();
+      });
   }
 
   // If the user is logged in, present the user with a "logged in" experience
