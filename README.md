@@ -18,8 +18,12 @@ For deployment on server:
 
 ## Changelog
 
+## [0.10.2] - 2026-03-18
+- Added MSAL events logging to debug #68
+- Attempt to fix #68
+
 ## [0.10.1] - 2026-03-13
-- Fix CTU not displaying in CTU list if CTU has no country assigned to it
+- Fixed CTU not displaying in CTU list if CTU has no country assigned to it
 
 ## [0.10.0] - 2026-03-05
 - Revamped aside menu
