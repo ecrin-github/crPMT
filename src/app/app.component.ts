@@ -13,7 +13,7 @@ import { TableExtendedService } from './_rms/shared/crud-table';
 
 // Required for MSAL
 import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
-import { filter } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 import { EventMessage, EventType } from '@azure/msal-browser';
 
 
@@ -84,20 +84,31 @@ export class AppComponent implements OnInit, OnDestroy {
     //   localStorage.setItem('tokenExpiration', this.tokenExpiration);
     // });
 
-    // Logging MSAL events
+    // Log MSAL events + attempt to re-login if acquire token fails
     this.msalBroadcastService.msalSubject$
-      // .pipe(filter((msg: EventMessage) =>
-      //   msg.eventType === EventType.LOGIN_FAILURE ||
-      //   msg.eventType === EventType.ACQUIRE_TOKEN_FAILURE
-      // ))
+      .pipe(
+        // filter((msg: EventMessage) =>
+        // msg.eventType === EventType.LOGIN_FAILURE ||
+        // msg.eventType === EventType.ACQUIRE_TOKEN_FAILURE
+        // ),
+        takeUntil(this._destroying$)
+      )
       .subscribe((msg: EventMessage) => {
+        // Log events + error if there is one
         console.log(msg.eventType);
         if (msg.error) {
           console.log(msg.error);
         }
-        // console.error('MSAL error', msg.error);
-        // Optional: force explicit login when recoverable
-        // this.msalService.loginRedirect();
+
+        // Attempt to re-login on failure events
+        if (msg.eventType === EventType.LOGIN_FAILURE || msg.eventType === EventType.ACQUIRE_TOKEN_FAILURE) {
+          this.authService.loginRedirect();
+          // if (error?.errorCode === 'interaction_required') {
+          // this.authService.loginRedirect({ 
+          //   scopes: ['openid', 'profile']
+          // });
+          // }
+        }
       });
   }
 
@@ -121,11 +132,7 @@ export class AppComponent implements OnInit, OnDestroy {
   // }
 
   ngOnDestroy(): void {
-    this._destroying$.next(undefined);
+    this._destroying$.next(null);
     this._destroying$.complete();
   }
-
-  // ngOnDestroy() {
-  //   this.unsubscribe.forEach((sb) => sb.unsubscribe());
-  // }
 }

@@ -31,7 +31,7 @@ import { BarChart, LineChart } from 'echarts/charts';
 import { DataZoomComponent, GraphicComponent, GridComponent, MarkLineComponent, TitleComponent, ToolboxComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 // All used echarts components
-echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer, 
+echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer,
   LineChart, TitleComponent, ToolboxComponent, DataZoomComponent, VisualMapComponent, GraphicComponent, MarkLineComponent]);
 
 
@@ -73,7 +73,8 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
     authRequest: {
-      scopes: ['openid', 'profile', 'email', 'Sites.Read.All', `api://${environment.apiClientId}/access_as_user`],
+      scopes: ['openid', 'profile', 'email'],
+      // scopes: ['openid', 'profile', 'email', 'Sites.Read.All', `api://${environment.apiClientId}/access_as_user`],
     },
     // loginFailedRoute: "/",
   };
