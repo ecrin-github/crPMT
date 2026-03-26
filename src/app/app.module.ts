@@ -31,7 +31,9 @@ import { BarChart, LineChart, PieChart } from 'echarts/charts';
 import {DataZoomComponent, GraphicComponent,GridComponent,LegendComponent,MarkLineComponent,TitleComponent, ToolboxComponent,TooltipComponent,VisualMapComponent} from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 // All used echarts components
+
 echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer, LineChart, TitleComponent, ToolboxComponent, DataZoomComponent, VisualMapComponent, GraphicComponent, MarkLineComponent, LegendComponent, PieChart]);
+
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication({
     auth: {
@@ -70,7 +72,8 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
   return {
     interactionType: InteractionType.Redirect,
     authRequest: {
-      scopes: ['openid', 'profile', 'email', 'Sites.Read.All', `api://${environment.apiClientId}/access_as_user`],
+      scopes: ['openid', 'profile', 'email'],
+      // scopes: ['openid', 'profile', 'email', 'Sites.Read.All', `api://${environment.apiClientId}/access_as_user`],
     },
     // loginFailedRoute: "/",
   };

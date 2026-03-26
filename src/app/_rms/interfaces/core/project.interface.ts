@@ -4,6 +4,11 @@ import { PersonInterface } from "../context/person.interface";
 import { StudyDataInterface } from "./study.interface";
 
 export interface ProjectInterface {
+    publications?: Array<{
+    id?: number;
+    title: string;
+    pubmedUrl: string;
+    }>;
     id: string;
     // General information
     name: string;

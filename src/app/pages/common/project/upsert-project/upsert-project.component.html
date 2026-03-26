@@ -240,11 +240,14 @@
                     </a>
                 </div>
             </div>
-            <div class="row form-group">
-                <div class="col-md-6">
-                    <div for="url" class="font-style">Publications involving ECRIN</div>
-                    <div>Coming soon!</div>
-                </div>
+            <hr class="hr-m2">
+            <div class="col-md-12">
+                <app-upsert-publication
+                    [projectId]="id"
+                    [isView]="isView"
+                    [isEdit]="isEdit"
+                    [isAdd]="isAdd">
+                </app-upsert-publication>
             </div>
         </form>
     </div>

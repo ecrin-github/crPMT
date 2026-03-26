@@ -1,0 +1,82 @@
+<div class="row section-title">
+  <div class="col-md-12 text-left">
+    <div class="view-sub-title">Publications involving ECRIN</div>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-md-12">
+
+    <ng-container *ngIf="!isView">
+      <div class="publication-table">
+        <div class="publication-table__head row">
+          <div class="col-md-4 font-style">Title</div>
+          <div class="col-md-7 font-style">Publication link</div>
+          <div class="col-md-1"></div>
+        </div>
+
+        <div
+          class="publication-table__row row align-items-center"
+          *ngFor="let publication of publications; let i = index"
+        >
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Publication title"
+              [(ngModel)]="publication.title"
+              [ngModelOptions]="{ standalone: true }"
+            />
+          </div>
+
+          <div class="col-md-7">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="https://pubmed.ncbi.nlm.nih.gov/..."
+              [(ngModel)]="publication.pubmedUrl"
+              [ngModelOptions]="{ standalone: true }"
+            />
+          </div>
+
+          <div class="col-md-1 d-flex justify-content-center">
+            <i
+              class="fa fa-trash text-danger"
+              style="cursor: pointer;"
+              (click)="removePublication(i)"
+            ></i>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary mt-3" (click)="addPublication()">
+        <i class="fa fa-plus"></i> New publication
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="isView">
+        <div *ngIf="publications?.length; else noPublications">
+            <ul class="publication-view-list">
+            <li class="publication-view-item" *ngFor="let publication of publications">
+                <a
+                class="publication-view-link-reset"
+                [href]="getHttpLink(publication?.pubmedUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+                >
+                <span class="publication-view-item__title">
+                    {{ publication?.title }}
+                </span>
+                </a>
+            </li>
+            </ul>
+        </div>
+
+        <ng-template #noPublications>
+            <div class="text-value">—</div>
+        </ng-template>
+    </ng-container>
+
+
+  </div>
+</div>
