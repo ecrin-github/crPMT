@@ -45,3 +45,4 @@ export enum CtuEvaluationResults {
 }
 
 export const ctuEvaluationsListUrl = "https://ecrineu.sharepoint.com/sites/Quality/Lists/CTU%20Evaluations/AllItems.aspx";
+export const sasTrackerListUrl = "https://ecrineu.sharepoint.com/sites/Quality/Lists/SAS%20Tracker%20Public/AllItems.aspx";

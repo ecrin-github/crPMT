@@ -24,6 +24,7 @@ import { ProjectService } from 'src/app/_rms/services/entities/project/project.s
 import { REGULATORY_FRAMEWORKS, STUDY_STATUSES, TIME_UNITS } from 'src/assets/js/constants';
 import { ProjectInterface } from 'src/app/_rms/interfaces/core/project.interface';
 
+
 @Component({
   selector: 'app-upsert-study',
   templateUrl: './upsert-study.component.html',
@@ -68,6 +69,7 @@ export class UpsertStudyComponent implements OnInit {
   summaryMaxChars: number = 1300;
   summaryRemainingChars: number[] = [];
   studies = [];
+  
 
   constructor(private fb: UntypedFormBuilder,
     private router: Router,

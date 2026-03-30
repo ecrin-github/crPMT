@@ -85,3 +85,5 @@ dist/
 
 # Mac OS
 .DS_STORE
+
+db.json
