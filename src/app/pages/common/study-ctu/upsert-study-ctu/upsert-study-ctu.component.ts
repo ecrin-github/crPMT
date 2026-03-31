@@ -18,8 +18,7 @@ import { anyStringToDateString, dateToString, getFlagEmoji, getTagBgColor, getTa
 import { UpsertCentreComponent } from '../../centre/upsert-centre/upsert-centre.component';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { UpsertCtuAgreementComponent } from '../../ctu-agreement/upsert-ctu-agreement/upsert-ctu-agreement.component';
-import { CtuEvaluationResults, ctuEvaluationsListUrl } from 'src/assets/js/constants';
-import { sasTrackerListUrl } from 'src/assets/js/constants';
+import { CtuEvaluationResults, SasVerificationResults, ctuEvaluationsListUrl, sasTrackerListUrl } from 'src/assets/js/constants';
 
 @Component({
   selector: 'app-upsert-study-ctu',
@@ -317,10 +316,10 @@ export class UpsertStudyCtuComponent implements OnInit {
       const status = this.sasVerifications[i][0]?.Status?.toLowerCase()?.trim();
 
       if (status === 'approved') {
-        return 'YES';
+        return SasVerificationResults.APPROVED;
       }
 
-      return 'NO';
+      return SasVerificationResults.NOT_APPROVED;
     } else if (this.loadingSASVerifications) {
       return 'Loading...';
     }
@@ -328,12 +327,12 @@ export class UpsertStudyCtuComponent implements OnInit {
     return null;
   }
   getSASVerificationTagClass(i): string {
-    const result = this.getSASVerificationResult(i);
+    const result = this.getSASVerificationResult(i)?.toLowerCase()?.trim();
 
-    if (result === 'YES') {
-      return 'sas-approved';
-    } else if (result === 'NO') {
-      return 'sas-not-approved';
+    if (result === SasVerificationResults.APPROVED.toLowerCase()) {
+      return 'tag-success';
+    } else if (result === SasVerificationResults.NOT_APPROVED.toLowerCase()) {
+      return 'tag-danger';
     }
 
     return '';

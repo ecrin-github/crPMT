@@ -102,7 +102,7 @@ export class UpsertStudyComponent implements OnInit {
     }
 
     // this.scrollService.handleScroll([`/studies/${this.id}/view`, `/studies/${this.id}/edit`, `/studies/add`]);
-
+    // le github de la boite en question est: https://github.com/ecrin-github/
     this.isEdit = this.router.url.includes('edit');
     this.isView = this.router.url.includes('view');
     this.isAdd = this.router.url.includes('add');
