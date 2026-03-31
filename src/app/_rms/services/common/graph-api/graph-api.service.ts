@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { filter, mergeMap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
@@ -13,6 +13,7 @@ export class GraphApiService {
 
   public SITE_NAME_QUALITY = "Quality";
   public CTU_EVALUATIONS_GUID = "d4cb819a-40b0-4adc-ad14-9aafd4bd5c9d";
+  public SAS_TRACKER_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";
 
   private ctuEvaluationsQueryStarted: boolean = false;
   // Stores CTU Evaluations data
@@ -37,6 +38,21 @@ export class GraphApiService {
     return () => sub.unsubscribe();   // Somehow unsubscribe to ctuEvaluationsData$ when calling unsubscribe on ctuEvaluations$
   });
 
+  private sasTrackerQueryStarted: boolean = false;
+  public _sasTrackerData$: BehaviorSubject<Object> = new BehaviorSubject<Object>(null);
+
+  public sasTracker$ = new Observable<Object | null>(subscriber => {
+    if (!this.sasTrackerQueryStarted && this._sasTrackerData$.value === null) {
+      this.sasTrackerQueryStarted = true;
+      this.getSASTracker().subscribe((res: Object) => {
+        this.setSASTrackerData(res);
+      });
+    }
+
+    const sub = this._sasTrackerData$.pipe(filter(v => v !== null)).subscribe(subscriber);
+    return () => sub.unsubscribe();
+  });
+
   constructor(
     private http: HttpClient,
   ) {
@@ -53,6 +69,19 @@ export class GraphApiService {
         if (res?.id) {
           return this.http.get(`https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_EVALUATIONS_GUID}}/items?expand=fields($select=ProjectLookupId,Project,CTULookupId,CTU,Created,Result)`);
         }
+      })
+    );
+  }
+
+  getSASTracker(): Observable<Object> {
+    return this.getFullSiteId(this.SITE_NAME_QUALITY).pipe(
+      mergeMap((res: any) => {
+        if (res?.id) {
+          return this.http.get(
+            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.SAS_TRACKER_GUID}}/items?expand=fields($select=Title,Short_x0020_Name,Status)`
+          );
+        }
+        return of(null);
       })
     );
   }
@@ -74,6 +103,29 @@ export class GraphApiService {
 
       this._ctuEvaluationsData$.next(ctuEvaluations);
     }
+  }
+
+  setSASTrackerData(res: any): void {
+    let sasTracker = {};
+
+    if (res?.value?.length > 0) {
+      res.value.forEach((item: any) => {
+        const shortName = item?.fields?.Short_x0020_Name?.toLowerCase()?.trim();
+        const title = item?.fields?.Title?.toLowerCase()?.trim();
+
+        const key = shortName || title;
+
+        if (key) {
+          if (!sasTracker.hasOwnProperty(key)) {
+            sasTracker[key] = [item.fields];
+          } else {
+            sasTracker[key].push(item.fields);
+          }
+        }
+      });
+    }
+
+    this._sasTrackerData$.next(sasTracker);
   }
 
   // getCTUEvaluationData(projectShortName: string, ctuShortName: string) {

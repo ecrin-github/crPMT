@@ -174,7 +174,24 @@
                         </div>
                         <div class="col-md-3">
                             <div for="sasVerification" class="font-style">SAS verification</div>
-                            <span class="text-value" [ngClass]="sctu.value.ctu ? (sctu.value.ctu?.sasVerification ? 'sas-approved' : 'sas-not-approved') : ''">Data from SharePoint coming soon!</span>
+
+                            <ng-container *ngIf="getSASVerificationResult(i); else noSASVerificationData">
+                            <div class="ctu-evaluation-container align-items-center">
+                                <span class="tag-ctu" [ngClass]="getSASVerificationTagClass(i)">
+                                {{ getSASVerificationResult(i) }}
+                                </span>
+                                <a [href]="sasTrackerListUrl" target="_blank" class="d-inline-flex ms-2">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                </a>
+                            </div>
+                            </ng-container>
+
+                            <ng-template #noSASVerificationData>
+                            <span class="text-value">No SAS verification found in SharePoint</span>
+                            <a [href]="sasTrackerListUrl" target="_blank" class="d-inline-flex ms-2">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                            </ng-template>
                         </div>
                         <div class="col-md-4">
                             <div for="ctuEvaluation" class="font-style">CTU Evaluation (CTU Services)</div>

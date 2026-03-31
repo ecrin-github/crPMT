@@ -18,7 +18,7 @@ import { anyStringToDateString, dateToString, getFlagEmoji, getTagBgColor, getTa
 import { UpsertCentreComponent } from '../../centre/upsert-centre/upsert-centre.component';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { UpsertCtuAgreementComponent } from '../../ctu-agreement/upsert-ctu-agreement/upsert-ctu-agreement.component';
-import { CtuEvaluationResults, ctuEvaluationsListUrl } from 'src/assets/js/constants';
+import { CtuEvaluationResults, SasVerificationResults, ctuEvaluationsListUrl, sasTrackerListUrl } from 'src/assets/js/constants';
 
 @Component({
   selector: 'app-upsert-study-ctu',
@@ -46,6 +46,9 @@ export class UpsertStudyCtuComponent implements OnInit {
   studyCTUs: StudyCTUInterface[] = [];
   ctuEvaluations: any[] = [];
   loadingCTUEvaluations: boolean = false;
+  public sasTrackerListUrl: string = sasTrackerListUrl;
+  sasVerifications: any[] = [];
+  loadingSASVerifications: boolean = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -288,6 +291,51 @@ export class UpsertStudyCtuComponent implements OnInit {
 
       this.loadingCTUEvaluations = false;
     });
+    this.loadingSASVerifications = true;
+
+    this.graphApi.sasTracker$.subscribe((sasTracker: any) => {
+      for (const [i, fv] of this.fv.entries()) {
+        const ctuShortName = fv.ctu?.shortName?.toLowerCase()?.trim();
+        const ctuTitle = fv.ctu?.name?.toLowerCase()?.trim();
+
+        if (ctuShortName && sasTracker[ctuShortName]) {
+          this.sasVerifications[i] = sasTracker[ctuShortName];
+        } else if (ctuTitle && sasTracker[ctuTitle]) {
+          this.sasVerifications[i] = sasTracker[ctuTitle];
+        } else {
+          this.sasVerifications[i] = [];
+        }
+      }
+
+      this.loadingSASVerifications = false;
+    });
+  }
+
+  getSASVerificationResult(i): string | null {
+    if (this.sasVerifications[i]?.length > 0) {
+      const status = this.sasVerifications[i][0]?.Status?.toLowerCase()?.trim();
+
+      if (status === 'approved') {
+        return SasVerificationResults.APPROVED;
+      }
+
+      return SasVerificationResults.NOT_APPROVED;
+    } else if (this.loadingSASVerifications) {
+      return 'Loading...';
+    }
+
+    return null;
+  }
+  getSASVerificationTagClass(i): string {
+    const result = this.getSASVerificationResult(i)?.toLowerCase()?.trim();
+
+    if (result === SasVerificationResults.APPROVED.toLowerCase()) {
+      return 'tag-success';
+    } else if (result === SasVerificationResults.NOT_APPROVED.toLowerCase()) {
+      return 'tag-danger';
+    }
+
+    return '';
   }
 
   sortCTUEvaluations() {
@@ -335,6 +383,8 @@ export class UpsertStudyCtuComponent implements OnInit {
   getCTUEvaluationTagBgColor(i) {
     return getTagBgColor(this.getCTUEvaluationResult(i));
   }
+
+
 
   getTagBorderColor(text) {
     return getTagBorderColor(text);
