@@ -44,8 +44,8 @@ export enum CtuEvaluationResults {
     UNSATISFACTORY = "Unsatisfactory"
 }
 export enum SasVerificationResults {
-    APPROVED = "YES",
-    NOT_APPROVED = "NO"
+    APPROVED = "Approved",
+    NOT_APPROVED = "Not approved"
 }
 
 export const ctuEvaluationsListUrl = "https://ecrineu.sharepoint.com/sites/Quality/Lists/CTU%20Evaluations/AllItems.aspx";
