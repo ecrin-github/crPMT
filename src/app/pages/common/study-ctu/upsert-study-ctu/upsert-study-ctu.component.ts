@@ -67,7 +67,10 @@ export class UpsertStudyCtuComponent implements OnInit {
   services: ClassValueInterface[] = [];
   studyCTUs: StudyCTUInterface[] = [];
   ctuEvaluations: any[] = [];
-  loadingCTUEvaluations = false;
+  loadingCTUEvaluations: boolean = false;
+  public sasTrackerListUrl: string = sasTrackerListUrl;
+  sasVerifications: any[] = [];
+  loadingSASVerifications: boolean = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
