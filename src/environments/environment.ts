@@ -1,7 +1,7 @@
 import { appVersion } from './version';
 
-const baseUrl = 'https://api-crpmtdev.ecrin.org';  // No trailing slash
-// const baseUrl = 'http://localhost:8000';  // No trailing slash
+// const baseUrl = 'https://api-crpmtdev.ecrin.org';  // No trailing slash
+const baseUrl = 'http://localhost:8000';  // No trailing slash
 export const environment = {
   production: false,
   // Microsoft Entra

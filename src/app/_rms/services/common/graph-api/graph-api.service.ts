@@ -26,7 +26,6 @@ export class GraphApiService {
         this.setCTUEvaluationsData(res);
       });
     }
-
     // const sub = this._ctuEvaluationsData$.subscribe({
     //   next: v => subscriber.next(v),
     //   error: err => subscriber.error(err),
@@ -42,6 +41,7 @@ export class GraphApiService {
     private http: HttpClient,
   ) {
   }
+
 
   
   // TODO: should cache site id for multiple request to the same site
@@ -101,7 +101,6 @@ export class GraphApiService {
     if (!this.ctuServiceProvidersQueryStarted && this._ctusServiceProvidersData$.value === null) {
       this.ctuServiceProvidersQueryStarted = true;
       this.getCTUsServiceProviders().subscribe((res: any) => {
-        console.log('CTU service providers API result =', res);
         this.setCTUsServiceProvidersData(res);
       });
     }
@@ -117,14 +116,14 @@ export class GraphApiService {
       mergeMap((res: any) => {
         if (res?.id) {
           return this.http.get(
-            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_SERVICE_PROVIDERS_GUID}}/items?$expand=fields($select=Title,Short_x0020_Name,Country)`
+            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_SERVICE_PROVIDERS_GUID}}/items?$expand=fields($select=Title,Short_x0020_Name,Country,SAS_x0020_Verification,Address)`
           );
         }
         return of(null);
       })
     );
   }
-
+  
   setCTUsServiceProvidersData(res: any): void {
     let ctus: any[] = [];
 
@@ -135,10 +134,13 @@ export class GraphApiService {
 
           return {
             id: null,
+            sharepointItemId: item?.id || null,
             shortName: fields?.Short_x0020_Name || '',
             name: fields?.Title || '',
+            sasVerification: !!fields?.SAS_x0020_Verification,
+            addressInfo: fields?.Address || null,
             country: {
-              iso2: null,
+              iso2: fields?.Country || null,
               name: fields?.Country || null
             },
             source: 'sharepoint'
@@ -148,14 +150,54 @@ export class GraphApiService {
     }
 
     this._ctusServiceProvidersData$.next(ctus);
-    res?.value?.forEach((item: any, index: number) => {
-      if (index < 5) {
-        console.log('Full SharePoint item =', item);
-        console .log('SharePoint item id =', item?.id);
-        console.log('SharePoint item fields =', item?.fields);
+  }
+
+  downloadCtusServiceProvidersCsv(): void {
+    this.ctusServiceProviders$.subscribe((ctus: any[]) => {
+      if (!ctus || ctus.length === 0) {
+        console.warn('No CTUs to export');
+        return;
       }
+
+      const rows = ctus.map((ctu: any) => ({
+        sharepoint_item_id: ctu.sharepointItemId || '',
+        short_name: ctu.shortName || '',
+        name: ctu.name || '',
+        country_iso2: ctu.country?.iso2 || '',
+        country_name: ctu.country?.name || '',
+        source: ctu.source || ''
+      }));
+
+      const csv = this.convertToCsv(rows);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ctus_service_providers_with_ids.csv';
+      a.click();
+
+      window.URL.revokeObjectURL(url);
     });
-    console.log('SharePoint raw response =', res);
-    console.log('SharePoint raw items =', res?.value);
+  }
+
+  private convertToCsv(rows: any[]): string {
+    if (!rows || rows.length === 0) {
+      return '';
+    }
+
+    const headers = Object.keys(rows[0]);
+
+    const escapeCsvValue = (value: any): string => {
+      const stringValue = value == null ? '' : String(value);
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    };
+
+    const lines = [
+      headers.join(','),
+      ...rows.map(row => headers.map(header => escapeCsvValue(row[header])).join(','))
+    ];
+
+    return lines.join('\n');
   }
 }

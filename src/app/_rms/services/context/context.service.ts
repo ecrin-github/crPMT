@@ -238,6 +238,16 @@ export class ContextService {
       || item.shortName?.toLocaleLowerCase().indexOf(term) > -1
       || item.addressInfo?.toLocaleLowerCase().indexOf(term) > -1;
   }
+  resolveSharePointCtu(payload: {
+    sharepoint_item_id: string | null;
+    name: string | null;
+    short_name: string | null;
+    country_iso2: string | null;
+    sas_verification: boolean;
+    address_info: string | null;
+  }): Observable<any> {
+    return this.http.post(`${environment.baseUrlApi}/context/ctus/resolve-sharepoint`, payload);
+  }
 
   addCTUDropdown(ctuName) {
     const addCTU = this.modalService.open(CtuModalComponent, { size: 'lg', backdrop: 'static' });

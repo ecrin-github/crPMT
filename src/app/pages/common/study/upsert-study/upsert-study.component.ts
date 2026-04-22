@@ -515,7 +515,7 @@ export class UpsertStudyComponent implements OnInit {
       }
     }
   }
-  
+
 
   back(): void {
     this.backService.back();
