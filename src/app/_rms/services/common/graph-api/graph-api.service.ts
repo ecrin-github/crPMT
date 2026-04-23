@@ -13,7 +13,8 @@ export class GraphApiService {
 
   public SITE_NAME_QUALITY = "Quality";
   public CTU_EVALUATIONS_GUID = "d4cb819a-40b0-4adc-ad14-9aafd4bd5c9d";
-  public CTU_SERVICE_PROVIDERS_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";                                                        
+  public CTU_SERVICE_PROVIDERS_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";
+  public SAS_TRACKER_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";                                                        
 
   private ctuEvaluationsQueryStarted: boolean = false;
   // Stores CTU Evaluations data
