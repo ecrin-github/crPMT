@@ -7,6 +7,7 @@ import { Observable, combineLatest, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { SubmissionInterface } from 'src/app/_rms/interfaces/core/submission.interface';
 import { SubmissionService } from 'src/app/_rms/services/entities/submission/submission.service';
+import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-link/regulatory-link.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
@@ -20,6 +21,7 @@ export class UpsertSubmissionComponent implements OnInit {
   @Input() submissionsData: Array<SubmissionInterface>;
   @Input() isAmendments: boolean = false;
   @Input() isOthers: boolean = false;
+  @Input() studyCountry: any;
 
   AuthorityCodes = AuthorityCodes;
   EC_TEXT = EC_TEXT;
@@ -40,6 +42,7 @@ export class UpsertSubmissionComponent implements OnInit {
     private modalService: NgbModal,
     private router: Router,
     private submissionService: SubmissionService,
+    private regulatoryLinkService: RegulatoryLinkService,
     private toastr: ToastrService) {
     this.form = this.fb.group({
       submissions: this.fb.array([])
@@ -50,6 +53,11 @@ export class UpsertSubmissionComponent implements OnInit {
     this.isEdit = this.router.url.includes('edit');
     this.isView = this.router.url.includes('view');
     this.isAdd = this.router.url.includes('add');
+
+    // Subscribe to regulatory link changes
+    this.regulatoryLinkService.links$.subscribe(() => {
+      this.syncNotApplicableFromService();
+    });
   }
 
   get fc() { return this.form.get('submissions')["controls"]; }
@@ -253,6 +261,40 @@ export class UpsertSubmissionComponent implements OnInit {
       this.getControls(i)?.protocolApprovalDate?.setValue(null);
       this.getControls(i)?.protocolApprovedVersion?.setValue(null);
       this.getControls(i)?.comment?.setValue(null);
+    }
+
+    // Update regulatory link service
+    if (this.studyCountry?.id && this.fv[i]?.authority) {
+      this.regulatoryLinkService.setSubmissionNotApplicable(
+        this.studyCountry.id,
+        this.fv[i].authority,
+        this.fv[i].notApplicable || false
+      );
+    }
+  }
+
+  private syncNotApplicableFromService() {
+    if (!this.studyCountry?.id) return;
+
+    for (let i = 0; i < this.fc.length; i++) {
+      const authority = this.fv[i]?.authority;
+      if (authority) {
+        const linkedNotApplicable = this.regulatoryLinkService.getSubmissionNotApplicable(
+          this.studyCountry.id,
+          authority
+        );
+        if (this.fv[i].notApplicable !== linkedNotApplicable) {
+          this.getControls(i)?.notApplicable?.setValue(linkedNotApplicable);
+          // Don't call onChangeNotApplicable here to avoid recursion
+          if (linkedNotApplicable) {
+            this.getControls(i)?.submissionDate?.setValue(null);
+            this.getControls(i)?.approvalDate?.setValue(null);
+            this.getControls(i)?.protocolApprovalDate?.setValue(null);
+            this.getControls(i)?.protocolApprovedVersion?.setValue(null);
+            this.getControls(i)?.comment?.setValue(null);
+          }
+        }
+      }
     }
   }
 

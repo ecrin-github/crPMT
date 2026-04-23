@@ -7,6 +7,7 @@ import { Observable, combineLatest, of } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { NotificationInterface } from 'src/app/_rms/interfaces/core/notification.interface';
 import { NotificationService } from 'src/app/_rms/services/entities/notification/notification.service';
+import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-link/regulatory-link.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
@@ -18,6 +19,7 @@ import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
 })
 export class UpsertNotificationComponent implements OnInit {
   @Input() notificationsData: Array<NotificationInterface>;
+  @Input() studyCountry: any;
 
   form: UntypedFormGroup;
   submitted: boolean = false;
@@ -38,6 +40,7 @@ export class UpsertNotificationComponent implements OnInit {
     private modalService: NgbModal,
     private router: Router,
     private notificationService: NotificationService,
+    private regulatoryLinkService: RegulatoryLinkService,
     private toastr: ToastrService) {
     this.form = this.fb.group({
       notifications: this.fb.array([])
@@ -48,6 +51,11 @@ export class UpsertNotificationComponent implements OnInit {
     this.isEdit = this.router.url.includes('edit');
     this.isView = this.router.url.includes('view');
     this.isAdd = this.router.url.includes('add');
+
+    // Subscribe to regulatory link changes
+    this.regulatoryLinkService.links$.subscribe(() => {
+      this.syncNotApplicableFromService();
+    });
   }
 
   get fc() { return this.form.get('notifications')["controls"]; }
@@ -230,6 +238,37 @@ export class UpsertNotificationComponent implements OnInit {
     if (this.fv[i]?.notApplicable) {
       this.getControls(i)?.notificationDate.setValue(null);
       this.getControls(i)?.comment?.setValue(null);
+    }
+
+    // Update regulatory link service
+    if (this.studyCountry?.id && this.fv[i]?.authority) {
+      this.regulatoryLinkService.setNotificationNotApplicable(
+        this.studyCountry.id,
+        this.fv[i].authority,
+        this.fv[i].notApplicable || false
+      );
+    }
+  }
+
+  private syncNotApplicableFromService() {
+    if (!this.studyCountry?.id) return;
+
+    for (let i = 0; i < this.fc.length; i++) {
+      const authority = this.fv[i]?.authority;
+      if (authority) {
+        const linkedNotApplicable = this.regulatoryLinkService.getNotificationNotApplicable(
+          this.studyCountry.id,
+          authority
+        );
+        if (this.fv[i].notApplicable !== linkedNotApplicable) {
+          this.getControls(i)?.notApplicable?.setValue(linkedNotApplicable);
+          // Don't call onChangeNotApplicable here to avoid recursion
+          if (linkedNotApplicable) {
+            this.getControls(i)?.notificationDate?.setValue(null);
+            this.getControls(i)?.comment?.setValue(null);
+          }
+        }
+      }
     }
   }
 

@@ -9,6 +9,7 @@ import { catchError, map, mapTo, mergeMap } from 'rxjs/operators';
 import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
 import { SafetyNotificationFormsInterface, SafetyNotificationInterface } from 'src/app/_rms/interfaces/core/safety-notification.interface';
 import { StudyCountryInterface } from 'src/app/_rms/interfaces/core/study-country.interface';
+import { StudyInterface } from 'src/app/_rms/interfaces/core/study.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { SafetyNotificationService } from 'src/app/_rms/services/entities/safety-notification/safety-notification.service';
@@ -21,7 +22,7 @@ import { UpsertSafetyNotificationComponent } from '../../safety-notification/ups
 import { UpsertStudyCtuComponent } from '../../study-ctu/upsert-study-ctu/upsert-study-ctu.component';
 import { UpsertSubmissionComponent } from '../../submission/upsert-submission/upsert-submission.component';
 import { AuthorityCodes, SafetyNotificationTypeCodes } from 'src/assets/js/constants';
-import { StudyInterface } from 'src/app/_rms/interfaces/core/study.interface';
+import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-link/regulatory-link.service';
 
 @Component({
   selector: 'app-upsert-study-country',
@@ -73,6 +74,7 @@ export class UpsertStudyCountryComponent implements OnInit {
     private spinner: NgxSpinnerService,
     public contextService: ContextService,
     private backService: BackService,
+    private regulatoryLinkService: RegulatoryLinkService,
     private toastr: ToastrService) {
     this.form = this.fb.group({
       studyCountries: this.fb.array([])
@@ -162,6 +164,13 @@ export class UpsertStudyCountryComponent implements OnInit {
 
   patchForm() {
     this.form.setControl('studyCountries', this.patchArray());
+
+    // Initialize regulatory links for each study country
+    this.studyCountries.forEach((sc, index) => {
+      const submissions = sc.submissions?.filter(sub => !sub.isAmendment && !sub.isOtherNotification) || [];
+      const notifications = sc.notifications || [];
+      this.regulatoryLinkService.initializeFromData(sc.id, submissions, notifications);
+    });
   }
 
   patchArray(): UntypedFormArray {
