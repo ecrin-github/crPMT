@@ -171,6 +171,20 @@ export class UpsertStudyCtuComponent implements OnInit {
       // Keep only real SharePoint data here.
       this.sharePointCtus = ctus?.length > 0 ? [...ctus] : [];
 
+      // Fix country ISO2 for SharePoint CTUs if they have ISO3 codes
+      this.sharePointCtus.forEach(ctu => {
+        if (ctu.country?.iso2 && this.countries?.length > 0) {
+          const correctIso2 = this.ctuMapperService.findCountryIso2FromSharePoint(ctu, this.countries);
+          if (correctIso2 && correctIso2 !== ctu.country.iso2) {
+            ctu.country.iso2 = correctIso2;
+            const countryMatch = this.countries.find(c => c.iso2 === correctIso2);
+            if (countryMatch) {
+              ctu.country.name = countryMatch.name;
+            }
+          }
+        }
+      });
+
       // Display SharePoint CTUs when available, otherwise fallback to DB CTUs.
       this.displayCtus = this.sharePointCtus.length > 0
         ? [...this.sharePointCtus]
