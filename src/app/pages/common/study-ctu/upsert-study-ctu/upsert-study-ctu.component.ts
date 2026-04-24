@@ -756,7 +756,7 @@ export class UpsertStudyCtuComponent implements OnInit {
       return ctu;
     }
 
-    const sharePointMatch = this.ctuMapperService.mapExistingCtuToDisplayedCtu(ctu, this.sharePointCtus);
+    const sharePointMatch = this.ctuMapperService.mapExistingCtuToDisplayedCtu(ctu, this.sharePointCtus, this.countries);
 
     if (sharePointMatch && (sharePointMatch?.sharepointItemId || sharePointMatch?.source === 'sharepoint')) {
       return sharePointMatch;
@@ -775,7 +775,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     }
 
     const match = this.sharePointCtus?.find((spCtu: any) => {
-      return this.ctuMapperService.compareCtuOptions(ctu, spCtu);
+      return this.ctuMapperService.compareCtuOptions(ctu, spCtu, this.countries);
     });
 
 
@@ -791,7 +791,7 @@ export class UpsertStudyCtuComponent implements OnInit {
   }
 
   compareCtuOptions = (a: any, b: any): boolean => {
-    return this.ctuMapperService.compareCtuOptions(a, b);
+    return this.ctuMapperService.compareCtuOptions(a, b, this.countries);
   };
 
   searchCTUs = (term: string, item: any) => {

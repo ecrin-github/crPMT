@@ -54,64 +54,45 @@ export class CtuMapperService {
    * - ES
    *
    * This helper ensures country comparison is done on a consistent format.
+   * uses dynamic lookup from countries data instead of hardcoded map.
    */
-  private normalizeCountryCode(value: string): string {
+  private normalizeCountryCode(value: string, countries?: CountryInterface[]): string {
     const raw = this.normalizeText(value).toUpperCase();
-
-    const iso3ToIso2Map: Record<string, string> = {
-      AUT: 'AT',
-      BEL: 'BE',
-      BGR: 'BG',
-      HRV: 'HR',
-      CYP: 'CY',
-      CZE: 'CZ',
-      DNK: 'DK',
-      EST: 'EE',
-      FIN: 'FI',
-      FRA: 'FR',
-      DEU: 'DE',
-      GRC: 'GR',
-      HUN: 'HU',
-      IRL: 'IE',
-      ITA: 'IT',
-      LVA: 'LV',
-      LTU: 'LT',
-      LUX: 'LU',
-      MLT: 'MT',
-      NLD: 'NL',
-      POL: 'PL',
-      PRT: 'PT',
-      ROU: 'RO',
-      SVK: 'SK',
-      SVN: 'SI',
-      ESP: 'ES',
-      SWE: 'SE',
-      CHE: 'CH',
-      NOR: 'NO',
-      ISL: 'IS',
-      GBR: 'GB'
-    };
 
     if (!raw) {
       return '';
     }
 
+    // If already ISO2 format, return as-is
     if (raw.length === 2) {
       return raw;
     }
 
-    return iso3ToIso2Map[raw] || raw;
+    // If countries array is available, use it for dynamic lookup
+    if (countries && countries.length > 0) {
+      const match = countries.find((country) => {
+        const iso3 = this.normalizeText(country?.iso3).toUpperCase();
+        return iso3 === raw;
+      });
+
+      if (match?.iso2) {
+        return match.iso2;
+      }
+    }
+
+    // Fallback: return as-is if not found
+    return raw;
   }
 
   /**
    * Compare two CTU countries in a robust way by normalizing ISO2 / ISO3 codes.
    */
-  private sameCountry(a: any, b: any): boolean {
+  private sameCountry(a: any, b: any, countries?: CountryInterface[]): boolean {
     const aCountryRaw = a?.country?.iso2 || a?.country?.name || '';
     const bCountryRaw = b?.country?.iso2 || b?.country?.name || '';
 
-    const aCountry = this.normalizeCountryCode(aCountryRaw);
-    const bCountry = this.normalizeCountryCode(bCountryRaw);
+    const aCountry = this.normalizeCountryCode(aCountryRaw, countries);
+    const bCountry = this.normalizeCountryCode(bCountryRaw, countries);
 
     return !!aCountry && !!bCountry && aCountry === bCountry;
   }
@@ -135,7 +116,7 @@ export class CtuMapperService {
    * 3. Exact canonical short name match
    * 4. Exact canonical full name match
    */
-  compareCtuOptions(a: any, b: any): boolean {
+  compareCtuOptions(a: any, b: any, countries?: CountryInterface[]): boolean {
     if (!a || !b) {
       return a === b;
     }
@@ -146,7 +127,7 @@ export class CtuMapperService {
     }
 
     // If countries do not match, do not try to match names.
-    if (!this.sameCountry(a, b)) {
+    if (!this.sameCountry(a, b, countries)) {
       return false;
     }
 
@@ -166,12 +147,12 @@ export class CtuMapperService {
   /**
    * Replace an existing DB CTU by its SharePoint equivalent for display purposes.
    */
-  mapExistingCtuToDisplayedCtu(ctu: any, sharePointCtus: any[]): any {
+  mapExistingCtuToDisplayedCtu(ctu: any, sharePointCtus: any[], countries?: CountryInterface[]): any {
     if (!ctu || !sharePointCtus?.length) {
       return ctu;
     }
 
-    const match = sharePointCtus.find((spCtu: any) => this.compareCtuOptions(ctu, spCtu));
+    const match = sharePointCtus.find((spCtu: any) => this.compareCtuOptions(ctu, spCtu, countries));
     return match || ctu;
   }
 
@@ -181,40 +162,6 @@ export class CtuMapperService {
   findCountryIso2FromSharePoint(selectedCtu: any, countries: CountryInterface[]): string | null {
     const rawIso2 = this.normalizeText(selectedCtu?.country?.iso2);
     const rawName = this.normalizeText(selectedCtu?.country?.name);
-
-    const iso3ToIso2Map: Record<string, string> = {
-      aut: 'AT',
-      bel: 'BE',
-      bgr: 'BG',
-      hrv: 'HR',
-      cyp: 'CY',
-      cze: 'CZ',
-      dnk: 'DK',
-      est: 'EE',
-      fin: 'FI',
-      fra: 'FR',
-      deu: 'DE',
-      grc: 'GR',
-      hun: 'HU',
-      irl: 'IE',
-      ita: 'IT',
-      lva: 'LV',
-      ltu: 'LT',
-      lux: 'LU',
-      mlt: 'MT',
-      nld: 'NL',
-      pol: 'PL',
-      prt: 'PT',
-      rou: 'RO',
-      svk: 'SK',
-      svn: 'SI',
-      esp: 'ES',
-      swe: 'SE',
-      che: 'CH',
-      nor: 'NO',
-      isl: 'IS',
-      gbr: 'GB'
-    };
 
     if (!rawIso2 && !rawName) {
       return null;
@@ -230,18 +177,15 @@ export class CtuMapperService {
       return directIso2Match.iso2;
     }
 
-    // 2. Convert ISO3 to ISO2
+    // 2. Convert ISO3 to ISO2 using the countries array
     const iso3Candidate = rawIso2 || rawName;
-    const convertedIso2 = iso3ToIso2Map[iso3Candidate];
+    const iso3Match = countries.find((country) => {
+      const iso3 = this.normalizeText(country?.iso3);
+      return iso3 === iso3Candidate;
+    });
 
-    if (convertedIso2) {
-      const iso2Match = countries.find((country) => {
-        return this.normalizeText(country?.iso2) === this.normalizeText(convertedIso2);
-      });
-
-      if (iso2Match?.iso2) {
-        return iso2Match.iso2;
-      }
+    if (iso3Match?.iso2) {
+      return iso3Match.iso2;
     }
 
     // 3. Match by country name
