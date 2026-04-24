@@ -13,7 +13,8 @@ export class GraphApiService {
 
   public SITE_NAME_QUALITY = "Quality";
   public CTU_EVALUATIONS_GUID = "d4cb819a-40b0-4adc-ad14-9aafd4bd5c9d";
-  public SAS_TRACKER_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";
+  public CTU_SERVICE_PROVIDERS_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";
+  public SAS_TRACKER_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";                                                        
 
   private ctuEvaluationsQueryStarted: boolean = false;
   // Stores CTU Evaluations data
@@ -26,7 +27,6 @@ export class GraphApiService {
         this.setCTUEvaluationsData(res);
       });
     }
-
     // const sub = this._ctuEvaluationsData$.subscribe({
     //   next: v => subscriber.next(v),
     //   error: err => subscriber.error(err),
@@ -58,6 +58,8 @@ export class GraphApiService {
   ) {
   }
 
+
+  
   // TODO: should cache site id for multiple request to the same site
   getFullSiteId(siteName): Observable<Object> {
     return this.http.get(`https://graph.microsoft.com/v1.0/sites/${environment.sharepointHostname}:/sites/${siteName}?$select=id`);
@@ -131,23 +133,123 @@ export class GraphApiService {
   // getCTUEvaluationData(projectShortName: string, ctuShortName: string) {
   //   return this.ctuEvaluations$.pipe(
   //     mergeMap((ctuEvaluations: Object) => {
-  //       console.log("hello")
-  //       console.log(projectShortName)
-  //       console.log(ctuShortName)
   //       let retArr: [] = [];
 
   //       if (ctuEvaluations && projectShortName && ctuShortName) {
-  //         console.log("first yes");
   //         projectShortName = projectShortName.toLowerCase().trim();
   //         ctuShortName = ctuShortName.toLowerCase().trim();
   //         if (ctuEvaluations.hasOwnProperty(projectShortName)) {
-  //           console.log("second yes");
   //           retArr = ctuEvaluations[projectShortName].filter((fields) => fields?.CTU?.toLowerCase() === ctuShortName);
   //         }
   //       }
-
   //       return of(retArr);
   //     })
   //   )
   // }
+  private ctuServiceProvidersQueryStarted: boolean = false;
+  public _ctusServiceProvidersData$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>(null);
+
+  public ctusServiceProviders$ = new Observable<any[]>(subscriber => {
+    if (!this.ctuServiceProvidersQueryStarted && this._ctusServiceProvidersData$.value === null) {
+      this.ctuServiceProvidersQueryStarted = true;
+      this.getCTUsServiceProviders().subscribe((res: any) => {
+        this.setCTUsServiceProvidersData(res);
+      });
+    }
+
+    const sub = this._ctusServiceProvidersData$
+      .pipe(filter(v => v !== null))
+      .subscribe(subscriber);
+
+    return () => sub.unsubscribe();
+  });
+  getCTUsServiceProviders(): Observable<any> {
+    return this.getFullSiteId(this.SITE_NAME_QUALITY).pipe(
+      mergeMap((res: any) => {
+        if (res?.id) {
+          return this.http.get(
+            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_SERVICE_PROVIDERS_GUID}}/items?$expand=fields($select=Title,Short_x0020_Name,Country,SAS_x0020_Verification,Address)`
+          );
+        }
+        return of(null);
+      })
+    );
+  }
+  
+  setCTUsServiceProvidersData(res: any): void {
+    let ctus: any[] = [];
+
+    if (res?.value?.length > 0) {
+      ctus = res.value
+        .map((item: any) => {
+          const fields = item?.fields || {};
+
+          return {
+            id: null,
+            sharepointItemId: item?.id || null,
+            shortName: fields?.Short_x0020_Name || '',
+            name: fields?.Title || '',
+            sasVerification: !!fields?.SAS_x0020_Verification,
+            addressInfo: fields?.Address || null,
+            country: {
+              iso2: fields?.Country || null,
+              name: fields?.Country || null
+            },
+            source: 'sharepoint'
+          };
+        })
+        .filter((ctu: any) => ctu.shortName || ctu.name);
+    }
+
+    this._ctusServiceProvidersData$.next(ctus);
+  }
+
+  downloadCtusServiceProvidersCsv(): void {
+    this.ctusServiceProviders$.subscribe((ctus: any[]) => {
+      if (!ctus || ctus.length === 0) {
+        console.warn('No CTUs to export');
+        return;
+      }
+
+      const rows = ctus.map((ctu: any) => ({
+        sharepoint_item_id: ctu.sharepointItemId || '',
+        short_name: ctu.shortName || '',
+        name: ctu.name || '',
+        country_iso2: ctu.country?.iso2 || '',
+        country_name: ctu.country?.name || '',
+        source: ctu.source || ''
+      }));
+
+      const csv = this.convertToCsv(rows);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ctus_service_providers_with_ids.csv';
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+    });
+  }
+
+  private convertToCsv(rows: any[]): string {
+    if (!rows || rows.length === 0) {
+      return '';
+    }
+
+    const headers = Object.keys(rows[0]);
+
+    const escapeCsvValue = (value: any): string => {
+      const stringValue = value == null ? '' : String(value);
+      return `"${stringValue.replace(/"/g, '""')}"`;
+    };
+
+    const lines = [
+      headers.join(','),
+      ...rows.map(row => headers.map(header => escapeCsvValue(row[header])).join(','))
+    ];
+
+    return lines.join('\n');
+  }
 }
