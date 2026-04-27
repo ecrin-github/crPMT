@@ -38,6 +38,7 @@ export class UpsertNotificationComponent implements OnInit, OnDestroy {
   // Subjects for authority field debounce
   private authorityChanges$ = new Subject<{ index: number; authority: string }>();
   private destroy$ = new Subject<void>();
+  private previousAuthorities: Map<number, string> = new Map(); // Track previous authorities to clean up links
 
   constructor(
     private fb: UntypedFormBuilder,
@@ -148,7 +149,14 @@ export class UpsertNotificationComponent implements OnInit, OnDestroy {
 
   deleteNotification(i: number) {
     const nId = this.getNotificationsForm().value[i].id;
+    const authority = this.fv[i]?.authority;
+    
     if (!nId) { // Notification has been locally added only
+      // Clean up link for this authority
+      if (this.studyCountry?.id && authority) {
+        this.regulatoryLinkService.removeLink(this.studyCountry.id, authority);
+      }
+      this.previousAuthorities.delete(i);
       this.getNotificationsForm().removeAt(i);
     } else {  // Existing notification
       const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
@@ -158,6 +166,11 @@ export class UpsertNotificationComponent implements OnInit, OnDestroy {
         if (remove) {
           this.notificationService.deleteNotification(nId).subscribe((res: any) => {
             if (res.status === 204) {
+              // Clean up link for this authority
+              if (this.studyCountry?.id && authority) {
+                this.regulatoryLinkService.removeLink(this.studyCountry.id, authority);
+              }
+              this.previousAuthorities.delete(i);
               this.getNotificationsForm().removeAt(i);
               this.toastr.success('Notification deleted successfully');
             } else {
@@ -305,6 +318,14 @@ export class UpsertNotificationComponent implements OnInit, OnDestroy {
    */
   private syncNotApplicableOnAuthorityChange(index: number, authority: string): void {
     if (!this.studyCountry?.id || !authority) return;
+
+    // Remove old authority link if it changed
+    const previousAuthority = this.previousAuthorities.get(index);
+    if (previousAuthority && previousAuthority !== authority) {
+      this.regulatoryLinkService.removeLink(this.studyCountry.id, previousAuthority);
+    }
+    // Track the new authority
+    this.previousAuthorities.set(index, authority);
 
     const linkedNotApplicable = this.regulatoryLinkService.getNotificationNotApplicable(
       this.studyCountry.id,

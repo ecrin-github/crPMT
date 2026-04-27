@@ -55,22 +55,6 @@ export class RegulatoryLinkService {
     this.linksSubject.next(new Map(currentLinks));
   }
 
-  /**
-   * Legacy method - redirects to unified setNotApplicable
-   * @deprecated Use setNotApplicable instead
-   */
-  setSubmissionNotApplicable(studyCountryId: string, authority: string, notApplicable: boolean): void {
-    this.setNotApplicable(studyCountryId, authority, notApplicable, 'submission');
-  }
-
-  /**
-   * Legacy method - redirects to unified setNotApplicable
-   * @deprecated Use setNotApplicable instead
-   */
-  setNotificationNotApplicable(studyCountryId: string, authority: string, notApplicable: boolean): void {
-    this.setNotApplicable(studyCountryId, authority, notApplicable, 'notification');
-  }
-
   initializeFromData(studyCountryId: string, submissions: any[], notifications: any[]): void {
     const currentLinks = this.linksSubject.value;
 
@@ -123,5 +107,16 @@ export class RegulatoryLinkService {
   getNotificationNotApplicable(studyCountryId: string, authority: string): boolean {
     const link = this.getLink(studyCountryId, authority);
     return link?.notificationNotApplicable || false;
+  }
+
+  /**
+   * Remove a specific link to prevent phantom links
+   * Call this when an authority is changed or a submission/notification is deleted
+   */
+  removeLink(studyCountryId: string, authority: string): void {
+    const key = this.getKey(studyCountryId, authority);
+    const currentLinks = this.linksSubject.value;
+    currentLinks.delete(key);
+    this.linksSubject.next(new Map(currentLinks));
   }
 }

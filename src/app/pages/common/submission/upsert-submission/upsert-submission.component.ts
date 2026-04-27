@@ -40,6 +40,7 @@ export class UpsertSubmissionComponent implements OnInit, OnDestroy {
   // Subject for authority field changes with debounce
   private authorityChanges$ = new Subject<{ index: number; authority: string }>();
   private destroy$ = new Subject<void>();
+  private previousAuthorities: Map<number, string> = new Map(); // Track previous authorities to clean up links
 
   constructor(
     private fb: UntypedFormBuilder,
@@ -162,7 +163,14 @@ export class UpsertSubmissionComponent implements OnInit, OnDestroy {
 
   deleteSubmission(i: number) {
     const sId = this.getSubmissionsForm().value[i].id;
+    const authority = this.fv[i]?.authority;
+    
     if (!sId) { // Submission has been locally added only
+      // Clean up link for this authority
+      if (this.studyCountry?.id && authority) {
+        this.regulatoryLinkService.removeLink(this.studyCountry.id, authority);
+      }
+      this.previousAuthorities.delete(i);
       this.getSubmissionsForm().removeAt(i);
     } else {  // Existing submission
       const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
@@ -172,6 +180,11 @@ export class UpsertSubmissionComponent implements OnInit, OnDestroy {
         if (remove) {
           this.submissionService.deleteSubmission(sId).subscribe((res: any) => {
             if (res.status === 204) {
+              // Clean up link for this authority
+              if (this.studyCountry?.id && authority) {
+                this.regulatoryLinkService.removeLink(this.studyCountry.id, authority);
+              }
+              this.previousAuthorities.delete(i);
               this.getSubmissionsForm().removeAt(i);
               this.toastr.success('Submission deleted successfully');
             } else {
@@ -338,6 +351,14 @@ export class UpsertSubmissionComponent implements OnInit, OnDestroy {
    */
   private syncNotApplicableOnAuthorityChange(index: number, authority: string): void {
     if (!this.studyCountry?.id || !authority) return;
+
+    // Remove old authority link if it changed
+    const previousAuthority = this.previousAuthorities.get(index);
+    if (previousAuthority && previousAuthority !== authority) {
+      this.regulatoryLinkService.removeLink(this.studyCountry.id, previousAuthority);
+    }
+    // Track the new authority
+    this.previousAuthorities.set(index, authority);
 
     const linkedNotApplicable = this.regulatoryLinkService.getSubmissionNotApplicable(
       this.studyCountry.id,
