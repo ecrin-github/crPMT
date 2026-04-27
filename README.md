@@ -18,6 +18,12 @@ For deployment on server:
 
 ## Changelog
 
+## [0.11.1] - 2026-04-27
+- Fixed modal windows appearing behind global header
+
+## [0.11.0] - 2026-04-24
+- Added fetching of CTUs directly live from SharePoint
+
 ## [0.10.2] - 2026-03-18
 - Added MSAL events logging to debug #68
 - Attempt to fix #68
