@@ -22,6 +22,16 @@
 // Metronic styles (replace these path when using RTL css below)
 @import "./assets/sass/style.angular.scss";
 
+// Fix for Issue #71: Modals appearing behind global header
+// Header has z-index: 2000, so modals need higher z-index
+.modal-backdrop {
+  z-index: 10000 !important;
+}
+
+.modal {
+  z-index: 10001 !important;
+}
+
 // For RTL, check this documentation https://keenthemes.com/metronic/?page=docs&section=angular-rtl
 // @import "./assets/sass/style.angular.rtl.css";
 
