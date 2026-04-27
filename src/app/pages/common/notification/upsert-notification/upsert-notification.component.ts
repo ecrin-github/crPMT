@@ -1,10 +1,10 @@
-import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, SimpleChanges } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
-import { Observable, combineLatest, of } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { Observable, combineLatest, of, Subject } from 'rxjs';
+import { mergeMap, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { NotificationInterface } from 'src/app/_rms/interfaces/core/notification.interface';
 import { NotificationService } from 'src/app/_rms/services/entities/notification/notification.service';
 import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-link/regulatory-link.service';
@@ -17,7 +17,7 @@ import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
   templateUrl: './upsert-notification.component.html',
   styleUrls: ['./upsert-notification.component.scss']
 })
-export class UpsertNotificationComponent implements OnInit {
+export class UpsertNotificationComponent implements OnInit, OnDestroy {
   @Input() notificationsData: Array<NotificationInterface>;
   @Input() studyCountry: any;
 
@@ -34,6 +34,10 @@ export class UpsertNotificationComponent implements OnInit {
 
   truncate: boolean[] = [];
   notifications: NotificationInterface[] = [];
+
+  // Subjects for authority field debounce
+  private authorityChanges$ = new Subject<{ index: number; authority: string }>();
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: UntypedFormBuilder,
@@ -56,6 +60,22 @@ export class UpsertNotificationComponent implements OnInit {
     this.regulatoryLinkService.links$.subscribe(() => {
       this.syncNotApplicableFromService();
     });
+
+    // Setup authority field changes with debounce for N/A sync
+    this.authorityChanges$
+      .pipe(
+        debounceTime(500), // Wait 500ms after user stops typing
+        distinctUntilChanged((prev, curr) => prev.index === curr.index && prev.authority === curr.authority),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(({ index, authority }) => {
+        this.syncNotApplicableOnAuthorityChange(index, authority);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get fc() { return this.form.get('notifications')["controls"]; }
@@ -148,6 +168,7 @@ export class UpsertNotificationComponent implements OnInit {
           });
         }
       }, error => { this.toastr.error(error) });
+
     }
   }
 
@@ -235,19 +256,27 @@ export class UpsertNotificationComponent implements OnInit {
   }
 
   onChangeNotApplicable(i) {
+    // Clear related fields when N/A is checked
     if (this.fv[i]?.notApplicable) {
-      this.getControls(i)?.notificationDate.setValue(null);
-      this.getControls(i)?.comment?.setValue(null);
+      this.clearFieldsOnNotApplicable(i);
     }
 
     // Update regulatory link service
     if (this.studyCountry?.id && this.fv[i]?.authority) {
-      this.regulatoryLinkService.setNotificationNotApplicable(
+      this.regulatoryLinkService.setNotApplicable(
         this.studyCountry.id,
         this.fv[i].authority,
-        this.fv[i].notApplicable || false
+        this.fv[i].notApplicable || false,
+        'notification'
       );
     }
+  }
+
+  /**
+   * Handle authority field changes with debounce
+   */
+  onAuthorityChange(index: number, authority: string): void {
+    this.authorityChanges$.next({ index, authority });
   }
 
   private syncNotApplicableFromService() {
@@ -264,11 +293,40 @@ export class UpsertNotificationComponent implements OnInit {
           this.getControls(i)?.notApplicable?.setValue(linkedNotApplicable);
           // Don't call onChangeNotApplicable here to avoid recursion
           if (linkedNotApplicable) {
-            this.getControls(i)?.notificationDate?.setValue(null);
-            this.getControls(i)?.comment?.setValue(null);
+            this.clearFieldsOnNotApplicable(i);
           }
         }
       }
+    }
+  }
+
+  /**
+   * Sync N/A state when authority field changes (with debounce)
+   */
+  private syncNotApplicableOnAuthorityChange(index: number, authority: string): void {
+    if (!this.studyCountry?.id || !authority) return;
+
+    const linkedNotApplicable = this.regulatoryLinkService.getNotificationNotApplicable(
+      this.studyCountry.id,
+      authority
+    );
+
+    if (this.fv[index].notApplicable !== linkedNotApplicable) {
+      this.getControls(index)?.notApplicable?.setValue(linkedNotApplicable);
+      if (linkedNotApplicable) {
+        this.clearFieldsOnNotApplicable(index);
+      }
+    }
+  }
+
+  /**
+   * Clear all related fields when N/A checkbox is checked
+   */
+  private clearFieldsOnNotApplicable(i: number): void {
+    const controls = this.getControls(i);
+    if (controls) {
+      controls.notificationDate?.setValue(null);
+      controls.comment?.setValue(null);
     }
   }
 
