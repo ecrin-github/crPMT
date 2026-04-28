@@ -1,12 +1,13 @@
-import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, SimpleChanges } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
-import { Observable, combineLatest, of } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { Observable, combineLatest, of, Subject } from 'rxjs';
+import { mergeMap, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { NotificationInterface } from 'src/app/_rms/interfaces/core/notification.interface';
 import { NotificationService } from 'src/app/_rms/services/entities/notification/notification.service';
+import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-link/regulatory-link.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
@@ -16,8 +17,9 @@ import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
   templateUrl: './upsert-notification.component.html',
   styleUrls: ['./upsert-notification.component.scss']
 })
-export class UpsertNotificationComponent implements OnInit {
+export class UpsertNotificationComponent implements OnInit, OnDestroy {
   @Input() notificationsData: Array<NotificationInterface>;
+  @Input() studyCountry: any;
 
   form: UntypedFormGroup;
   submitted: boolean = false;
@@ -33,11 +35,17 @@ export class UpsertNotificationComponent implements OnInit {
   truncate: boolean[] = [];
   notifications: NotificationInterface[] = [];
 
+  // Subjects for authority field debounce
+  private authorityChanges$ = new Subject<{ index: number; authority: string }>();
+  private destroy$ = new Subject<void>();
+  private previousAuthorities: Map<number, string> = new Map(); // Track previous authorities to clean up links
+
   constructor(
     private fb: UntypedFormBuilder,
     private modalService: NgbModal,
     private router: Router,
     private notificationService: NotificationService,
+    private regulatoryLinkService: RegulatoryLinkService,
     private toastr: ToastrService) {
     this.form = this.fb.group({
       notifications: this.fb.array([])
@@ -48,6 +56,27 @@ export class UpsertNotificationComponent implements OnInit {
     this.isEdit = this.router.url.includes('edit');
     this.isView = this.router.url.includes('view');
     this.isAdd = this.router.url.includes('add');
+
+    // Subscribe to regulatory link changes
+    this.regulatoryLinkService.links$.subscribe(() => {
+      this.syncNotApplicableFromService();
+    });
+
+    // Setup authority field changes with debounce for N/A sync
+    this.authorityChanges$
+      .pipe(
+        debounceTime(500), // Wait 500ms after user stops typing
+        distinctUntilChanged((prev, curr) => prev.index === curr.index && prev.authority === curr.authority),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(({ index, authority }) => {
+        this.syncNotApplicableOnAuthorityChange(index, authority);
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get fc() { return this.form.get('notifications')["controls"]; }
@@ -120,7 +149,14 @@ export class UpsertNotificationComponent implements OnInit {
 
   deleteNotification(i: number) {
     const nId = this.getNotificationsForm().value[i].id;
+    const authority = this.fv[i]?.authority;
+    
     if (!nId) { // Notification has been locally added only
+      // Clean up link for this authority
+      if (this.studyCountry?.id && authority) {
+        this.regulatoryLinkService.removeLink(this.studyCountry.id, authority);
+      }
+      this.previousAuthorities.delete(i);
       this.getNotificationsForm().removeAt(i);
     } else {  // Existing notification
       const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
@@ -130,6 +166,11 @@ export class UpsertNotificationComponent implements OnInit {
         if (remove) {
           this.notificationService.deleteNotification(nId).subscribe((res: any) => {
             if (res.status === 204) {
+              // Clean up link for this authority
+              if (this.studyCountry?.id && authority) {
+                this.regulatoryLinkService.removeLink(this.studyCountry.id, authority);
+              }
+              this.previousAuthorities.delete(i);
               this.getNotificationsForm().removeAt(i);
               this.toastr.success('Notification deleted successfully');
             } else {
@@ -140,6 +181,7 @@ export class UpsertNotificationComponent implements OnInit {
           });
         }
       }, error => { this.toastr.error(error) });
+
     }
   }
 
@@ -227,9 +269,85 @@ export class UpsertNotificationComponent implements OnInit {
   }
 
   onChangeNotApplicable(i) {
+    // Clear related fields when N/A is checked
     if (this.fv[i]?.notApplicable) {
-      this.getControls(i)?.notificationDate.setValue(null);
-      this.getControls(i)?.comment?.setValue(null);
+      this.clearFieldsOnNotApplicable(i);
+    }
+
+    // Update regulatory link service
+    if (this.studyCountry?.id && this.fv[i]?.authority) {
+      this.regulatoryLinkService.setNotApplicable(
+        this.studyCountry.id,
+        this.fv[i].authority,
+        this.fv[i].notApplicable || false,
+        'notification'
+      );
+    }
+  }
+
+  /**
+   * Handle authority field changes with debounce
+   */
+  onAuthorityChange(index: number, authority: string): void {
+    this.authorityChanges$.next({ index, authority });
+  }
+
+  private syncNotApplicableFromService() {
+    if (!this.studyCountry?.id) return;
+
+    for (let i = 0; i < this.fc.length; i++) {
+      const authority = this.fv[i]?.authority;
+      if (authority) {
+        const linkedNotApplicable = this.regulatoryLinkService.getNotificationNotApplicable(
+          this.studyCountry.id,
+          authority
+        );
+        if (this.fv[i].notApplicable !== linkedNotApplicable) {
+          this.getControls(i)?.notApplicable?.setValue(linkedNotApplicable);
+          // Don't call onChangeNotApplicable here to avoid recursion
+          if (linkedNotApplicable) {
+            this.clearFieldsOnNotApplicable(i);
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Sync N/A state when authority field changes (with debounce)
+   */
+  private syncNotApplicableOnAuthorityChange(index: number, authority: string): void {
+    if (!this.studyCountry?.id || !authority) return;
+
+    // Remove old authority link if it changed
+    const previousAuthority = this.previousAuthorities.get(index);
+    if (previousAuthority && previousAuthority !== authority) {
+      this.regulatoryLinkService.removeLink(this.studyCountry.id, previousAuthority);
+    }
+    // Track the new authority
+    this.previousAuthorities.set(index, authority);
+
+    const linkedNotApplicable = this.regulatoryLinkService.getNotificationNotApplicable(
+      this.studyCountry.id,
+      authority
+    );
+
+    if (this.fv[index].notApplicable !== linkedNotApplicable) {
+      this.getControls(index)?.notApplicable?.setValue(linkedNotApplicable);
+      if (linkedNotApplicable) {
+        this.clearFieldsOnNotApplicable(index);
+      }
+    }
+  }
+
+  /**
+   * Clear all related fields when N/A checkbox is checked
+   */
+  private clearFieldsOnNotApplicable(i: number): void {
+    const controls = this.getControls(i);
+    if (controls) {
+      controls.notificationDate?.setValue(null);
+      controls.comment?.setValue(null);
     }
   }
 

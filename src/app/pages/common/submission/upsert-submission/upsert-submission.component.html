@@ -15,7 +15,7 @@
                                     <span class="text-value">{{NCA_TEXT}}</span>
                                 </ng-container>
                                 <ng-template #otherAuthority>
-                                    <input type="text" id="authority" class="form-control" formControlName="authority" *ngIf="!isView" />
+                                    <input type="text" id="authority" class="form-control" formControlName="authority" *ngIf="!isView" (input)="onAuthorityChange(i, $event.target.value)" />
                                     <span class="text-value" *ngIf="isView">{{submission.value.authority}}</span>
                                 </ng-template>
                             </ng-template>
