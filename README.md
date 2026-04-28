@@ -18,6 +18,9 @@ For deployment on server:
 
 ## Changelog
 
+## [0.12.0] - 2026-04-28
+- N/A checkboxes are now linked between initial regulatory submissions and end of trial notifications who have the same authority name
+
 ## [0.11.1] - 2026-04-27
 - Fixed modal windows appearing behind global header
 
