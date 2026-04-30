@@ -32,6 +32,11 @@
   z-index: 10001 !important;
 }
 
+.tooltip,
+.popover {
+  z-index: 10050 !important;
+}
+
 // For RTL, check this documentation https://keenthemes.com/metronic/?page=docs&section=angular-rtl
 // @import "./assets/sass/style.angular.rtl.css";
 
