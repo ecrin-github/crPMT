@@ -213,6 +213,20 @@ export class UpsertStudyComponent implements OnInit {
     });
   }
 
+  getNonConformityStatusClass(status: string): string {
+    const normalized = status?.toLowerCase()?.trim();
+
+    if (normalized === 'open') {
+      return 'nc-status-open';
+    }
+
+    if (normalized === 'closed') {
+      return 'nc-status-closed';
+    }
+
+    return 'tag-ctu';
+  }
+
   private filterNonComplianceByProject(): void {
     const allItems = this.allNonComplianceItems || [];
 

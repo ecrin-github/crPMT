@@ -417,7 +417,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row form-group mt-8" *ngIf="isView">
+                    <div class="row mt-8" *ngIf="isView">
                         <div class="col-md-12">
                             <div class="font-style f-bold fs-3 mt-1 pb-2">RAF</div>
                         </div>
@@ -454,10 +454,9 @@
                             </div>
                         </div>
                     </div>
-                    <hr class="hr-m2">
-                    <div class="row section-title">
-                        <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-title">Non-compliance</div>
+                    <div class="row mt-5" *ngIf="isView">
+                        <div class="col-md-12">
+                            <div class="font-style f-bold fs-3 mt-1 pb-2">Non-compliance</div>
                         </div>
                     </div>
                     <div class="row" *ngIf="nonComplianceLoading">
@@ -481,36 +480,22 @@
                     </div>
                     <div class="row" *ngFor="let item of nonComplianceItems">
                         <div class="col-12 mb-2">
-                            <div class="row align-items-center border rounded p-3 cursor-pointer"
-                                 [ngbTooltip]="descriptionTpl"
-                                 tooltipClass="non-compliance-description-tooltip"
-                                 triggers="mouseenter:mouseleave"
-                                 [openDelay]="0"
-                                 [closeDelay]="0"
-                                 container="body"
-                                 placement="top">
-                                <div class="col-md-3">
-                                    <strong>{{ item.identificationDate | date:'dd/MM/yyyy' }}</strong>
-                                </div>
-                                <div class="col-md-2">
-                                    <span class="badge bg-secondary">{{item.status}}</span>
-                                </div>
-                                <div class="col-md-5">
-                                    <div class="non-compliance-description">
-                                        {{ item.description | slice:0:120 }}...
+                            <div class="nc-item border rounded p-3">
+                                <div class="nc-main-content">
+                                    <div class="nc-date">
+                                        <strong>Identification Date:</strong> {{ item.identificationDate ? (item.identificationDate | date:'dd/MM/yyyy') : 'N/A' }}
+                                    </div>
+                                    <div class="nc-description-full">
+                                        {{ item.description || 'No description available' }}
                                     </div>
                                 </div>
-                                <div class="col-md-2 text-end">
-                                    <a href="{{item.sharepointLink}}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <div class="nc-actions">
+                                    <span class="badge" [ngClass]="getNonConformityStatusClass(item.status)">{{ item.status }}</span>
+                                    <a *ngIf="item.sharepointLink" [href]="item.sharepointLink" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
                                         View in SharePoint
                                     </a>
                                 </div>
                             </div>
-                            <ng-template #descriptionTpl>
-                                <div class="text-left non-compliance-tooltip">
-                                    {{ item.description }}
-                                </div>
-                            </ng-template>
                         </div>
                     </div>
                     <hr class="hr-m2">
