@@ -75,6 +75,10 @@ export class UpsertStudyComponent implements OnInit {
   public riskError: string = null;
   public currentProjectShortName: string = null;
   private subscriptions: Subscription[] = [];
+  nonComplianceItems: any[] = [];
+  nonComplianceLoading: boolean = false;
+  nonComplianceError: string = '';
+  allNonComplianceItems: any[] = [];
   
 
   constructor(private fb: UntypedFormBuilder,
@@ -89,7 +93,8 @@ export class UpsertStudyComponent implements OnInit {
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
     private jsonGenerator: JsonGeneratorService,
-    private backService: BackService) {
+    private backService: BackService,
+    private graphApi: GraphApiService) {
     this.studyForm = this.fb.group({
       studies: this.fb.array([])
     });
@@ -178,6 +183,10 @@ export class UpsertStudyComponent implements OnInit {
       this.services = services;
     });
 
+    if (this.isStudyPage && this.isView) {
+      this.subscribeToNonComplianceRegister();
+    }
+
     if (this.isAdd) {
       setTimeout(() => {
         this.spinner.hide();
@@ -188,6 +197,69 @@ export class UpsertStudyComponent implements OnInit {
   event.preventDefault();
   event.stopPropagation();
   this.router.navigate(['/study-ctus', studyCtuId, 'view']);
+  }
+
+  private subscribeToNonComplianceRegister(): void {
+    this.nonComplianceLoading = true;
+
+    this.graphApi.nonComplianceRegister$.subscribe((items: any[]) => {
+      this.allNonComplianceItems = items || [];
+      this.filterNonComplianceByProject();
+      this.nonComplianceLoading = false;
+    }, (error) => {
+      console.error('Error loading non-compliance register:', error);
+      this.nonComplianceError = 'Unable to load SharePoint non-compliance register.';
+      this.nonComplianceLoading = false;
+    });
+  }
+
+  private filterNonComplianceByProject(): void {
+    const allItems = this.allNonComplianceItems || [];
+
+    if (!this.studies || this.studies.length === 0) {
+      this.nonComplianceItems = [];
+      return;
+    }
+
+    const currentStudy = this.studies[0];
+    const currentProject = currentStudy?.project?.shortName;
+
+    if (!currentProject) {
+      this.nonComplianceItems = [];
+      return;
+    }
+
+    const normalizedCurrentProject = this.normalizeText(currentProject);
+
+    this.nonComplianceItems = allItems.filter((item) => {
+      const projectNames = this.extractSharePointProjectNames(item.projectName);
+
+      if (!projectNames.length || !normalizedCurrentProject) {
+        return false;
+      }
+
+      return projectNames.some((spProject) =>
+        spProject === normalizedCurrentProject ||
+        spProject.includes(normalizedCurrentProject)
+      );
+    });
+  }
+
+  private extractSharePointProjectNames(value: any): string[] {
+    if (!value) {
+      return [];
+    }
+
+    return value
+      .toString()
+      .split(/\r?\n/)
+      .map((project) => project.replace(/^\s*-\s*/, '').trim())
+      .map((project) => this.normalizeText(project))
+      .filter(Boolean);
+  }
+
+  private normalizeText(value: any): string {
+    return value?.toString().toLowerCase().trim().replace(/\s+/g, ' ') || '';
   }
 
   get fc() { return this.studyForm.get('studies')["controls"]; }
@@ -252,6 +324,7 @@ export class UpsertStudyComponent implements OnInit {
 
       if (this.isView) {
         this.loadRiskRegisterData(this.currentProjectShortName);
+        this.filterNonComplianceByProject();
       }
     }
   }

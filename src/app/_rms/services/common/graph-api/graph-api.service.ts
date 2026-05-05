@@ -17,6 +17,7 @@ export class GraphApiService {
   public SAS_TRACKER_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";
   public RISK_REGISTER_GUID = "E63CD96C-A388-42B8-85F5-30B88848A0BE";
   public RISK_REGISTER_TITLE = "QAFOR0425 Risk Register";
+  public NON_COMPLIANCE_REGISTER_GUID = "A6B67893-9071-4F72-83DC-CE168D5A75F9";                                                        
 
   private ctuEvaluationsQueryStarted: boolean = false;
   // Stores CTU Evaluations data
@@ -311,12 +312,43 @@ export class GraphApiService {
 
     return () => sub.unsubscribe();
   });
+
+  private nonComplianceRegisterQueryStarted: boolean = false;
+  public _nonComplianceRegisterData$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>(null);
+
+  public nonComplianceRegister$ = new Observable<any[]>(subscriber => {
+    if (!this.nonComplianceRegisterQueryStarted && this._nonComplianceRegisterData$.value === null) {
+      this.nonComplianceRegisterQueryStarted = true;
+      this.getNonComplianceRegister().subscribe((res: any) => {
+        this.setNonComplianceRegisterData(res);
+      });
+    }
+
+    const sub = this._nonComplianceRegisterData$
+      .pipe(filter(v => v !== null))
+      .subscribe(subscriber);
+
+    return () => sub.unsubscribe();
+  });
   getCTUsServiceProviders(): Observable<any> {
     return this.getFullSiteId(this.SITE_NAME_QUALITY).pipe(
       mergeMap((res: any) => {
         if (res?.id) {
           return this.http.get(
             `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_SERVICE_PROVIDERS_GUID}}/items?$expand=fields($select=Title,Short_x0020_Name,Country,SAS_x0020_Verification,Address)`
+          );
+        }
+        return of(null);
+      })
+    );
+  }
+
+  getNonComplianceRegister(): Observable<any> {
+    return this.getFullSiteId(this.SITE_NAME_QUALITY).pipe(
+      mergeMap((res: any) => {
+        if (res?.id) {
+          return this.http.get(
+            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.NON_COMPLIANCE_REGISTER_GUID}}/items?$expand=fields`
           );
         }
         return of(null);
@@ -350,6 +382,31 @@ export class GraphApiService {
     }
 
     this._ctusServiceProvidersData$.next(ctus);
+  }
+
+  setNonComplianceRegisterData(res: any): void {
+    let nonComplianceItems: any[] = [];
+
+    if (res?.value?.length > 0) {
+      nonComplianceItems = res.value
+        .map((item: any) => {
+          const fields = item?.fields || {};
+
+          return {
+            sharepointItemId: item?.id || null,
+            sharepointLink: `https://ecrineu.sharepoint.com/sites/Quality/Lists/Nonconformity%20register/DispForm.aspx?ID=${item.id}`,
+            status: fields?.Active || '',
+            identificationDate: fields?.IdentificationDate || null,
+            description: fields?.NCDescription || '',
+            reporter: fields?.Reporter || '',
+            reporterEmail: fields?.ReporterEmail || '',
+            source: fields?.Source || '',
+            projectName: fields?.ProjectName || '',
+          };
+        });
+    }
+
+    this._nonComplianceRegisterData$.next(nonComplianceItems);
   }
 
   downloadCtusServiceProvidersCsv(): void {
