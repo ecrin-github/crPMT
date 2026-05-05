@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { filter, mergeMap } from 'rxjs/operators';
+import { filter, mergeMap, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -14,11 +14,17 @@ export class GraphApiService {
   public SITE_NAME_QUALITY = "Quality";
   public CTU_EVALUATIONS_GUID = "d4cb819a-40b0-4adc-ad14-9aafd4bd5c9d";
   public CTU_SERVICE_PROVIDERS_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";
-  public SAS_TRACKER_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";                                                        
+  public SAS_TRACKER_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";
+  public RISK_REGISTER_GUID = "E63CD96C-A388-42B8-85F5-30B88848A0BE";
+  public RISK_REGISTER_TITLE = "QAFOR0425 Risk Register";
+  public NON_COMPLIANCE_REGISTER_GUID = "A6B67893-9071-4F72-83DC-CE168D5A75F9";                                                        
 
   private ctuEvaluationsQueryStarted: boolean = false;
   // Stores CTU Evaluations data
   public _ctuEvaluationsData$: BehaviorSubject<Object> = new BehaviorSubject<Object>(null);
+  private riskRegisterQueryStarted: boolean = false;
+  public _riskRegisterData$: BehaviorSubject<any[] | null> = new BehaviorSubject<any[] | null>(null);
+  public riskScoreAfterMitigationAvailable: boolean = true; // Will be set false if missing from SharePoint response
   // Triggers graph API query on first subscription, for subsequent subscription use stored data
   public ctuEvaluations$ = new Observable<Object | null>(subscriber => {
     if (!this.ctuEvaluationsQueryStarted && this._ctuEvaluationsData$.value === null) {
@@ -50,6 +56,18 @@ export class GraphApiService {
     }
 
     const sub = this._sasTrackerData$.pipe(filter(v => v !== null)).subscribe(subscriber);
+    return () => sub.unsubscribe();
+  });
+
+  public riskRegister$ = new Observable<any[] | null>(subscriber => {
+    if (!this.riskRegisterQueryStarted && this._riskRegisterData$.value === null) {
+      this.riskRegisterQueryStarted = true;
+      this.getRiskRegister().subscribe((res: any) => {
+        this.setRiskRegisterData(res);
+      });
+    }
+
+    const sub = this._riskRegisterData$.pipe(filter(v => v !== null)).subscribe(subscriber);
     return () => sub.unsubscribe();
   });
 
@@ -86,6 +104,137 @@ export class GraphApiService {
         return of(null);
       })
     );
+  }
+
+  getRiskRegister(): Observable<Object> {
+    return this.getFullSiteId(this.SITE_NAME_QUALITY).pipe(
+      mergeMap((res: any) => {
+        if (res?.id) {
+          return this.http.get(
+            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.RISK_REGISTER_GUID}}/items?$expand=fields`
+          );
+        }
+        return of(null);
+      })
+    );
+  }
+
+  getRiskRegisterSampleItem(): Observable<Object> {
+    return this.getFullSiteId(this.SITE_NAME_QUALITY).pipe(
+      mergeMap((res: any) => {
+        if (res?.id) {
+          return this.http.get(
+            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.RISK_REGISTER_GUID}}/items?$top=1&$expand=fields`
+          );
+        }
+        return of(null);
+      })
+    );
+  }
+
+  setRiskRegisterData(res: any): void {
+    let riskRegister: any[] = [];
+
+    if (!res?.value) {
+      this._riskRegisterData$.next([]);
+      return;
+    }
+
+    if (res.value?.length > 0) {
+      riskRegister = res.value.map((item: any) => {
+        const fields = item?.fields || {};
+        const itemId = item?.id || null;
+        const sharepointLink = itemId
+          ? `https://${environment.sharepointHostname}/sites/${this.SITE_NAME_QUALITY}/Lists/${encodeURIComponent(this.RISK_REGISTER_TITLE)}/DispForm.aspx?ID=${itemId}`
+          : null;
+
+        const afterMitigationScore = this.getAfterMitigationScore(fields);
+
+        return {
+          sharepointItemId: itemId,
+          sharepointLink,
+          projectShortName: fields?.field_1 || '',
+          riskOwner: fields?.field_2 || '',
+          description: fields?.field_5 || '',
+          riskType: fields?.field_6 || '',
+          riskCategory: fields?.field_7 || '',
+          severity: fields?.field_10 || '',
+          nextReviewDate: fields?.field_4 || null,
+          riskScore: fields?.field_11 ?? null,
+          riskScoreLabel: this.riskScoreLabel(fields?.field_11),
+          riskAnalysisConclusion: fields?.field_12 || '',
+          riskScoreAfterMitigation: afterMitigationScore ?? null,
+          riskScoreAfterMitigationLabel: this.riskScoreLabel(afterMitigationScore),
+          initialReportingDate: null, // Not identified
+          lastReviewDate: null, // Not mapped, field not identified
+          active: fields?.Active || false,
+          reporterEmail: '', // Not mapped, field not identified
+        };
+      });
+    }
+
+    this.riskScoreAfterMitigationAvailable = riskRegister.some(
+      (risk) =>
+        risk.riskScoreAfterMitigation !== null &&
+        risk.riskScoreAfterMitigation !== undefined &&
+        risk.riskScoreAfterMitigation !== ''
+    );
+    this._riskRegisterData$.next(riskRegister);
+  }
+
+  private riskScoreLabel(score: any): string {
+    if (score === null || score === undefined || score === '') {
+      return '';
+    }
+
+    const normalized = String(score).trim();
+    if (/^(low|medium|high)$/i.test(normalized)) {
+      return normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
+    }
+
+    const numeric = Number(normalized);
+    if (!isNaN(numeric)) {
+      if (numeric === 0) return 'Low';
+      if (numeric >= 1 && numeric <= 6) return 'Low';
+      if (numeric >= 7 && numeric <= 12) return 'Medium';
+      if (numeric >= 13 && numeric <= 16) return 'High';
+      return 'Unknown';
+    }
+
+    return normalized;
+  }
+
+  private getAfterMitigationScore(fields: any): any {
+    const explicitCandidates = [
+      fields?.Risk_x0020_Score_x0020_After_x0020_Mitigation,
+      fields?.Risk_x0020_Score_x0020_After_x0020_Mit,
+      fields?.Risk_x0020_score_x0020_After_x0020_Mit,
+      fields?.Risk_x0020_score_x0020_After_x0020_Mitigation,
+      fields?.RiskScoreAfterMit,
+      fields?.Risk_x0020_Score_x0020_After_x0020_mitigation
+    ];
+
+    for (const candidate of explicitCandidates) {
+      if (candidate !== undefined && candidate !== null && candidate !== '') {
+        return candidate;
+      }
+    }
+
+    for (let i = 13; i <= 24; i++) {
+      const genericField = fields?.[`field_${i}`];
+      if (genericField !== undefined && genericField !== null && genericField !== '') {
+        const normalized = String(genericField).trim();
+        const numeric = Number(normalized);
+        if (!isNaN(numeric) && normalized !== '' && numeric >= 0 && numeric <= 16) {
+          return numeric;
+        }
+        if (/^(low|medium|high)$/i.test(normalized)) {
+          return normalized;
+        }
+      }
+    }
+
+    return null;
   }
 
   setCTUEvaluationsData(res: any): void {
@@ -163,12 +312,43 @@ export class GraphApiService {
 
     return () => sub.unsubscribe();
   });
+
+  private nonComplianceRegisterQueryStarted: boolean = false;
+  public _nonComplianceRegisterData$: BehaviorSubject<any[]> = new BehaviorSubject<any[]>(null);
+
+  public nonComplianceRegister$ = new Observable<any[]>(subscriber => {
+    if (!this.nonComplianceRegisterQueryStarted && this._nonComplianceRegisterData$.value === null) {
+      this.nonComplianceRegisterQueryStarted = true;
+      this.getNonComplianceRegister().subscribe((res: any) => {
+        this.setNonComplianceRegisterData(res);
+      });
+    }
+
+    const sub = this._nonComplianceRegisterData$
+      .pipe(filter(v => v !== null))
+      .subscribe(subscriber);
+
+    return () => sub.unsubscribe();
+  });
   getCTUsServiceProviders(): Observable<any> {
     return this.getFullSiteId(this.SITE_NAME_QUALITY).pipe(
       mergeMap((res: any) => {
         if (res?.id) {
           return this.http.get(
             `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_SERVICE_PROVIDERS_GUID}}/items?$expand=fields($select=Title,Short_x0020_Name,Country,SAS_x0020_Verification,Address)`
+          );
+        }
+        return of(null);
+      })
+    );
+  }
+
+  getNonComplianceRegister(): Observable<any> {
+    return this.getFullSiteId(this.SITE_NAME_QUALITY).pipe(
+      mergeMap((res: any) => {
+        if (res?.id) {
+          return this.http.get(
+            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.NON_COMPLIANCE_REGISTER_GUID}}/items?$expand=fields`
           );
         }
         return of(null);
@@ -202,6 +382,31 @@ export class GraphApiService {
     }
 
     this._ctusServiceProvidersData$.next(ctus);
+  }
+
+  setNonComplianceRegisterData(res: any): void {
+    let nonComplianceItems: any[] = [];
+
+    if (res?.value?.length > 0) {
+      nonComplianceItems = res.value
+        .map((item: any) => {
+          const fields = item?.fields || {};
+
+          return {
+            sharepointItemId: item?.id || null,
+            sharepointLink: `https://ecrineu.sharepoint.com/sites/Quality/Lists/Nonconformity%20register/DispForm.aspx?ID=${item.id}`,
+            status: fields?.Active || '',
+            identificationDate: fields?.IdentificationDate || null,
+            description: fields?.NCDescription || '',
+            reporter: fields?.Reporter || '',
+            reporterEmail: fields?.ReporterEmail || '',
+            source: fields?.Source || '',
+            projectName: fields?.ProjectName || '',
+          };
+        });
+    }
+
+    this._nonComplianceRegisterData$.next(nonComplianceItems);
   }
 
   downloadCtusServiceProvidersCsv(): void {

@@ -111,3 +111,55 @@
   font-size: 16px;
   align-self: center;
 }
+
+.nc-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 2.8rem;
+  align-items: flex-start;
+}
+
+.nc-main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.nc-date {
+  font-weight: 500;
+  margin-bottom: 0.35rem;
+}
+
+.nc-description-full {
+  line-height: 1.35;
+  margin-top: 0.35rem;
+}
+
+.nc-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.nc-status-open,
+.nc-status-closed {
+  border-width: 0.15rem;
+  border-style: solid;
+  border-radius: 1.5rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 1rem !important;
+  pointer-events: none;
+  font-weight: lighter;
+}
+
+.nc-status-open {
+  color: #8a5a00;
+  background-color: #ffe2a8;
+  border-color: rgba(138, 90, 0, 0.15);
+}
+
+.nc-status-closed {
+  color: #008894;
+  background-color: #aaf3f6;
+  border-color: rgba(0, 136, 148, 0.15);
+}

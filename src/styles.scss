@@ -32,6 +32,37 @@
   z-index: 10001 !important;
 }
 
+.tooltip,
+.popover {
+  z-index: 10050 !important;
+}
+
+.risk-description-tooltip .tooltip-inner,
+.non-compliance-description-tooltip .tooltip-inner {
+  max-width: 520px !important;
+  width: max-content;
+  min-width: 320px;
+  text-align: left;
+  white-space: normal;
+}
+
+.risk-description-popover,
+.non-compliance-description-popover {
+  max-width: 600px !important;
+  width: 600px;
+  z-index: 10050 !important;
+}
+
+.risk-description-popover .popover-body,
+.non-compliance-description-popover .popover-body {
+  text-align: left;
+  white-space: normal;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
 // For RTL, check this documentation https://keenthemes.com/metronic/?page=docs&section=angular-rtl
 // @import "./assets/sass/style.angular.rtl.css";
 

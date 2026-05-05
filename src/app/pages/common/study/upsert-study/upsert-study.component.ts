@@ -4,9 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { Observable, combineLatest, of } from 'rxjs';
+import { Observable, combineLatest, of, Subscription } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
+import { GraphApiService } from 'src/app/_rms/services/common/graph-api/graph-api.service';
 import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
 import { CTUInterface } from 'src/app/_rms/interfaces/context/ctu.interface';
 import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisation.interface';
@@ -69,6 +70,15 @@ export class UpsertStudyComponent implements OnInit {
   summaryMaxChars: number = 1300;
   summaryRemainingChars: number[] = [];
   studies = [];
+  public riskItems: any[] = [];
+  public riskLoading: boolean = false;
+  public riskError: string = null;
+  public currentProjectShortName: string = null;
+  private subscriptions: Subscription[] = [];
+  nonComplianceItems: any[] = [];
+  nonComplianceLoading: boolean = false;
+  nonComplianceError: string = '';
+  allNonComplianceItems: any[] = [];
   
 
   constructor(private fb: UntypedFormBuilder,
@@ -79,10 +89,12 @@ export class UpsertStudyComponent implements OnInit {
     private modalService: NgbModal,
     private scrollService: ScrollService,
     private activatedRoute: ActivatedRoute,
+    private graphApiService: GraphApiService,
     private spinner: NgxSpinnerService,
     private toastr: ToastrService,
     private jsonGenerator: JsonGeneratorService,
-    private backService: BackService) {
+    private backService: BackService,
+    private graphApi: GraphApiService) {
     this.studyForm = this.fb.group({
       studies: this.fb.array([])
     });
@@ -171,6 +183,10 @@ export class UpsertStudyComponent implements OnInit {
       this.services = services;
     });
 
+    if (this.isStudyPage && this.isView) {
+      this.subscribeToNonComplianceRegister();
+    }
+
     if (this.isAdd) {
       setTimeout(() => {
         this.spinner.hide();
@@ -181,6 +197,83 @@ export class UpsertStudyComponent implements OnInit {
   event.preventDefault();
   event.stopPropagation();
   this.router.navigate(['/study-ctus', studyCtuId, 'view']);
+  }
+
+  private subscribeToNonComplianceRegister(): void {
+    this.nonComplianceLoading = true;
+
+    this.graphApi.nonComplianceRegister$.subscribe((items: any[]) => {
+      this.allNonComplianceItems = items || [];
+      this.filterNonComplianceByProject();
+      this.nonComplianceLoading = false;
+    }, (error) => {
+      console.error('Error loading non-compliance register:', error);
+      this.nonComplianceError = 'Unable to load SharePoint non-compliance register.';
+      this.nonComplianceLoading = false;
+    });
+  }
+
+  getNonConformityStatusClass(status: string): string {
+    const normalized = status?.toLowerCase()?.trim();
+
+    if (normalized === 'open') {
+      return 'nc-status-open';
+    }
+
+    if (normalized === 'closed') {
+      return 'nc-status-closed';
+    }
+
+    return 'tag-ctu';
+  }
+
+  private filterNonComplianceByProject(): void {
+    const allItems = this.allNonComplianceItems || [];
+
+    if (!this.studies || this.studies.length === 0) {
+      this.nonComplianceItems = [];
+      return;
+    }
+
+    const currentStudy = this.studies[0];
+    const currentProject = currentStudy?.project?.shortName;
+
+    if (!currentProject) {
+      this.nonComplianceItems = [];
+      return;
+    }
+
+    const normalizedCurrentProject = this.normalizeText(currentProject);
+
+    this.nonComplianceItems = allItems.filter((item) => {
+      const projectNames = this.extractSharePointProjectNames(item.projectName);
+
+      if (!projectNames.length || !normalizedCurrentProject) {
+        return false;
+      }
+
+      return projectNames.some((spProject) =>
+        spProject === normalizedCurrentProject ||
+        spProject.includes(normalizedCurrentProject)
+      );
+    });
+  }
+
+  private extractSharePointProjectNames(value: any): string[] {
+    if (!value) {
+      return [];
+    }
+
+    return value
+      .toString()
+      .split(/\r?\n/)
+      .map((project) => project.replace(/^\s*-\s*/, '').trim())
+      .map((project) => this.normalizeText(project))
+      .filter(Boolean);
+  }
+
+  private normalizeText(value: any): string {
+    return value?.toString().toLowerCase().trim().replace(/\s+/g, ' ') || '';
   }
 
   get fc() { return this.studyForm.get('studies')["controls"]; }
@@ -240,7 +333,112 @@ export class UpsertStudyComponent implements OnInit {
     if (studyData) {
       this.studies = [studyData];
       this.id = studyData.id;
+      this.currentProjectShortName = studyData.project?.shortName || null;
       this.patchStudyForm();
+
+      if (this.isView) {
+        this.loadRiskRegisterData(this.currentProjectShortName);
+        this.filterNonComplianceByProject();
+      }
+    }
+  }
+
+  private loadRiskRegisterData(projectShortName: string): void {
+    this.riskError = null;
+    this.riskItems = [];
+    this.riskLoading = true;
+
+    if (!projectShortName) {
+      this.riskLoading = false;
+      return;
+    }
+
+    const currentProject = this.normalizeRiskProjectName(projectShortName);
+
+    this.subscriptions.push(
+      this.graphApiService.riskRegister$.subscribe(
+        (items: any[]) => {
+          this.riskItems = (items || []).filter((risk) => {
+            const riskProject = this.normalizeRiskProjectName(risk.projectShortName);
+
+            return (
+              riskProject === currentProject ||
+              riskProject.includes(currentProject) ||
+              currentProject.includes(riskProject)
+            );
+          }).sort((a, b) => this.getRiskSortValue(b.riskScore) - this.getRiskSortValue(a.riskScore)); // Sort highest risk first
+          this.riskLoading = false;
+        },
+        () => {
+          this.riskError = 'Unable to load SharePoint risk register.';
+          this.riskLoading = false;
+        }
+      )
+    );
+  }
+
+  private normalizeRiskProjectName(value: any): string {
+    return value?.toString().toLowerCase().trim().replace(/\s+/g, ' ') || '';
+  }
+
+  getRiskLevel(score: any): string {
+    if (score == null || score === '') {
+      return 'Unknown';
+    }
+
+    const normalized = String(score).trim();
+    if (/^(low|medium|high)$/i.test(normalized)) {
+      return normalized.charAt(0).toUpperCase() + normalized.slice(1).toLowerCase();
+    }
+
+    const numeric = Number(normalized);
+    if (!isNaN(numeric)) {
+      if (numeric >= 0 && numeric <= 6) return 'Low';
+      if (numeric >= 7 && numeric <= 12) return 'Medium';
+      if (numeric >= 13 && numeric <= 16) return 'High';
+      return 'Unknown';
+    }
+
+    return 'Unknown';
+  }
+
+  getRiskTooltipDescription(risk: any): string {
+    return risk?.description || 'No description available';
+  }
+
+  hasAfterMitigationScore(item: any): boolean {
+    return item?.riskScoreAfterMitigation !== null
+      && item?.riskScoreAfterMitigation !== undefined
+      && item?.riskScoreAfterMitigation !== '';
+  }
+
+  getRiskBadgeClass(level: string): string {
+    switch (level?.toLowerCase()) {
+      case 'low': return 'tag-success';
+      case 'medium': return 'tag-warning';
+      case 'high': return 'tag-danger';
+      default: return 'tag-secondary';
+    }
+  }
+
+  formatNextReviewDate(date: any): string {
+    if (!date) return 'N/A';
+    try {
+      const parsed = new Date(date);
+      if (isNaN(parsed.getTime())) return 'Invalid Date';
+      return parsed.toLocaleDateString('en-GB'); // dd/MM/yyyy
+    } catch {
+      return 'Invalid Date';
+    }
+  }
+
+  private getRiskSortValue(score: any): number {
+    const level = this.getRiskLevel(score);
+    switch (level?.toLowerCase()) {
+      case 'high': return 3;
+      case 'medium': return 2;
+      case 'low': return 1;
+      default: return 0;
     }
   }
 
@@ -732,5 +930,6 @@ export class UpsertStudyComponent implements OnInit {
 
   ngOnDestroy() {
     this.scrollService.unsubscribeScroll();
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
   }
 }
