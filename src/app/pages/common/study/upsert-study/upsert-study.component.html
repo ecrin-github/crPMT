@@ -428,14 +428,14 @@
                             <div *ngIf="riskError" class="text-danger mb-3">{{ riskError }}</div>
                             <div *ngIf="!riskLoading && !riskError && riskItems?.length === 0" class="text-muted mb-3">No SharePoint items found for this project.</div>
 
-                            <div *ngFor="let item of riskItems" class="risk-card mb-3 border rounded p-3"
+                            <div *ngFor="let item of riskItems" class="risk-card mb-3 border rounded p-3 cursor-pointer"
                                  [ngbTooltip]="riskDescriptionTpl"
                                  tooltipClass="risk-description-tooltip"
                                  triggers="mouseenter:mouseleave"
                                  [openDelay]="0"
                                  [closeDelay]="0"
                                  container="body"
-                                 placement="auto">
+                                 placement="top">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <strong>Next Review:</strong> {{ formatNextReviewDate(item.nextReviewDate) }}
@@ -481,7 +481,14 @@
                     </div>
                     <div class="row" *ngFor="let item of nonComplianceItems">
                         <div class="col-12 mb-2">
-                            <div class="row align-items-center border rounded p-3">
+                            <div class="row align-items-center border rounded p-3 cursor-pointer"
+                                 [ngbTooltip]="descriptionTpl"
+                                 tooltipClass="non-compliance-description-tooltip"
+                                 triggers="mouseenter:mouseleave"
+                                 [openDelay]="0"
+                                 [closeDelay]="0"
+                                 container="body"
+                                 placement="top">
                                 <div class="col-md-3">
                                     <strong>{{ item.identificationDate | date:'dd/MM/yyyy' }}</strong>
                                 </div>
@@ -489,23 +496,9 @@
                                     <span class="badge bg-secondary">{{item.status}}</span>
                                 </div>
                                 <div class="col-md-5">
-                                    <div
-                                        class="non-compliance-description"
-                                        [ngbTooltip]="descriptionTpl"
-                                        tooltipClass="non-compliance-description-tooltip"
-                                        triggers="mouseenter:mouseleave"
-                                        [openDelay]="0"
-                                        [closeDelay]="0"
-                                        container="body"
-                                        placement="auto"
-                                    >
+                                    <div class="non-compliance-description">
                                         {{ item.description | slice:0:120 }}...
                                     </div>
-                                    <ng-template #descriptionTpl>
-                                        <div class="text-left non-compliance-tooltip">
-                                            {{ item.description }}
-                                        </div>
-                                    </ng-template>
                                 </div>
                                 <div class="col-md-2 text-end">
                                     <a href="{{item.sharepointLink}}" target="_blank" class="btn btn-sm btn-outline-primary">
@@ -513,6 +506,11 @@
                                     </a>
                                 </div>
                             </div>
+                            <ng-template #descriptionTpl>
+                                <div class="text-left non-compliance-tooltip">
+                                    {{ item.description }}
+                                </div>
+                            </ng-template>
                         </div>
                     </div>
                     <hr class="hr-m2">
