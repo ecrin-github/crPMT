@@ -71,6 +71,9 @@ export class UpsertStudyCtuComponent implements OnInit {
   public sasTrackerListUrl: string = sasTrackerListUrl;
   sasVerifications: any[] = [];
   loadingSASVerifications: boolean = false;
+  nonComplianceItems: any[] = [];
+  nonComplianceLoading: boolean = false;
+  nonComplianceError: string = '';
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -97,6 +100,9 @@ export class UpsertStudyCtuComponent implements OnInit {
     this.subscribeToCountries();
     this.subscribeToSharePointCtus();
     this.subscribeToServices();
+    if (this.isView) {
+      this.subscribeToNonComplianceRegister();
+    }
   }
 
   private initPageFlags(): void {
@@ -199,6 +205,43 @@ export class UpsertStudyCtuComponent implements OnInit {
           this.patchForm();
         }
       }
+    });
+  }
+
+  private subscribeToNonComplianceRegister(): void {
+    this.nonComplianceLoading = true;
+    this.graphApi.nonComplianceRegister$.subscribe((items: any[]) => {
+      if (items) {
+        this.filterNonComplianceByProject(items);
+      }
+      this.nonComplianceLoading = false;
+    }, (error) => {
+      console.error('Error loading non-compliance register:', error);
+      this.nonComplianceError = 'Unable to load SharePoint non-compliance register.';
+      this.nonComplianceLoading = false;
+    });
+  }
+
+  private filterNonComplianceByProject(allItems: any[]): void {
+    if (!this.studyCTUs || this.studyCTUs.length === 0) {
+      this.nonComplianceItems = [];
+      return;
+    }
+
+    const currentStudy = this.studyCTUs[0]?.study;
+    const currentProject = currentStudy?.project?.shortName;
+
+    if (!currentProject) {
+      this.nonComplianceItems = [];
+      return;
+    }
+
+    const normalize = (str: string) => str?.toLowerCase().trim() || '';
+
+    this.nonComplianceItems = allItems.filter(item => {
+      const spProject = item.projectName;
+      return normalize(spProject).includes(normalize(currentProject)) ||
+             normalize(currentProject).includes(normalize(spProject));
     });
   }
 
