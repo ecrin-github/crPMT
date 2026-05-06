@@ -7,8 +7,10 @@ export interface PublicationInterface {
   id?: number;
   title: string;
   pubmedUrl: string;
-  project?: number;
   order?: number;
+  publicationAcknowledgingEcrin?: boolean;
+  ecrinEmployeeInAuthors?: boolean;
+  project?: number;
 }
 
 @Injectable({

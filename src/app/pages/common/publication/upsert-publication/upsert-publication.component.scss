@@ -37,3 +37,13 @@
 .publication-no-link:hover {
   text-decoration: none; /* Pas de soulignement au hover */
 }
+
+.publication-view-item__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: normal;
+}

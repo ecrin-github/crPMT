@@ -16,7 +16,7 @@
         </div>
 
         <div
-          class="publication-table__row row align-items-center"
+          class="publication-table__row row align-items-start"
           *ngFor="let publication of publications; let i = index"
         >
           <div class="col-md-4">
@@ -26,7 +26,11 @@
               placeholder="Publication title"
               [(ngModel)]="publication.title"
               [ngModelOptions]="{ standalone: true }"
+              [ngClass]="{ 'is-invalid': submitted && !publication.title }"
             />
+            <div class="invalid-feedback d-block" *ngIf="submitted && !publication.title">
+              Please enter a publication title
+            </div>
           </div>
 
           <div class="col-md-7">
@@ -45,6 +49,33 @@
               style="cursor: pointer;"
               (click)="removePublication(i)"
             ></i>
+          </div>
+
+          <div class="col-md-12 mt-3 ps-3 pb-3 border-bottom">
+            <div class="form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="publication.publicationAcknowledgingEcrin"
+                [ngModelOptions]="{ standalone: true }"
+                [id]="'pubAckEcrin' + i"
+              />
+              <label class="form-check-label" [for]="'pubAckEcrin' + i">
+                Publication acknowledging ECRIN
+              </label>
+            </div>
+            <div class="form-check mt-2">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [(ngModel)]="publication.ecrinEmployeeInAuthors"
+                [ngModelOptions]="{ standalone: true }"
+                [id]="'ecrinEmpAuth' + i"
+              />
+              <label class="form-check-label" [for]="'ecrinEmpAuth' + i">
+                ECRIN employee in authors
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -75,6 +106,16 @@
                     {{ publication?.title }}
                   </span>
                 </ng-template>
+                <div class="publication-view-item__meta">
+                  <span>
+                    Publication acknowledging ECRIN:
+                    {{ publication.publicationAcknowledgingEcrin ? 'Yes' : 'No' }}
+                  </span>
+                  <span>
+                    ECRIN employee in authors:
+                    {{ publication.ecrinEmployeeInAuthors ? 'Yes' : 'No' }}
+                  </span>
+                </div>
               </li>
             </ul>
         </div>

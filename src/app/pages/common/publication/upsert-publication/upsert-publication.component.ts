@@ -17,6 +17,7 @@ export class UpsertPublicationComponent implements OnChanges {
 
   publications: PublicationInterface[] = [];
   deletedPublicationIds: number[] = [];
+  submitted: boolean = false;
 
   constructor(
     private publicationService: PublicationService,
@@ -39,7 +40,9 @@ export class UpsertPublicationComponent implements OnChanges {
       title: '',
       pubmedUrl: '',
       project: this.projectId ? Number(this.projectId) : null,
-      order: this.publications.length
+      order: this.publications.length,
+      publicationAcknowledgingEcrin: false,
+      ecrinEmployeeInAuthors: false
     });
   }
 
@@ -61,6 +64,7 @@ export class UpsertPublicationComponent implements OnChanges {
   }
 
   onSave(projectId: string | number): Observable<boolean[]> {
+    this.submitted = true;
     const deleteRequests = this.deletedPublicationIds.map((id) =>
       this.publicationService.deletePublication(id).pipe(
         map(() => true),
@@ -69,13 +73,15 @@ export class UpsertPublicationComponent implements OnChanges {
     );
 
     const upsertRequests = this.publications
-      .filter(p => p.title || p.pubmedUrl)
+      .filter(p => p.title)
       .map((publication, index) => {
         const payload: PublicationInterface = {
           title: publication.title,
           pubmedUrl: publication.pubmedUrl,
           project: Number(projectId),
-          order: index
+          order: index,
+          publicationAcknowledgingEcrin: publication.publicationAcknowledgingEcrin ?? false,
+          ecrinEmployeeInAuthors: publication.ecrinEmployeeInAuthors ?? false
         };
 
         if (publication.id) {
