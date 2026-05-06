@@ -10,14 +10,13 @@ import { PublicationService, PublicationInterface } from 'src/app/_rms/services/
   styleUrls: ['./upsert-publication.component.scss']
 })
 export class UpsertPublicationComponent implements OnChanges {
+  @Input() publicationsData: PublicationInterface[] = [];
   @Input() projectId: string;
   @Input() isView: boolean = false;
-  @Input() isEdit: boolean = false;
-  @Input() isAdd: boolean = false;
+
 
   publications: PublicationInterface[] = [];
   deletedPublicationIds: number[] = [];
-  loaded = false;
 
   constructor(
     private publicationService: PublicationService,
@@ -25,39 +24,22 @@ export class UpsertPublicationComponent implements OnChanges {
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['projectId'] && this.projectId && (this.isEdit || this.isView)) {
-      this.loadPublications();
+    if (changes['publicationsData']) {
+      this.publications = (this.publicationsData || [])
+        .map((publication, index) => ({
+          ...publication,
+          order: publication.order ?? index
+        }))
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     }
   }
-
-    loadPublications(): void {
-        if (!this.projectId) {
-            return;
-        }
-
-        console.log('projectId =', this.projectId);
-
-        this.publicationService.getPublicationsByProject(this.projectId).subscribe({
-            next: (res: any[]) => {
-            console.log('publications success =', res);
-            this.publications = Array.isArray(res) ? res : [];
-            this.loaded = true;
-            },
-            error: (err) => {
-            console.error('publications error =', err);
-            this.publications = [];
-            this.loaded = true;
-            this.toastr.error('Error loading publications');
-            }
-        });
-    }
 
   addPublication(): void {
     this.publications.push({
       title: '',
       pubmedUrl: '',
-      project: Number(this.projectId),
-      study: null
+      project: this.projectId ? Number(this.projectId) : null,
+      order: this.publications.length
     });
   }
 
@@ -88,12 +70,12 @@ export class UpsertPublicationComponent implements OnChanges {
 
     const upsertRequests = this.publications
       .filter(p => p.title || p.pubmedUrl)
-      .map((publication) => {
+      .map((publication, index) => {
         const payload: PublicationInterface = {
           title: publication.title,
           pubmedUrl: publication.pubmedUrl,
           project: Number(projectId),
-          study: publication.study ?? null
+          order: index
         };
 
         if (publication.id) {

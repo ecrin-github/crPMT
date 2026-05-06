@@ -67,6 +67,7 @@ export class UpsertProjectComponent implements OnInit {
       gaNumber: '',
       studies: [],
       reportingPeriods: [],
+      publications: [],
       publicSummary: null,
       url: '',
     });
@@ -163,6 +164,7 @@ export class UpsertProjectComponent implements OnInit {
       gaNumber: this.projectData.gaNumber,
       studies: this.projectData.studies,
       reportingPeriods: this.projectData.reportingPeriods,
+      publications: this.projectData.publications || [],
       publicSummary: this.projectData.publicSummary,
       url: this.projectData.url,
     });

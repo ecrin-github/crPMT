@@ -17,8 +17,8 @@ export interface ProjectInterface {
     gaNumber: string;
     // Clinical study information
     studies: StudyDataInterface[];
-    // TODO
     reportingPeriods: [];
+    publications: any[];
     // Publication information
     publicSummary: string;
     url: string;

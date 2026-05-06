@@ -8,7 +8,7 @@ export interface PublicationInterface {
   title: string;
   pubmedUrl: string;
   project?: number;
-  study?: number | null;
+  order?: number;
 }
 
 @Injectable({
@@ -22,12 +22,6 @@ export class PublicationService {
   getPublicationList(): Observable<PublicationInterface[]> {
     return this.http.get<PublicationInterface[]>(this.apiUrl);
   }
-
-    getPublicationsByProject(projectId: string | number): Observable<PublicationInterface[]> {
-        const url = `${this.apiUrl}?project=${projectId}`;
-        console.log('GET publications URL =', url);
-        return this.http.get<PublicationInterface[]>(url);
-    }   
 
   addPublication(payload: PublicationInterface): Observable<any> {
     return this.http.post(this.apiUrl, payload);

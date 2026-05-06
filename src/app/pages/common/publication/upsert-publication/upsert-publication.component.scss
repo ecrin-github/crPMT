@@ -26,6 +26,14 @@
   display: inline;
 }
 
-.publication-view-item:hover .publication-view-item__title {
+.publication-view-item:hover .publication-view-item__title:not(.publication-no-link) {
   text-decoration: underline;
+}
+
+.publication-no-link {
+  color: #6c757d; /* Couleur plus sombre, comme du gris */
+}
+
+.publication-no-link:hover {
+  text-decoration: none; /* Pas de soulignement au hover */
 }
