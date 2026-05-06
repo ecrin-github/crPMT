@@ -25,6 +25,7 @@ import { PersonModalComponent } from './person-modal/person-modal.component';
 import { PersonListComponent } from './person/person-list/person-list.component';
 import { ProjectListComponent } from './project/project-list/project-list.component';
 import { UpsertProjectComponent } from './project/upsert-project/upsert-project.component';
+import { UpsertPublicationComponent } from './publication/upsert-publication/upsert-publication.component';
 import { UpsertSafetyNotificationComponent } from './safety-notification/upsert-safety-notification/upsert-safety-notification.component';
 import { UpsertStudyCountryComponent } from './study-country/upsert-study-country/upsert-study-country.component';
 import { UpsertStudyCtuComponent } from './study-ctu/upsert-study-ctu/upsert-study-ctu.component';
@@ -39,12 +40,14 @@ import { UpsertCtuAgreementAmendmentComponent } from './ctu-agreement-amendment/
 import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amendment-modal.component';
 
 
+
 @NgModule({
     declarations: [
         ProjectListComponent,
         UpsertStudyComponent,
         ConfirmationWindowComponent,
         UpsertProjectComponent,
+        UpsertPublicationComponent,
         UpsertStudyCtuComponent,
         UpsertCentreComponent,
         UpsertStudyCountryComponent,

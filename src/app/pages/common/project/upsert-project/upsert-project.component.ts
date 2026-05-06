@@ -18,6 +18,7 @@ import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { dateToString, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
 import { UpsertReportingPeriodComponent } from '../../reporting-period/upsert-reporting-period/upsert-reporting-period.component';
 import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.component';
+import { UpsertPublicationComponent } from '../../publication/upsert-publication/upsert-publication.component';
 
 @Component({
   selector: 'app-upsert-project',
@@ -29,7 +30,7 @@ export class UpsertProjectComponent implements OnInit {
 
   @ViewChild(UpsertStudyComponent) studyComponent: UpsertStudyComponent;
   @ViewChild(UpsertReportingPeriodComponent) reportingPeriodComponent: UpsertReportingPeriodComponent;
-
+  @ViewChild(UpsertPublicationComponent) publicationComponent: UpsertPublicationComponent;
   fundingSources: ClassValueInterface[] = [];
   organisations: OrganisationInterface[] = [];
   services: ClassValueInterface[] = [];
@@ -66,12 +67,13 @@ export class UpsertProjectComponent implements OnInit {
       gaNumber: '',
       studies: [],
       reportingPeriods: [],
+      publications: [],
       publicSummary: null,
       url: '',
-      // totalPatientsExpected: '',
     });
   }
 
+  
   ngOnInit(): void {
     setTimeout(() => {
       this.spinner.show();
@@ -126,13 +128,14 @@ export class UpsertProjectComponent implements OnInit {
     this.contextService.services.subscribe((services) => {
       this.services = services;
     });
-
     if (this.isAdd) {
       setTimeout(() => {
         this.spinner.hide();
       });
     }
+    
   }
+
 
   get g() { return this.projectForm.controls; }
   get fv() { return this.projectForm.value; }
@@ -148,7 +151,7 @@ export class UpsertProjectComponent implements OnInit {
       this.patchProjectForm();
     }
   }
-
+  
   patchProjectForm() {
     this.projectForm.patchValue({
       name: this.projectData.name,
@@ -161,9 +164,9 @@ export class UpsertProjectComponent implements OnInit {
       gaNumber: this.projectData.gaNumber,
       studies: this.projectData.studies,
       reportingPeriods: this.projectData.reportingPeriods,
+      publications: this.projectData.publications || [],
       publicSummary: this.projectData.publicSummary,
       url: this.projectData.url,
-      // TODO: publications
     });
 
     this.onChangeFundingSources();
@@ -233,6 +236,12 @@ export class UpsertProjectComponent implements OnInit {
 
             // Reporting periods
             saveObs$.push(this.reportingPeriodComponent.onSave(res.id).pipe(
+              mergeMap((successArr: boolean[]) => {
+                return of(successArr.every(b => b));
+              })
+            ));
+            // Publications
+            saveObs$.push(this.publicationComponent.onSave(res.id).pipe(
               mergeMap((successArr: boolean[]) => {
                 return of(successArr.every(b => b));
               })
