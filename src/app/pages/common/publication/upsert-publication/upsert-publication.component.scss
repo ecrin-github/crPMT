@@ -3,9 +3,19 @@
 }
 
 .publication-table__row {
-  padding: 8px 0;
+  padding: 16px 0;
+}
+
+.publication-table-divider {
+  margin: 0;
+  border: none;
   border-top: 1px solid #e6e6e6;
 }
+
+.publication-delete-icon {
+  cursor: pointer;
+}
+
 .publication-view-list {
   margin: 0;
   padding-left: 1.25rem;
@@ -31,11 +41,11 @@
 }
 
 .publication-no-link {
-  color: #6c757d; /* Couleur plus sombre, comme du gris */
+  color: #6c757d; 
 }
 
 .publication-no-link:hover {
-  text-decoration: none; /* Pas de soulignement au hover */
+  text-decoration: none;
 }
 
 .publication-view-item__meta {

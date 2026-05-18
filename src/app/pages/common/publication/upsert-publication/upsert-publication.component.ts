@@ -11,7 +11,7 @@ import { PublicationService, PublicationInterface } from 'src/app/_rms/services/
 })
 export class UpsertPublicationComponent implements OnChanges {
   @Input() publicationsData: PublicationInterface[] = [];
-  @Input() projectId: string;
+  @Input() projectId?: string;
   @Input() isView: boolean = false;
 
 
@@ -39,7 +39,7 @@ export class UpsertPublicationComponent implements OnChanges {
     this.publications.push({
       title: '',
       pubmedUrl: '',
-      project: this.projectId ? Number(this.projectId) : null,
+      project: this.projectId ? Number(this.projectId) : undefined,
       order: this.publications.length,
       publicationAcknowledgingEcrin: false,
       ecrinEmployeeInAuthors: false
@@ -55,7 +55,6 @@ export class UpsertPublicationComponent implements OnChanges {
 
     this.publications.splice(index, 1);
   }
-
   getHttpLink(link: string): string {
     if (link && !link.toLowerCase().startsWith('http')) {
       return 'https://' + link;
