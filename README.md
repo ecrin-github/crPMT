@@ -18,6 +18,9 @@ For deployment on server:
 
 ## Changelog
 
+## [0.14.0] - 2026-05-19
+- Added publications at Project level
+
 ## [0.13.0] - 2026-05-05
 - Added NC and RAF info fetched from SharePoint at Study level
 
@@ -31,8 +34,8 @@ For deployment on server:
 - Added fetching of CTUs directly live from SharePoint
 
 ## [0.10.2] - 2026-03-18
-- Added MSAL events logging to debug #68
-- Attempt to fix #68
+- Added MSAL events logging to debug infinite loading issue
+- Attempt to fix infinite loading
 
 ## [0.10.1] - 2026-03-13
 - Fixed CTU not displaying in CTU list if CTU has no country assigned to it
