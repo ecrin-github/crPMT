@@ -29,9 +29,9 @@
                 placeholder="Publication title"
                 [(ngModel)]="publication.title"
                 [ngModelOptions]="{ standalone: true }"
-                [ngClass]="{ 'is-invalid': submitted && !publication.title }"
+                [ngClass]="{ 'is-invalid': submitted && !publication.title?.trim() }"
               />
-              <div class="invalid-feedback d-block" *ngIf="submitted && !publication.title">
+              <div class="invalid-feedback d-block" *ngIf="submitted && !publication.title?.trim()">
                 Please enter a publication title
               </div>
             </div>

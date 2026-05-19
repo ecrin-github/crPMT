@@ -44,8 +44,7 @@ export class UpsertPublicationComponent implements OnChanges {
       publicationAcknowledgingEcrin: false,
       ecrinEmployeeInAuthors: false
     });
-  }
-
+  } 
   removePublication(index: number): void {
     const publication = this.publications[index];
 
@@ -55,6 +54,12 @@ export class UpsertPublicationComponent implements OnChanges {
 
     this.publications.splice(index, 1);
   }
+
+  allFormsValid(): boolean {
+    this.submitted = true;
+    return this.publications.every((publication) => !!publication.title?.trim());
+  }
+
   getHttpLink(link: string): string {
     if (link && !link.toLowerCase().startsWith('http')) {
       return 'https://' + link;
@@ -63,7 +68,6 @@ export class UpsertPublicationComponent implements OnChanges {
   }
 
   onSave(projectId: string | number): Observable<boolean[]> {
-    this.submitted = true;
     const deleteRequests = this.deletedPublicationIds.map((id) =>
       this.publicationService.deletePublication(id).pipe(
         map(() => true),
@@ -72,7 +76,6 @@ export class UpsertPublicationComponent implements OnChanges {
     );
 
     const upsertRequests = this.publications
-      .filter(p => p.title)
       .map((publication, index) => {
         const payload: PublicationInterface = {
           title: publication.title,
