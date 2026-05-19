@@ -1,0 +1,135 @@
+<div class="row section-title">
+  <div class="col-md-12 text-left">
+    <div class="view-sub-title">Publications involving ECRIN</div>
+  </div>
+</div>
+
+<div class="row form-group">
+  <div class="col-md-12">
+
+    <ng-container *ngIf="!isView">
+      <div class="publication-table">
+        <div class="publication-table__head row align-items-center">
+          <div class="col-md-3 font-style">Title</div>
+          <div class="col-md-4 font-style">Publication link</div>
+          <div class="col-md-2 font-style">Publication acknowledging ECRIN</div>
+          <div class="col-md-2 font-style">ECRIN employee in authors</div>
+          <div class="col-md-1"></div>
+        </div>
+
+        <ng-container *ngFor="let publication of publications; let i = index">
+          <div class="publication-table__row row align-items-center">
+            <div class="col-md-3">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Publication title"
+                [(ngModel)]="publication.title"
+                [ngModelOptions]="{ standalone: true }"
+                [ngClass]="{ 'is-invalid': submitted && !publication.title?.trim() }"
+              />
+              <div class="invalid-feedback d-block" *ngIf="submitted && !publication.title?.trim()">
+                Please enter a publication title
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="https://pubmed.ncbi.nlm.nih.gov/..."
+                [(ngModel)]="publication.pubmedUrl"
+                [ngModelOptions]="{ standalone: true }"
+              />
+            </div>
+
+            <div class="col-md-2 d-flex align-items-center">
+              <div class="form-check mb-0">
+                <input
+                  type="checkbox"
+                  class="form-check-input checkbox"
+                  [(ngModel)]="publication.publicationAcknowledgingEcrin"
+                  [ngModelOptions]="{ standalone: true }"
+                  [id]="'pubAckEcrin' + i"
+                />
+                <label class="form-check-label visually-hidden" [for]="'pubAckEcrin' + i">
+                  Publication acknowledging ECRIN
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-center">
+              <div class="form-check mb-0">
+                <input
+                  type="checkbox"
+                  class="form-check-input checkbox"
+                  [(ngModel)]="publication.ecrinEmployeeInAuthors"
+                  [ngModelOptions]="{ standalone: true }"
+                  [id]="'ecrinEmpAuth' + i"
+                />
+                <label class="form-check-label visually-hidden" [for]="'ecrinEmpAuth' + i">
+                  ECRIN employee in authors
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-1 d-flex align-items-center justify-content-center">
+              <i
+                class="fa fa-trash sc-delete-icon text-danger publication-delete-icon"
+                (click)="removePublication(i)"
+              ></i>
+            </div>
+          </div>
+
+          <hr class="publication-table-divider" *ngIf="i < publications.length - 1" />
+        </ng-container>
+      </div>
+
+      <button type="button" class="btn btn-primary mt-7" (click)="addPublication()">
+        <i class="fa fa-plus"></i> New publication
+      </button>
+    </ng-container>
+
+    <ng-container *ngIf="isView">
+        <div *ngIf="publications?.length; else noPublications">
+            <ul class="publication-view-list">
+              <li class="publication-view-item" *ngFor="let publication of publications">
+                <ng-container *ngIf="publication?.pubmedUrl; else noUrl">
+                  <a
+                    class="publication-view-link-reset"
+                    [href]="getHttpLink(publication?.pubmedUrl)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span class="publication-view-item__title">
+                      {{ publication?.title }}
+                    </span>
+                  </a>
+                </ng-container>
+                <ng-template #noUrl>
+                  <span class="publication-view-item__title publication-no-link">
+                    {{ publication?.title }}
+                  </span>
+                </ng-template>
+                <div class="publication-view-item__meta">
+                  <span>
+                    Publication acknowledging ECRIN:
+                    {{ publication.publicationAcknowledgingEcrin ? 'Yes' : 'No' }}
+                  </span>
+                  <span>
+                    ECRIN employee in authors:
+                    {{ publication.ecrinEmployeeInAuthors ? 'Yes' : 'No' }}
+                  </span>
+                </div>
+              </li>
+            </ul>
+        </div>
+
+        <ng-template #noPublications>
+            <div class="text-value">—</div>
+        </ng-template>
+    </ng-container>
+
+
+  </div>
+</div>
