@@ -32,6 +32,7 @@ For deployment on server:
 
 ## [0.11.0] - 2026-04-24
 - Added fetching of CTUs directly live from SharePoint
+- Added fetching of CTU SAS verification from SharePoint at Study CTU level
 
 ## [0.10.2] - 2026-03-18
 - Added MSAL events logging to debug infinite loading issue
