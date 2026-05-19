@@ -17,10 +17,7 @@
           <div class="col-md-1"></div>
         </div>
 
-        <hr class="mt-1">
-
         <ng-container *ngFor="let publication of publications; let i = index">
-          <hr *ngIf="i > 0">
           <div class="publication-table__row row align-items-center">
             <div class="col-md-3">
               <input
@@ -50,7 +47,7 @@
               <div class="form-check mb-0">
                 <input
                   type="checkbox"
-                  class="form-check-input checkbox"
+                  class="form-check-input"
                   [(ngModel)]="publication.publicationAcknowledgingEcrin"
                   [ngModelOptions]="{ standalone: true }"
                   [id]="'pubAckEcrin' + i"
@@ -65,7 +62,7 @@
               <div class="form-check mb-0">
                 <input
                   type="checkbox"
-                  class="form-check-input checkbox"
+                  class="form-check-input"
                   [(ngModel)]="publication.ecrinEmployeeInAuthors"
                   [ngModelOptions]="{ standalone: true }"
                   [id]="'ecrinEmpAuth' + i"
@@ -88,7 +85,7 @@
         </ng-container>
       </div>
 
-      <button type="button" class="btn btn-primary mt-7" (click)="addPublication()">
+      <button type="button" class="btn btn-primary mt-3" (click)="addPublication()">
         <i class="fa fa-plus"></i> New publication
       </button>
     </ng-container>

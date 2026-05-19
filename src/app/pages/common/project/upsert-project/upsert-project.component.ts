@@ -179,10 +179,10 @@ export class UpsertProjectComponent implements OnInit {
       this.toastr.error("Please correct the errors in the project form");
     }
 
-    return (
+   return (
       this.projectForm.valid &&
-      (this.studyComponent?.allFormsValid?.() ?? true) &&
-      (this.publicationComponent?.allFormsValid?.() ?? true)
+      this.studyComponent?.allFormsValid() &&
+      (this.publicationComponent?.allFormsValid())
     );
   }
 
@@ -213,7 +213,7 @@ export class UpsertProjectComponent implements OnInit {
     this.spinner.show();
 
     if (this.allFormsValid()) {
-      const payload = { ...this.projectForm.value };
+      const payload = JSON.parse(JSON.stringify(this.projectForm.value));
       this.updatePayload(payload);
 
       let projectQueryObs$: Observable<Object>;
