@@ -213,7 +213,7 @@ export class UpsertProjectComponent implements OnInit {
     this.spinner.show();
 
     if (this.allFormsValid()) {
-      const payload = JSON.parse(JSON.stringify(this.projectForm.value));
+      const payload: ProjectInterface = {...this.projectForm.value};
       this.updatePayload(payload);
 
       let projectQueryObs$: Observable<Object>;
