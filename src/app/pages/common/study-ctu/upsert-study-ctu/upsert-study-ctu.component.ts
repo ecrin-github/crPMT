@@ -100,6 +100,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     this.subscribeToCountries();
     this.subscribeToSharePointCtus();
     this.subscribeToServices();
+    // No temporary SharePoint inspection logs.
     if (this.isView) {
       this.subscribeToNonComplianceRegister();
     }
@@ -177,6 +178,8 @@ export class UpsertStudyCtuComponent implements OnInit {
       // Keep only real SharePoint data here.
       this.sharePointCtus = ctus?.length > 0 ? [...ctus] : [];
 
+
+
       // Fix country ISO2 for SharePoint CTUs if they have ISO3 codes
       this.sharePointCtus.forEach(ctu => {
         if (ctu.country?.iso2 && this.countries?.length > 0) {
@@ -196,13 +199,15 @@ export class UpsertStudyCtuComponent implements OnInit {
         ? [...this.sharePointCtus]
         : [...this.dbCtus];
 
+      
+
       if (this.displayCtus?.length > 0) {
         this.sortCTUs();
 
         // Re-patch the form so existing DB CTUs can be replaced by
         // their SharePoint version when SharePoint data is available.
         if (this.studyCTUs?.length > 0) {
-          this.patchForm();
+
         }
       }
     });
@@ -297,13 +302,15 @@ export class UpsertStudyCtuComponent implements OnInit {
   patchArray(): UntypedFormArray {
     const formArray = new UntypedFormArray([]);
     this.studyCTUs.forEach((sctu) => {
+      const mappedCtu = this.mapExistingCtuToDisplayedCtu(sctu.ctu);
+
       formArray.push(this.fb.group({
         id: sctu.id,
         leadCtu: sctu.leadCtu,
         services: [sctu.services],
         study: sctu.study,
         studyCountry: sctu.studyCountry,
-        ctu: this.mapExistingCtuToDisplayedCtu(sctu.ctu),
+        ctu: mappedCtu,
         ctuAgreements: [sctu.ctuAgreements],
         centres: [sctu.centres]
       }));
@@ -353,6 +360,8 @@ export class UpsertStudyCtuComponent implements OnInit {
     // Always try to use the real SharePoint version when possible.
     const ctuToResolve = this.getSharePointVersionOfCtu(selectedCtu) || selectedCtu;
 
+    
+
     const countryIso2 = this.ctuMapperService.findCountryIso2FromSharePoint(ctuToResolve, this.countries);
 
     if (!countryIso2) {
@@ -372,6 +381,8 @@ export class UpsertStudyCtuComponent implements OnInit {
       sas_verification: !!ctuToResolve?.sasVerification,
       address_info: ctuToResolve?.addressInfo || null
     };
+
+    
 
 
     return this.contextService.resolveSharePointCtu(payload).pipe(
@@ -441,13 +452,11 @@ export class UpsertStudyCtuComponent implements OnInit {
         } else {
           this.ctuEvaluations[i] = [];
         }
-      }
-
+      }  
       this.sortCTUEvaluations();
       this.loadingCTUEvaluations = false;
     });
     this.loadingSASVerifications = true;
-
     this.graphApi.sasTracker$.subscribe((sasTracker: any) => {
       for (const [i, fv] of this.fv.entries()) {
         const ctuShortName = fv.ctu?.shortName?.toLowerCase()?.trim();
@@ -580,11 +589,13 @@ export class UpsertStudyCtuComponent implements OnInit {
     }
 
     if (changes.studyCTUsData) {
+      
       if (this.studyCTUsData === null) {
         this.studyCTUs = [];
       } else {
         this.studyCTUs = this.studyCTUsData;
       }
+      
       patchForm = true;
     }
 
@@ -691,6 +702,8 @@ export class UpsertStudyCtuComponent implements OnInit {
 
             item.ctu = { id: finalCtuId };
             this.updatePayload(item, scId, studyId, i);
+
+            
 
             let itemObs$: Observable<Object>;
             if (!item.id) {
@@ -801,11 +814,9 @@ export class UpsertStudyCtuComponent implements OnInit {
 
     const sharePointMatch = this.ctuMapperService.mapExistingCtuToDisplayedCtu(ctu, this.sharePointCtus, this.countries);
 
-    if (sharePointMatch && (sharePointMatch?.sharepointItemId || sharePointMatch?.source === 'sharepoint')) {
-      return sharePointMatch;
-    }
+    const returned = (sharePointMatch && (sharePointMatch?.sharepointItemId || sharePointMatch?.source === 'sharepoint')) ? sharePointMatch : ctu;
 
-    return ctu;
+    return returned;
   }
 
   private getSharePointVersionOfCtu(ctu: any): any {

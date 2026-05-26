@@ -153,9 +153,19 @@ export class CtuMapperService {
     }
 
     const match = sharePointCtus.find((spCtu: any) => this.compareCtuOptions(ctu, spCtu, countries));
-    return match || ctu;
-  }
 
+    if (!match) {
+      return ctu;
+    }
+    // If SharePoint match lacks contact information, preserve the contact from the
+    // existing DB CTU to avoid losing user-entered or backend-stored contact data.
+    const merged = {
+      ...match,
+      contact: match.contact || ctu.contact,
+    };
+
+    return merged;
+  }
   /**
    * Convert a SharePoint country value to a DB ISO2 country code.
    */
