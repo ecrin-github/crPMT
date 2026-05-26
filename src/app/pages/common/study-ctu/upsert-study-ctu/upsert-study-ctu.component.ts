@@ -100,7 +100,6 @@ export class UpsertStudyCtuComponent implements OnInit {
     this.subscribeToCountries();
     this.subscribeToSharePointCtus();
     this.subscribeToServices();
-    // No temporary SharePoint inspection logs.
     if (this.isView) {
       this.subscribeToNonComplianceRegister();
     }
