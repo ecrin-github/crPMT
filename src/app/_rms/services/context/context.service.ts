@@ -246,6 +246,7 @@ export class ContextService {
     sas_verification: boolean;
     address_info: string | null;
   }): Observable<any> {
+    // payload logged during development; no debug log in production
     return this.http.post(`${environment.baseUrlApi}/context/ctus/resolve-sharepoint`, payload);
   }
 

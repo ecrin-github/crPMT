@@ -132,6 +132,22 @@ export class GraphApiService {
     );
   }
 
+  /**
+   * Temporary debug helper: request the list of columns for the CTU Service Providers
+   * SharePoint list so we can inspect internal column names (used as $select values).
+   */
+  debugCTUColumns(): Observable<any> {
+    return this.getFullSiteId(this.SITE_NAME_QUALITY).pipe(
+      mergeMap((res: any) => {
+        if (res?.id) {
+          return this.http.get(
+            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_SERVICE_PROVIDERS_GUID}}/columns`
+          );
+        }
+        return of(null);
+      })
+    );
+  }
   setRiskRegisterData(res: any): void {
     let riskRegister: any[] = [];
 
@@ -335,14 +351,14 @@ export class GraphApiService {
       mergeMap((res: any) => {
         if (res?.id) {
           return this.http.get(
-            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_SERVICE_PROVIDERS_GUID}}/items?$expand=fields($select=Title,Short_x0020_Name,Country,SAS_x0020_Verification,Address)`
+            `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_SERVICE_PROVIDERS_GUID}}/items?$expand=fields($select=Title,Short_x0020_Name,Country,SAS_x0020_Verification,AddressInfo,Contact,Contactemail,ContactTitle)`
           );
         }
         return of(null);
       })
     );
   }
-
+   
   getNonComplianceRegister(): Observable<any> {
     return this.getFullSiteId(this.SITE_NAME_QUALITY).pipe(
       mergeMap((res: any) => {
@@ -355,7 +371,6 @@ export class GraphApiService {
       })
     );
   }
-  
   setCTUsServiceProvidersData(res: any): void {
     let ctus: any[] = [];
 
@@ -364,19 +379,35 @@ export class GraphApiService {
         .map((item: any) => {
           const fields = item?.fields || {};
 
-          return {
+          // Extract contact information from SharePoint fields using discovered internal names
+          const contactName = fields?.Contact || '';
+          const contactEmail = fields?.Contactemail || '';
+          const contactTitle = fields?.ContactTitle || '';
+
+          const mapped = {
             id: null,
             sharepointItemId: item?.id || null,
             shortName: fields?.Short_x0020_Name || '',
             name: fields?.Title || '',
             sasVerification: !!fields?.SAS_x0020_Verification,
-            addressInfo: fields?.Address || null,
+            addressInfo: fields?.AddressInfo || null,
             country: {
               iso2: fields?.Country || null,
               name: fields?.Country || null
             },
+            // Build PersonInterface for contact
+            contact: contactName || contactEmail ? {
+              id: null,
+              country: null,
+              email: contactEmail || '',
+              isEuco: false,
+              fullName: contactName || '',
+              position: contactTitle || ''
+            } : null,
             source: 'sharepoint'
           };
+
+          return mapped;
         })
         .filter((ctu: any) => ctu.shortName || ctu.name);
     }
