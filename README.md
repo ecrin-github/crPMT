@@ -18,6 +18,9 @@ For deployment on server:
 
 ## Changelog
 
+## [0.14.1] - 2026-05-29
+- Fixed missing CTU contact person name and email
+
 ## [0.14.0] - 2026-05-19
 - Added publications at Project level
 
