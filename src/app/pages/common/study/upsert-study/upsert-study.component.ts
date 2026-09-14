@@ -40,6 +40,7 @@ export class UpsertStudyComponent implements OnInit {
   complexTrialTypes: ClassValueInterface[] = [];
   countries: CountryInterface[] = [];
   ctus: CTUInterface[] = [];
+  ecrinContractingEntities: ClassValueInterface[] = [];
   eucos: PersonInterface[] = [];
   medicalFields: ClassValueInterface[] = [];
   organisations: OrganisationInterface[] = [];
@@ -148,6 +149,9 @@ export class UpsertStudyComponent implements OnInit {
     this.contextService.ctus.subscribe((ctus) => {
       this.ctus = ctus;
     });
+    this.contextService.ecrinContractingEntities.subscribe((ecrinContractingEntities) => {
+      this.ecrinContractingEntities = ecrinContractingEntities;
+    });
     this.contextService.medicalFields.subscribe((medicalFields) => {
       this.medicalFields = medicalFields;
     });
@@ -211,6 +215,7 @@ export class UpsertStudyComponent implements OnInit {
       regulatoryFrameworkDetails: [],
       complexTrialDesign: false,
       complexTrialType: null,
+      ecrinContractingEntity: null,
       trialRegistrationNumber: null,
       summary: null,
       cEuco: null,
@@ -301,6 +306,7 @@ export class UpsertStudyComponent implements OnInit {
         regulatoryFramework: s.regulatoryFramework,
         complexTrialDesign: s.complexTrialDesign,
         complexTrialType: s.complexTrialType,
+        ecrinContractingEntity: s.ecrinContractingEntity,
         trialRegistrationNumber: s.trialRegistrationNumber,
         summary: s.summary,
         cEuco: s.cEuco,
@@ -379,6 +385,10 @@ export class UpsertStudyComponent implements OnInit {
 
     if (payload.complexTrialType?.id) {
       payload.complexTrialType = payload.complexTrialType.id;
+    }
+
+    if (payload.ecrinContractingEntity?.id) {
+      payload.ecrinContractingEntity = payload.ecrinContractingEntity.id;
     }
 
     if (payload.coordinatingCountry?.iso2) {
@@ -590,6 +600,20 @@ export class UpsertStudyComponent implements OnInit {
       this.complexTrialTypes = this.complexTrialTypes.filter(c => !(c.id == cToRemove.id && c.value == cToRemove.value));
     } else {  // Already existing
       this.contextService.deleteComplexTrialTypeDropdown(cToRemove, !this.isAdd);
+    }
+  }
+
+  addEcrinContractingEntity = (type) => {
+    return this.contextService.addEcrinContractingEntityDropdown(type);
+  }
+
+  deleteEcrinContractingEntity($event, eToRemove) {
+    $event.stopPropagation(); // Clicks the option otherwise
+
+    if (eToRemove.id == -1) { // Created locally by user
+      this.ecrinContractingEntities = this.ecrinContractingEntities.filter(e => !(e.id == eToRemove.id && e.value == eToRemove.value));
+    } else {  // Already existing
+      this.contextService.deleteEcrinContractingEntityDropdown(eToRemove, !this.isAdd);
     }
   }
 

@@ -28,6 +28,8 @@ export class ContextService {
     new BehaviorSubject<CountryInterface[]>(null);
   public ctus: BehaviorSubject<CTUInterface[]> =
     new BehaviorSubject<CTUInterface[]>(null);
+  public ecrinContractingEntities: BehaviorSubject<ClassValueInterface[]> =
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public hospitals: BehaviorSubject<HospitalInterface[]> =
     new BehaviorSubject<HospitalInterface[]>(null);
   public fundingSources: BehaviorSubject<ClassValueInterface[]> =
@@ -66,6 +68,7 @@ export class ContextService {
     queryFuncs.push(this.getPopulations());
     queryFuncs.push(this.getRegulatoryFrameworkDetails());
     queryFuncs.push(this.getServices());
+    queryFuncs.push(this.getEcrinContractingEntities());
 
     let obsArr: Array<Observable<any>> = [];
     queryFuncs.forEach((funct) => {
@@ -73,6 +76,7 @@ export class ContextService {
     });
 
     combineLatest(obsArr).subscribe(res => {
+      this.setEcrinContractingEntities(res.pop());
       this.setServices(res.pop());
       this.setRegulatoryFrameworkDetails(res.pop());
       this.setPopulations(res.pop());
@@ -824,6 +828,88 @@ export class ContextService {
             });
           }
           this.spinner.hide();
+        }, error => {
+          this.toastr.error(error);
+          this.spinner.hide();
+        });
+      }
+    }, error => {
+      this.toastr.error(error);
+      this.spinner.hide();
+    });
+  }
+
+  /* ECRIN contracting entities */
+  getEcrinContractingEntities() {
+    return this.http.get(`${environment.baseUrlApi}/context/ecrin-contracting-entities`);
+  }
+
+  setEcrinContractingEntities(ecrinContractingEntities) {
+    this.sortClassValues(ecrinContractingEntities);
+    this.ecrinContractingEntities.next(ecrinContractingEntities);
+  }
+
+  addEcrinContractingEntity(payload) {
+    return this.http.post(`${environment.baseUrlApi}/context/ecrin-contracting-entities`, payload);
+  }
+
+  deleteEcrinContractingEntity(id) {
+    return this.http.delete(`${environment.baseUrlApi}/context/ecrin-contracting-entities/${id}`, { observe: "response", responseType: 'json' });
+  }
+
+  updateEcrinContractingEntities() {
+    return this.getEcrinContractingEntities().pipe(
+      map((eces) => {
+        this.setEcrinContractingEntities(eces);
+      })
+    );
+  }
+
+  addEcrinContractingEntityDropdown(value) {
+    let ece = { "id": "", "value": "" };
+
+    this.spinner.show();
+    return this.addEcrinContractingEntity({ 'value': value }).pipe(
+      mergeMap((e: any) => {
+        ece.id = e.id;
+        ece.value = e.value;
+        return this.updateEcrinContractingEntities();
+      }),
+      mergeMap(() => {
+        this.spinner.hide();
+        return of(ece);
+      }),
+      catchError((err) => {
+        this.toastr.error(err, "Error adding ECRIN contracting entity", { timeOut: 20000, extendedTimeOut: 20000 });
+        return of(null);
+      })
+    ).toPromise();
+  }
+
+  deleteEcrinContractingEntityDropdown(eceToRemove, filter) {
+    this.spinner.show();
+    // Checking if other projects have this ECRIN contracting entity
+    this.commonApiService.getReferenceCountByClass("ecrincontractingentity", eceToRemove.id).subscribe((res: any) => {
+      let refCount = res.totalCount;
+      // Allowing deletion if ECRIN contracting entity has already been added and is only referenced once by the calling class
+      if (filter) { // !isAdd
+        refCount -= 1;
+      }
+
+      if (refCount > 0) {
+        this.toastr.error(`Failed to delete this ECRIN contracting entity as it is used in ${refCount} other objects (projects, studies, etc.)`);
+        this.spinner.hide();
+      } else {
+        // Delete entity from the DB, then locally if succeeded
+        this.deleteEcrinContractingEntity(eceToRemove.id).subscribe((res: any) => {
+          if (res.status !== 204) {
+            this.toastr.error('Error when deleting ECRIN contracting entity', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
+            this.spinner.hide();
+          } else {
+            this.updateEcrinContractingEntities().subscribe(() => {
+              this.spinner.hide();
+            });
+          }
         }, error => {
           this.toastr.error(error);
           this.spinner.hide();
