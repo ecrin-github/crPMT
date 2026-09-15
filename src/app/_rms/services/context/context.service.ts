@@ -880,6 +880,7 @@ export class ContextService {
         return of(ece);
       }),
       catchError((err) => {
+        this.spinner.hide(); // Was left spinning forever on error
         this.toastr.error(err, "Error adding ECRIN contracting entity", { timeOut: 20000, extendedTimeOut: 20000 });
         return of(null);
       })
