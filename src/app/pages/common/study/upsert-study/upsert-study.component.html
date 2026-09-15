@@ -356,7 +356,7 @@
                     </div>
                     <div class="row section-title">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-title">ECRIN status as contracted entity</div>
+                            <div class="view-sub-sub-title underline">ECRIN status as contracted entity</div>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -384,6 +384,12 @@
                                 <span *ngIf="study.value.ecrinContractingEntity; else noEcrinContractingEntity">{{study.value.ecrinContractingEntity?.value}}</span>
                                 <ng-template #noEcrinContractingEntity><span class="text-muted fst-italic">Not specified</span></ng-template>
                             </div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-12">
+                            <app-upsert-study-agreement [studyAgreements]="study.value.studyAgreements"
+                                #studyAgreements></app-upsert-study-agreement>
                         </div>
                     </div>
                     <hr class="hr-m2">
