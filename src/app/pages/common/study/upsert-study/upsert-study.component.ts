@@ -59,7 +59,6 @@ export class UpsertStudyComponent implements OnInit {
   isEdit: boolean = false;
   isStudyPage: boolean = false;
   isView: boolean = false;
-  isAgreementSigned: boolean[] = [];
   isComplexTrial: boolean[] = [];
   isObservational: boolean[] = [];
   hasRegulatoryFrameworkDetails: boolean[] = [];
@@ -346,7 +345,6 @@ export class UpsertStudyComponent implements OnInit {
 
     // Setting initial boolean variables to display or not certain fields
     for (let i = 0; i < this.fc.length; i++) {
-      this.onChangeAgreementSigned(i);
       this.onChangeComplexTrialDesign(i);
       this.onChangeRegulatoryFramework(i, true);
     }
@@ -559,14 +557,6 @@ export class UpsertStudyComponent implements OnInit {
 
   compareCountries(c1, c2): boolean {
     return c1?.iso2 == c2?.iso2;
-  }
-
-  onChangeAgreementSigned(i) {
-    if (this.studyForm.value?.studies[i].agreementSigned) {
-      this.isAgreementSigned[i] = true;
-    } else {
-      this.isAgreementSigned[i] = false;
-    }
   }
 
   onChangeComplexTrialDesign(i) {

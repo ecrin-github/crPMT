@@ -128,7 +128,7 @@
                             </ng-select>
                             <div class="text-value" *ngIf="isView">{{study.value.sponsorOrganisation?.name}}</div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-8">
                             <div for="sponsorCountry" class="font-style">Sponsor Country</div>
                             <ng-select [items]="countries" formControlName="sponsorCountry" [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true" [compareWith]="compareCountries" notFoundText="No countries found" placeholder="Select sponsor country" *ngIf="!isView" appendTo="body" name="sponsorCountry">
                                 <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
@@ -140,27 +140,6 @@
                             </ng-select>
                             <div class="text-value" *ngIf="isView">{{getCountryFlagFromIso2(study.value.sponsorCountry?.iso2)}}
                                 {{study.value.sponsorCountry?.name}}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div for="agreementSigned" class="font-style">Agreement (Sponsor - ECRIN)</div>
-                            <div class="row" *ngIf="!isView">
-                                <div class="col-md-4 pe-0 d-flex align-items-center">
-                                    <div class="text-value me-2">Signed:</div>
-                                    <input *ngIf="!isView" type="checkbox" id="agreementSigned" class="form-check-input checkbox" (change)="onChangeAgreementSigned(i)" formControlName="agreementSigned" />
-                                </div>
-                                <div class="col-md-8 ps-0" *ngIf="isAgreementSigned[i]">
-                                    <div class="input-group" *ngIf="!isView">
-                                        <input class="form-control" placeholder="yyyy-mm-dd" name="agreementSignedDate" ngbDatepicker #agreementSignedDate="ngbDatepicker" [ngClass]="{ 'is-invalid': submitted && getControls(i).agreementSignedDate.errors }" formControlName="agreementSignedDate" container='body'>
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" (click)="agreementSignedDate.toggle()" type="button">
-                                                <i class="fa fa-calendar"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div *ngIf="isView" class="text-value">{{study.value.agreementSigned ? ('Signed ' +
-                                dateToString(study.value.agreementSignedDate)) : 'Not signed'}}</div>
                         </div>
                     </div>
                     <div class="row form-group mt-8">
