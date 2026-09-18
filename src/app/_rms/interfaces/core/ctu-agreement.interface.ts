@@ -5,8 +5,13 @@ import { StudyCTUInterface } from "./study-ctus.interface";
 export interface CTUAgreementInterface {
     id: string;
     signed: boolean;
+    draftSentDate: string;
+    signedByCtuDate: string;
+    signedByEcrinDate: string;
+    fullyExecuted: boolean;
     startDate: string;
     endDate: string;
+    comment: string;
     ctuStatus: ClassValueInterface;
     studyCtu: StudyCTUInterface;
     ctuAgreementAmendments: CTUAgreementAmendmentInterface[];

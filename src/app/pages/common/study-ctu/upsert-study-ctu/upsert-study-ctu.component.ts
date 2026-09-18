@@ -16,6 +16,7 @@ import { StudyCTUInterface } from 'src/app/_rms/interfaces/core/study-ctus.inter
 import { BackService } from 'src/app/_rms/services/back/back.service';
 import { GraphApiService } from 'src/app/_rms/services/common/graph-api/graph-api.service';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
+import { CtuContractingEntityService } from 'src/app/_rms/services/context/ctu-contracting-entity/ctu-contracting-entity.service';
 import { StudyCtuService } from 'src/app/_rms/services/entities/study-ctu/study-ctu.service';
 import { CtuMapperService } from 'src/app/_rms/services/entities/study-ctu/ctu-mapper.service';
 
@@ -64,6 +65,7 @@ export class UpsertStudyCtuComponent implements OnInit {
   displayCtus: any[] = [];
 
   countries: CountryInterface[] = [];
+  ctuContractingEntities: ClassValueInterface[] = [];
   services: ClassValueInterface[] = [];
   studyCTUs: StudyCTUInterface[] = [];
   ctuEvaluations: any[] = [];
@@ -82,6 +84,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     private modalService: NgbModal,
     private router: Router,
     private contextService: ContextService,
+    private ctuContractingEntityService: CtuContractingEntityService,
     private graphApi: GraphApiService,
     private spinner: NgxSpinnerService,
     private studyCTUService: StudyCtuService,
@@ -253,6 +256,10 @@ export class UpsertStudyCtuComponent implements OnInit {
     this.contextService.services.subscribe((services) => {
       this.services = services;
     });
+
+    this.ctuContractingEntityService.ctuContractingEntities.subscribe((ctuContractingEntities) => {
+      this.ctuContractingEntities = ctuContractingEntities;
+    });
   }
 
   get g() { return this.form.get('studyCTUs')['controls']; }
@@ -275,6 +282,7 @@ export class UpsertStudyCtuComponent implements OnInit {
       study: this.studyCountry?.study,
       studyCountry: this.studyCountry,
       ctu: [null, Validators.required],
+      ctuContractingEntity: null,
       ctuAgreements: [],
       centres: null
     });
@@ -310,6 +318,7 @@ export class UpsertStudyCtuComponent implements OnInit {
         study: sctu.study,
         studyCountry: sctu.studyCountry,
         ctu: mappedCtu,
+        ctuContractingEntity: sctu.ctuContractingEntity,
         ctuAgreements: [sctu.ctuAgreements],
         centres: [sctu.centres]
       }));
@@ -577,6 +586,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     }
   }
 
+  // No addCtuContractingEntity: the list is fixed for now (see context/migrations/0026_seed_ctu_contracting_entities.py)
   ngOnChanges(changes: SimpleChanges) {
     let patchForm = false;
 
@@ -648,7 +658,9 @@ export class UpsertStudyCtuComponent implements OnInit {
       this.toastr.error('Please correct the errors in the study CTUs form');
     }
 
-    return this.form.valid && !this.centreComponents.some(b => !b.isFormValid());
+    return this.form.valid
+      && !this.centreComponents.some(b => !b.isFormValid())
+      && !this.ctuAgreementComponents.some(b => !b.isFormValid());
   }
 
   updatePayload(payload, scId, studyId, i) {
@@ -661,6 +673,10 @@ export class UpsertStudyCtuComponent implements OnInit {
 
     if (payload.ctu?.id) {
       payload.ctu = payload.ctu.id;
+    }
+
+    if (payload.ctuContractingEntity?.id) {
+      payload.ctuContractingEntity = payload.ctuContractingEntity.id;
     }
 
     if (payload.pi?.id) {

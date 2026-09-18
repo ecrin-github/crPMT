@@ -226,6 +226,30 @@
                             <div class="text-value" class="view-sub-title">Agreements</div>
                         </div>
                     </div>
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="view-sub-sub-title underline">CTU status as contracted entity</div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-4">
+                            <div for="ctuContractingEntity" class="font-style">CTU contracting entity</div>
+                            <ng-select [items]="ctuContractingEntities" formControlName="ctuContractingEntity" [searchFn]="searchClassValues" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No CTU contracting entity found" placeholder="Select an entity" *ngIf="!isView" appendTo="body">
+                                <ng-template ng-label-tmp let-item="item" let-clear="clear">
+                                    <span class="ng-value-label">{{item.value}}</span>
+                                </ng-template>
+                                <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+                                    <div class="row m-0">
+                                        <div class="col-md-12 col-12 p-0 m-0">{{item.value}}</div>
+                                    </div>
+                                </ng-template>
+                            </ng-select>
+                            <div *ngIf="isView" class="text-value">
+                                <span *ngIf="sctu.value.ctuContractingEntity; else noCtuContractingEntity">{{sctu.value.ctuContractingEntity?.value}}</span>
+                                <ng-template #noCtuContractingEntity><span class="text-muted fst-italic">Not specified</span></ng-template>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-12">
                             <app-upsert-ctu-agreement #ctuAgreements [ctuAgreements]="sctu.value.ctuAgreements"></app-upsert-ctu-agreement>

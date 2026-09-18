@@ -1,14 +1,13 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
-import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { AbstractControl, UntypedFormArray, UntypedFormBuilder, UntypedFormGroup, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, combineLatest, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
 import { CTUAgreementAmendmentInterface } from 'src/app/_rms/interfaces/core/ctu-agreement-amendment.interface';
 import { CtuAgreementAmendmentService } from 'src/app/_rms/services/entities/ctu-agreement-amendment/ctu-agreement-amendment.service';
-import { dateToString, stringToDate } from 'src/assets/js/util';
-import { AmendmentModalComponent } from '../../amendment-modal/amendment-modal/amendment-modal.component';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util';
 
 @Component({
   selector: 'app-upsert-ctu-agreement-amendment',
@@ -17,6 +16,14 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class UpsertCtuAgreementAmendmentComponent implements OnInit {
   @Input() ctuAgreementAmendments: CTUAgreementAmendmentInterface[];
+  // The parent agreement's start date, so a new end date can't be set before it
+  @Input() agreementStartDate: NgbDateStruct;
+
+  // A contract can't be signed in the future
+  today: NgbDateStruct = getTodayNgbDate();
+
+  // Whether each amendment (by index) changes the agreement's end date - drives the "new end date" yes/no toggle
+  changesEndDate: boolean[] = [];
 
   form: UntypedFormGroup;
   isEdit: boolean = false;
@@ -24,10 +31,22 @@ export class UpsertCtuAgreementAmendmentComponent implements OnInit {
   isAdd: boolean = false;
   submitted: boolean = false;
 
+  // Bound as an instance property (not static) so it can read this.agreementStartDate
+  newEndDateValidatorFn: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+    const toDate = (d: NgbDateStruct) => d?.year && d?.month && d?.day ? new Date(d.year, d.month - 1, d.day) : null;
+
+    const newEndDate = toDate(group.get('newEndDate')?.value);
+    const startDate = toDate(this.agreementStartDate);
+
+    if (newEndDate && startDate && newEndDate < startDate) {
+      return { newEndDateBeforeStart: true };
+    }
+    return null;
+  }
+
   constructor(
     private ctuAgreementAmendmentService: CtuAgreementAmendmentService,
     private fb: UntypedFormBuilder,
-    private modalService: NgbModal,
     private router: Router,
     private toastr: ToastrService) {
     this.form = this.fb.group({
@@ -50,37 +69,50 @@ export class UpsertCtuAgreementAmendmentComponent implements OnInit {
   newAmendment(): UntypedFormGroup {
     return this.fb.group({
       id: null,
-      signedDate: null,
+      signedDate: null, // Deprecated, kept as silent pass-through - #97 replaces this UI
+      signedByCtuDate: null,
+      signedByEcrinDate: null,
+      newEndDate: null,
       ctuAgreement: null,
-    });
+    }, { validators: [this.newEndDateValidatorFn] });
   }
 
   getFormArray() {
     const formArray = new UntypedFormArray([]);
-    this.ctuAgreementAmendments.forEach((amendment: CTUAgreementAmendmentInterface, index) => {
+    this.ctuAgreementAmendments.forEach((amendment: CTUAgreementAmendmentInterface) => {
       formArray.push(this.fb.group({
         id: amendment.id,
         signedDate: stringToDate(amendment.signedDate),
+        signedByCtuDate: stringToDate(amendment.signedByCtuDate),
+        signedByEcrinDate: stringToDate(amendment.signedByEcrinDate),
+        newEndDate: stringToDate(amendment.newEndDate),
         ctuAgreement: amendment.ctuAgreement,
-      }));
+      }, { validators: [this.newEndDateValidatorFn] }));
     });
     return formArray;
   }
 
   patchForm() {
     this.form.setControl('ctuAgreementAmendments', this.getFormArray());
+
+    // Restoring the yes/no toggle based on whether a new end date was already set
+    this.changesEndDate = this.ctuAgreementAmendments.map((amendment) => !!amendment.newEndDate);
   }
 
   addAmendment() {
     this.getAmendmentsForm().push(this.newAmendment());
+    this.changesEndDate.push(false);
   }
 
   removeAmendment(i) {
     this.getAmendmentsForm().removeAt(i);
+    this.changesEndDate.splice(i, 1);
   }
 
-  removeVisit(i: number) {
-    this.getAmendmentsForm().removeAt(i);
+  onChangeEndDateToggle(i: number) {
+    if (!this.changesEndDate[i]) { // Switched back to "No": clearing the stale date so it isn't saved
+      this.getAmendmentsForm().at(i).get('newEndDate').setValue(null);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -90,16 +122,14 @@ export class UpsertCtuAgreementAmendmentComponent implements OnInit {
       }
       this.patchForm();
     }
+
+    if (changes.agreementStartDate && !changes.agreementStartDate.firstChange) {
+      // Re-check newEndDate vs. the agreement's start date if it changes after the amendments were loaded
+      this.getAmendmentsForm()?.controls.forEach((group) => group.updateValueAndValidity());
+    }
   }
 
-  onClickNewAmendment() {
-    this.addAmendment();
-
-    const reminderModal = this.modalService.open(AmendmentModalComponent, { size: 'lg', backdrop: 'static' });
-    reminderModal.result.then(() => {});
-  }
-
-  isFormValid() { // TODO?
+  isFormValid() {
     this.submitted = true;
 
     return this.form.valid;
@@ -109,6 +139,9 @@ export class UpsertCtuAgreementAmendmentComponent implements OnInit {
     payload.ctuAgreement = ctuAgId;
 
     payload.signedDate = this.dateToString(payload.signedDate);
+    payload.signedByCtuDate = this.dateToString(payload.signedByCtuDate);
+    payload.signedByEcrinDate = this.dateToString(payload.signedByEcrinDate);
+    payload.newEndDate = this.dateToString(payload.newEndDate);
 
     payload.order = i;
   }
