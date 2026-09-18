@@ -371,20 +371,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     }
   }
 
-  addCtuContractingEntity = (value) => {
-    return this.ctuContractingEntityService.addCtuContractingEntityDropdown(value);
-  }
-
-  deleteCtuContractingEntity($event, eToRemove) {
-    $event.stopPropagation(); // Clicks the option otherwise
-
-    if (eToRemove.id == -1) {  // Created locally by user
-      this.ctuContractingEntities = this.ctuContractingEntities.filter(e => !(e.id == eToRemove.id && e.value == eToRemove.value));
-    } else {  // Already existing
-      this.ctuContractingEntityService.deleteCtuContractingEntityDropdown(eToRemove, !this.isAdd);
-    }
-  }
-
+  // No addCtuContractingEntity: the list is fixed for now (see context/migrations/0026_seed_ctu_contracting_entities.py)
   ngOnChanges(changes: SimpleChanges) {
     let patchForm = false;
     if (changes.studyCountry?.previousValue?.country?.iso2 != changes.studyCountry?.currentValue?.country?.iso2) {

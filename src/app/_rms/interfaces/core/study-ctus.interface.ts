@@ -12,6 +12,7 @@ export interface StudyCTUInterface {
     study: StudyMainDataInterface;
     studyCountry: StudyCountryInterface;
     ctu: CTUInterface;
+    ctuContractingEntity: ClassValueInterface;
     ctuAgreements: CTUAgreementInterface[];
     centres: CentreInterface[];
 }

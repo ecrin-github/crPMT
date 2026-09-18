@@ -148,7 +148,14 @@ export class UpsertCtuAgreementComponent implements OnInit {
   }
 
   contractStatus(agreementValue): string {
-    return this.isFullyExecuted(agreementValue) ? 'Fully executed' : 'In progress';
+    if (this.isFullyExecuted(agreementValue)) {
+      return 'Fully executed';
+    }
+    // "In progress" as soon as any action has been taken (draft sent or a signature), "Not started" otherwise
+    if (agreementValue?.draftSentDate || agreementValue?.signedByCtuDate || agreementValue?.signedByEcrinDate) {
+      return 'In progress';
+    }
+    return 'Not started';
   }
 
   updatePayload(payload, sctuId, i) {
