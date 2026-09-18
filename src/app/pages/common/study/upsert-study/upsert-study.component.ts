@@ -615,20 +615,7 @@ export class UpsertStudyComponent implements OnInit {
     }
   }
 
-  addEcrinContractingEntity = (type) => {
-    return this.contextService.addEcrinContractingEntityDropdown(type);
-  }
-
-  deleteEcrinContractingEntity($event, eToRemove) {
-    $event.stopPropagation(); // Clicks the option otherwise
-
-    if (eToRemove.id == -1) { // Created locally by user
-      this.ecrinContractingEntities = this.ecrinContractingEntities.filter(e => !(e.id == eToRemove.id && e.value == eToRemove.value));
-    } else {  // Already existing
-      this.contextService.deleteEcrinContractingEntityDropdown(eToRemove, !this.isAdd);
-    }
-  }
-
+  // No addEcrinContractingEntity/deleteEcrinContractingEntity: the list is fixed for now
   searchCountries = (term: string, item) => {
     return this.contextService.searchCountries(term, item);
   }

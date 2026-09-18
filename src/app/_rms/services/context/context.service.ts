@@ -846,79 +846,13 @@ export class ContextService {
 
   setEcrinContractingEntities(ecrinContractingEntities) {
     this.sortClassValues(ecrinContractingEntities);
+    // "Other" is a catch-all and should always be the last option, regardless of alphabetical order
+    const otherIndex = ecrinContractingEntities?.findIndex((e) => e.value === 'Other') ?? -1;
+    if (otherIndex > -1) {
+      const [other] = ecrinContractingEntities.splice(otherIndex, 1);
+      ecrinContractingEntities.push(other);
+    }
     this.ecrinContractingEntities.next(ecrinContractingEntities);
   }
-
-  addEcrinContractingEntity(payload) {
-    return this.http.post(`${environment.baseUrlApi}/context/ecrin-contracting-entities`, payload);
-  }
-
-  deleteEcrinContractingEntity(id) {
-    return this.http.delete(`${environment.baseUrlApi}/context/ecrin-contracting-entities/${id}`, { observe: "response", responseType: 'json' });
-  }
-
-  updateEcrinContractingEntities() {
-    return this.getEcrinContractingEntities().pipe(
-      map((eces) => {
-        this.setEcrinContractingEntities(eces);
-      })
-    );
-  }
-
-  addEcrinContractingEntityDropdown(value) {
-    let ece = { "id": "", "value": "" };
-
-    this.spinner.show();
-    return this.addEcrinContractingEntity({ 'value': value }).pipe(
-      mergeMap((e: any) => {
-        ece.id = e.id;
-        ece.value = e.value;
-        return this.updateEcrinContractingEntities();
-      }),
-      mergeMap(() => {
-        this.spinner.hide();
-        return of(ece);
-      }),
-      catchError((err) => {
-        this.spinner.hide(); // Was left spinning forever on error
-        this.toastr.error(err, "Error adding ECRIN contracting entity", { timeOut: 20000, extendedTimeOut: 20000 });
-        return of(null);
-      })
-    ).toPromise();
-  }
-
-  deleteEcrinContractingEntityDropdown(eceToRemove, filter) {
-    this.spinner.show();
-    // Checking if other projects have this ECRIN contracting entity
-    this.commonApiService.getReferenceCountByClass("ecrincontractingentity", eceToRemove.id).subscribe((res: any) => {
-      let refCount = res.totalCount;
-      // Allowing deletion if ECRIN contracting entity has already been added and is only referenced once by the calling class
-      if (filter) { // !isAdd
-        refCount -= 1;
-      }
-
-      if (refCount > 0) {
-        this.toastr.error(`Failed to delete this ECRIN contracting entity as it is used in ${refCount} other objects (projects, studies, etc.)`);
-        this.spinner.hide();
-      } else {
-        // Delete entity from the DB, then locally if succeeded
-        this.deleteEcrinContractingEntity(eceToRemove.id).subscribe((res: any) => {
-          if (res.status !== 204) {
-            this.toastr.error('Error when deleting ECRIN contracting entity', res.error, { timeOut: 20000, extendedTimeOut: 20000 });
-            this.spinner.hide();
-          } else {
-            this.updateEcrinContractingEntities().subscribe(() => {
-              this.spinner.hide();
-            });
-          }
-        }, error => {
-          this.toastr.error(error);
-          this.spinner.hide();
-        });
-      }
-    }, error => {
-      this.toastr.error(error);
-      this.spinner.hide();
-    });
-  }
+  // No add/delete: the list is fixed for now (see crPMT-BE context/migrations/0029_seed_ecrin_contracting_entities.py)
 }

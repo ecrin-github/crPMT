@@ -341,21 +341,13 @@
                     <div class="row form-group">
                         <div class="col-md-4">
                             <div for="ecrinContractingEntity" class="font-style">ECRIN contracting entity</div>
-                            <ng-select [items]="ecrinContractingEntities" formControlName="ecrinContractingEntity" [searchFn]="searchClassValues" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No ECRIN contracting entity found" placeholder="Start typing to add a new entity" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addEcrinContractingEntity" appendTo="body">
+                            <ng-select [items]="ecrinContractingEntities" formControlName="ecrinContractingEntity" [searchFn]="searchClassValues" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No ECRIN contracting entity found" placeholder="Select an entity" *ngIf="!isView" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>
                                 </ng-template>
                                 <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                     <div class="row m-0">
-                                        <div class="col-md-11 col-11 p-0 m-0">
-                                            <div class="col-md-12 p-0 m-0">{{item.value}}</div>
-                                        </div>
-                                        <div class="col-md-1 col-1 p-0 m-0 d-flex">
-                                            <div class="col-md-12 col-1 p-0 m-0 d-flex align-items-center justify-content-center">
-                                                <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" (click)="deleteEcrinContractingEntity($event, item)">
-                                                </i>
-                                            </div>
-                                        </div>
+                                        <div class="col-md-12 col-12 p-0 m-0">{{item.value}}</div>
                                     </div>
                                 </ng-template>
                             </ng-select>
