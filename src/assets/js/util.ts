@@ -20,6 +20,12 @@ export function stringToDate(date) {
 	return date ? { year: dateArray.getFullYear(), month: dateArray.getMonth() + 1, day: dateArray.getDate() } : null;
 }
 
+// Used as [maxDate] on a ngbDatepicker to prevent picking a date in the future (e.g. a signature date)
+export function getTodayNgbDate(): NgbDateStruct {
+	const today = new Date();
+	return { year: today.getFullYear(), month: today.getMonth() + 1, day: today.getDate() };
+}
+
 export function dateObjToTimeString(date) {
 	if (date instanceof Date) {
 		return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} \

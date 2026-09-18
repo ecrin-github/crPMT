@@ -851,15 +851,19 @@ export class UpsertStudyCountryComponent implements OnInit {
       if (studyId) {
         this.onSave(studyId).subscribe((success) => {
           this.spinner.hide();
-          if (success) {
+          if (success.every(s => s)) { // success is a boolean[]: a non-empty array is always truthy on its own
             this.toastr.success("Changes saved successfully");
             this.router.navigate([`/study-countries/${this.id}/view`]);
+          } else {
+            this.toastr.error("One or more items failed to save");
           }
         });
       } else {
         this.spinner.hide();
         this.toastr.error("Couldn't get study ID from study country");
       }
+    } else {
+      this.spinner.hide(); // Prevent infinite spinner when the form is invalid
     }
   }
 
