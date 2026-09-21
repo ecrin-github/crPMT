@@ -485,7 +485,9 @@ export class UpsertStudyCtuComponent implements OnInit {
 
   getSASVerificationResult(i): string | null {
     if (this.sasVerifications[i]?.length > 0) {
-      const status = this.sasVerifications[i][0]?.Status?.toLowerCase()?.trim();
+      const rawStatus = this.sasVerifications[i][0]?.Status;
+      // Defensive: SharePoint can return this field as something other than a plain string
+      const status = typeof rawStatus === 'string' ? rawStatus.toLowerCase().trim() : null;
 
       if (status === 'approved') {
         return SasVerificationResults.APPROVED;
