@@ -18,6 +18,9 @@ For deployment on server:
 
 ## Changelog
 
+## [0.15.0] - 2026-09-29
+- Added Initial Agreement and Amendments section both at Study and CTU level (Sponsor-ECRIN for Studies and ECRIN-CTU for CTUs)
+
 ## [0.14.1] - 2026-05-29
 - Fixed missing CTU contact person name and email
 
