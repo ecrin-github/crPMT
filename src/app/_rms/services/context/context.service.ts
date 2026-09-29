@@ -28,6 +28,8 @@ export class ContextService {
     new BehaviorSubject<CountryInterface[]>(null);
   public ctus: BehaviorSubject<CTUInterface[]> =
     new BehaviorSubject<CTUInterface[]>(null);
+  public ecrinContractingEntities: BehaviorSubject<ClassValueInterface[]> =
+    new BehaviorSubject<ClassValueInterface[]>(null);
   public hospitals: BehaviorSubject<HospitalInterface[]> =
     new BehaviorSubject<HospitalInterface[]>(null);
   public fundingSources: BehaviorSubject<ClassValueInterface[]> =
@@ -66,6 +68,7 @@ export class ContextService {
     queryFuncs.push(this.getPopulations());
     queryFuncs.push(this.getRegulatoryFrameworkDetails());
     queryFuncs.push(this.getServices());
+    queryFuncs.push(this.getEcrinContractingEntities());
 
     let obsArr: Array<Observable<any>> = [];
     queryFuncs.forEach((funct) => {
@@ -73,6 +76,7 @@ export class ContextService {
     });
 
     combineLatest(obsArr).subscribe(res => {
+      this.setEcrinContractingEntities(res.pop());
       this.setServices(res.pop());
       this.setRegulatoryFrameworkDetails(res.pop());
       this.setPopulations(res.pop());
@@ -845,4 +849,21 @@ export class ContextService {
       this.spinner.hide();
     });
   }
+
+  /* ECRIN contracting entities */
+  getEcrinContractingEntities() {
+    return this.http.get(`${environment.baseUrlApi}/context/ecrin-contracting-entities`);
+  }
+
+  setEcrinContractingEntities(ecrinContractingEntities) {
+    this.sortClassValues(ecrinContractingEntities);
+    // "Other" is a catch-all and should always be the last option, regardless of alphabetical order
+    const otherIndex = ecrinContractingEntities?.findIndex((e) => e.value === 'Other') ?? -1;
+    if (otherIndex > -1) {
+      const [other] = ecrinContractingEntities.splice(otherIndex, 1);
+      ecrinContractingEntities.push(other);
+    }
+    this.ecrinContractingEntities.next(ecrinContractingEntities);
+  }
+  // No add/delete: the list is fixed for now (see crPMT-BE context/migrations/0029_seed_ecrin_contracting_entities.py)
 }

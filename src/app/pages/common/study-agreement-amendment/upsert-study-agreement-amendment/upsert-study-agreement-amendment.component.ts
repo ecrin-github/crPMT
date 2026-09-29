@@ -5,17 +5,17 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, combineLatest, of } from 'rxjs';
 import { catchError, mergeMap } from 'rxjs/operators';
-import { CTUAgreementAmendmentInterface } from 'src/app/_rms/interfaces/core/ctu-agreement-amendment.interface';
-import { CtuAgreementAmendmentService } from 'src/app/_rms/services/entities/ctu-agreement-amendment/ctu-agreement-amendment.service';
+import { StudyAgreementAmendmentInterface } from 'src/app/_rms/interfaces/core/study-agreement-amendment.interface';
+import { StudyAgreementAmendmentService } from 'src/app/_rms/services/entities/study-agreement-amendment/study-agreement-amendment.service';
 import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util';
 
 @Component({
-  selector: 'app-upsert-ctu-agreement-amendment',
-  templateUrl: './upsert-ctu-agreement-amendment.component.html',
-  styleUrls: ['./upsert-ctu-agreement-amendment.component.scss']
+  selector: 'app-upsert-study-agreement-amendment',
+  templateUrl: './upsert-study-agreement-amendment.component.html',
+  styleUrls: ['./upsert-study-agreement-amendment.component.scss']
 })
-export class UpsertCtuAgreementAmendmentComponent implements OnInit {
-  @Input() ctuAgreementAmendments: CTUAgreementAmendmentInterface[];
+export class UpsertStudyAgreementAmendmentComponent implements OnInit {
+  @Input() studyAgreementAmendments: StudyAgreementAmendmentInterface[];
   // The parent agreement's start date, so a new end date can't be set before it
   @Input() agreementStartDate: NgbDateStruct;
 
@@ -24,12 +24,6 @@ export class UpsertCtuAgreementAmendmentComponent implements OnInit {
 
   // Whether each amendment (by index) changes the agreement's end date - drives the "new end date" yes/no toggle
   changesEndDate: boolean[] = [];
-
-  form: UntypedFormGroup;
-  isEdit: boolean = false;
-  isView: boolean = false;
-  isAdd: boolean = false;
-  submitted: boolean = false;
 
   // Bound as an instance property (not static) so it can read this.agreementStartDate
   newEndDateValidatorFn: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
@@ -44,13 +38,19 @@ export class UpsertCtuAgreementAmendmentComponent implements OnInit {
     return null;
   }
 
+  form: UntypedFormGroup;
+  isEdit: boolean = false;
+  isView: boolean = false;
+  isAdd: boolean = false;
+  submitted: boolean = false;
+
   constructor(
-    private ctuAgreementAmendmentService: CtuAgreementAmendmentService,
+    private studyAgreementAmendmentService: StudyAgreementAmendmentService,
     private fb: UntypedFormBuilder,
     private router: Router,
     private toastr: ToastrService) {
     this.form = this.fb.group({
-      ctuAgreementAmendments: this.fb.array([])
+      studyAgreementAmendments: this.fb.array([])
     });
   }
 
@@ -63,40 +63,38 @@ export class UpsertCtuAgreementAmendmentComponent implements OnInit {
   get fv() { return this.getAmendmentsForm()?.value; }
 
   getAmendmentsForm(): UntypedFormArray {
-    return this.form.get('ctuAgreementAmendments') as UntypedFormArray;
+    return this.form.get('studyAgreementAmendments') as UntypedFormArray;
   }
 
   newAmendment(): UntypedFormGroup {
     return this.fb.group({
       id: null,
-      signedDate: null, // Deprecated, kept as silent pass-through - #97 replaces this UI
-      signedByCtuDate: null,
+      signedBySponsorDate: null,
       signedByEcrinDate: null,
       newEndDate: null,
-      ctuAgreement: null,
+      studyAgreement: null,
     }, { validators: [this.newEndDateValidatorFn] });
   }
 
   getFormArray() {
     const formArray = new UntypedFormArray([]);
-    this.ctuAgreementAmendments.forEach((amendment: CTUAgreementAmendmentInterface) => {
+    this.studyAgreementAmendments.forEach((amendment: StudyAgreementAmendmentInterface, index) => {
       formArray.push(this.fb.group({
         id: amendment.id,
-        signedDate: stringToDate(amendment.signedDate),
-        signedByCtuDate: stringToDate(amendment.signedByCtuDate),
+        signedBySponsorDate: stringToDate(amendment.signedBySponsorDate),
         signedByEcrinDate: stringToDate(amendment.signedByEcrinDate),
         newEndDate: stringToDate(amendment.newEndDate),
-        ctuAgreement: amendment.ctuAgreement,
+        studyAgreement: amendment.studyAgreement,
       }, { validators: [this.newEndDateValidatorFn] }));
     });
     return formArray;
   }
 
   patchForm() {
-    this.form.setControl('ctuAgreementAmendments', this.getFormArray());
+    this.form.setControl('studyAgreementAmendments', this.getFormArray());
 
     // Restoring the yes/no toggle based on whether a new end date was already set
-    this.changesEndDate = this.ctuAgreementAmendments.map((amendment) => !!amendment.newEndDate);
+    this.changesEndDate = this.studyAgreementAmendments.map((amendment) => !!amendment.newEndDate);
   }
 
   addAmendment() {
@@ -116,9 +114,9 @@ export class UpsertCtuAgreementAmendmentComponent implements OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.ctuAgreementAmendments) {
-      if (!this.ctuAgreementAmendments) {
-        this.ctuAgreementAmendments = [];
+    if (changes.studyAgreementAmendments) {
+      if (!this.studyAgreementAmendments) {
+        this.studyAgreementAmendments = [];
       }
       this.patchForm();
     }
@@ -129,38 +127,37 @@ export class UpsertCtuAgreementAmendmentComponent implements OnInit {
     }
   }
 
-  isFormValid() {
+  isFormValid() { // TODO?
     this.submitted = true;
 
     return this.form.valid;
   }
 
-  updatePayload(payload, ctuAgId, i) {
-    payload.ctuAgreement = ctuAgId;
+  updatePayload(payload, saId, i) {
+    payload.studyAgreement = saId;
 
-    payload.signedDate = this.dateToString(payload.signedDate);
-    payload.signedByCtuDate = this.dateToString(payload.signedByCtuDate);
+    payload.signedBySponsorDate = this.dateToString(payload.signedBySponsorDate);
     payload.signedByEcrinDate = this.dateToString(payload.signedByEcrinDate);
     payload.newEndDate = this.dateToString(payload.newEndDate);
 
     payload.order = i;
   }
 
-  onSave(ctuAgId: string): Observable<boolean[]> {
+  onSave(saId: string): Observable<boolean[]> {
     this.submitted = true;
     let saveObs$: Array<Observable<boolean>> = [];
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
     // Add/edit amendments
-    for (const [i, item] of payload.ctuAgreementAmendments.entries()) {
-      this.updatePayload(item, ctuAgId, i);
+    for (const [i, item] of payload.studyAgreementAmendments.entries()) {
+      this.updatePayload(item, saId, i);
 
       let amendmentObs$: Observable<Object> = null;
       if (!item.id) { // Add
-        amendmentObs$ = this.ctuAgreementAmendmentService.addAmendmentFromCTUAgreement(ctuAgId, item);
+        amendmentObs$ = this.studyAgreementAmendmentService.addAmendmentFromStudyAgreement(saId, item);
       } else {
-        amendmentObs$ = this.ctuAgreementAmendmentService.editCTUAgreementAmendment(item.id, item);
+        amendmentObs$ = this.studyAgreementAmendmentService.editStudyAgreementAmendment(item.id, item);
       }
 
       saveObs$.push(amendmentObs$.pipe(
@@ -168,18 +165,18 @@ export class UpsertCtuAgreementAmendmentComponent implements OnInit {
           if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
             return of(true);
           }
-          this.toastr.error("Failed to save CTU Agreement Amendment");
+          this.toastr.error("Failed to save Study Agreement Amendment");
           return of(false);
         })
       ));
     }
 
     // Deleting items deleted in the UI
-    const formItemIds: Set<String> = new Set(payload.ctuAgreementAmendments.map((item: CTUAgreementAmendmentInterface) => { return item.id; }));
-    const removedItems: Array<CTUAgreementAmendmentInterface> = this.ctuAgreementAmendments.filter((initialItem) => !formItemIds.has(initialItem.id));
+    const formItemIds: Set<String> = new Set(payload.studyAgreementAmendments.map((item: StudyAgreementAmendmentInterface) => { return item.id; }));
+    const removedItems: Array<StudyAgreementAmendmentInterface> = this.studyAgreementAmendments.filter((initialItem) => !formItemIds.has(initialItem.id));
 
     removedItems.forEach((item) => {
-      saveObs$.push(this.ctuAgreementAmendmentService.deleteCTUAgreementAmendment(item.id).pipe(
+      saveObs$.push(this.studyAgreementAmendmentService.deleteStudyAgreementAmendment(item.id).pipe(
         mergeMap((res: any) => {
           if (res.status === 204) {
             return of(true);

@@ -38,6 +38,8 @@ import { UpsertVisitComponent } from './visit/upsert-visit/upsert-visit.componen
 import { UpsertCtuAgreementComponent } from './ctu-agreement/upsert-ctu-agreement/upsert-ctu-agreement.component';
 import { UpsertCtuAgreementAmendmentComponent } from './ctu-agreement-amendment/upsert-ctu-agreement-amendment/upsert-ctu-agreement-amendment.component';
 import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amendment-modal.component';
+import { UpsertStudyAgreementComponent } from './study-agreement/upsert-study-agreement/upsert-study-agreement.component';
+import { UpsertStudyAgreementAmendmentComponent } from './study-agreement-amendment/upsert-study-agreement-amendment/upsert-study-agreement-amendment.component';
 
 
 
@@ -65,6 +67,8 @@ import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amend
         UpsertCtuAgreementComponent,
         UpsertCtuAgreementAmendmentComponent,
         AmendmentModalComponent,
+        UpsertStudyAgreementComponent,
+        UpsertStudyAgreementAmendmentComponent,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [

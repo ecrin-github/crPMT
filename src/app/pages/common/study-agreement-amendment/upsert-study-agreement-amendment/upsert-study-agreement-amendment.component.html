@@ -4,7 +4,7 @@
             <div for="amendments" class="font-style">Amendments</div>
         </div>
         <div class="col-md-2">
-            <div for="signedByCtuDate" class="font-style">Signed by CTU</div>
+            <div for="signedBySponsorDate" class="font-style">Signed by Sponsor</div>
         </div>
         <div class="col-md-2">
             <div for="signedByEcrinDate" class="font-style">Signed by ECRIN</div>
@@ -15,7 +15,7 @@
     </div>
     <hr class="mt-1 mb-1">
     <form [formGroup]="form" ngNativeValidate>
-        <div formArrayName="ctuAgreementAmendments">
+        <div formArrayName="studyAgreementAmendments">
             <ng-container *ngIf="!(isView && getAmendmentsForm()?.length === 0); else noAmendmentsView">
                 <div class="row" *ngFor="let amendment of getAmendmentsForm()?.controls; let i = index;" [formGroupName]="i">
                     <div class="col">
@@ -26,14 +26,14 @@
                             </div>
                             <div class="col-md-2 pe-1">
                                 <div class="input-group" *ngIf="!isView">
-                                    <input class="form-control" placeholder="yyyy-mm-dd" name="signedByCtuDate" ngbDatepicker [maxDate]="today" #signedByCtuDate="ngbDatepicker" formControlName="signedByCtuDate" container='body'>
+                                    <input class="form-control" placeholder="yyyy-mm-dd" name="signedBySponsorDate" ngbDatepicker [maxDate]="today" #signedBySponsorDate="ngbDatepicker" formControlName="signedBySponsorDate" container='body'>
                                     <div class="input-group-append">
-                                        <button class="btn btn-primary" (click)="signedByCtuDate.toggle()" type="button">
+                                        <button class="btn btn-primary" (click)="signedBySponsorDate.toggle()" type="button">
                                             <i class="fa fa-calendar"></i>
                                         </button>
                                     </div>
                                 </div>
-                                <span class="text-value" *ngIf="isView">{{dateToString(amendment.value.signedByCtuDate)}}</span>
+                                <span class="text-value" *ngIf="isView">{{dateToString(amendment.value.signedBySponsorDate)}}</span>
                             </div>
                             <div class="col-md-2 pe-1">
                                 <div class="input-group" *ngIf="!isView">

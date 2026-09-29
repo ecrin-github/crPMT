@@ -5,7 +5,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, combineLatest, of, Subscription } from 'rxjs';
-import { catchError, mergeMap } from 'rxjs/operators';
+import { catchError, map, mergeMap } from 'rxjs/operators';
 import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
 import { GraphApiService } from 'src/app/_rms/services/common/graph-api/graph-api.service';
 import { CountryInterface } from 'src/app/_rms/interfaces/context/country.interface';
@@ -21,6 +21,7 @@ import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
+import { UpsertStudyAgreementComponent } from '../../study-agreement/upsert-study-agreement/upsert-study-agreement.component';
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { REGULATORY_FRAMEWORKS, STUDY_STATUSES, TIME_UNITS } from 'src/assets/js/constants';
 import { ProjectInterface } from 'src/app/_rms/interfaces/core/project.interface';
@@ -35,6 +36,7 @@ import { ProjectInterface } from 'src/app/_rms/interfaces/core/project.interface
 export class UpsertStudyComponent implements OnInit {
 
   @ViewChildren('studyCountries') studyCountryComponents: QueryList<UpsertStudyCountryComponent>;
+  @ViewChildren('studyAgreements') studyAgreementComponents: QueryList<UpsertStudyAgreementComponent>;
   @Input() studiesData: Array<StudyInterface>;
   @Input() project: ProjectInterface;
 
@@ -42,6 +44,7 @@ export class UpsertStudyComponent implements OnInit {
   complexTrialTypes: ClassValueInterface[] = [];
   countries: CountryInterface[] = [];
   ctus: CTUInterface[] = [];
+  ecrinContractingEntities: ClassValueInterface[] = [];
   eucos: PersonInterface[] = [];
   medicalFields: ClassValueInterface[] = [];
   organisations: OrganisationInterface[] = [];
@@ -58,7 +61,6 @@ export class UpsertStudyComponent implements OnInit {
   isEdit: boolean = false;
   isStudyPage: boolean = false;
   isView: boolean = false;
-  isAgreementSigned: boolean[] = [];
   isComplexTrial: boolean[] = [];
   isObservational: boolean[] = [];
   hasRegulatoryFrameworkDetails: boolean[] = [];
@@ -160,6 +162,9 @@ export class UpsertStudyComponent implements OnInit {
     });
     this.contextService.ctus.subscribe((ctus) => {
       this.ctus = ctus;
+    });
+    this.contextService.ecrinContractingEntities.subscribe((ecrinContractingEntities) => {
+      this.ecrinContractingEntities = ecrinContractingEntities;
     });
     this.contextService.medicalFields.subscribe((medicalFields) => {
       this.medicalFields = medicalFields;
@@ -305,6 +310,8 @@ export class UpsertStudyComponent implements OnInit {
       regulatoryFrameworkDetails: [],
       complexTrialDesign: false,
       complexTrialType: null,
+      ecrinContractingEntity: null,
+      studyAgreements: [],
       trialRegistrationNumber: null,
       summary: null,
       cEuco: null,
@@ -500,6 +507,8 @@ export class UpsertStudyComponent implements OnInit {
         regulatoryFramework: s.regulatoryFramework,
         complexTrialDesign: s.complexTrialDesign,
         complexTrialType: s.complexTrialType,
+        ecrinContractingEntity: s.ecrinContractingEntity,
+        studyAgreements: [s.studyAgreements],
         trialRegistrationNumber: s.trialRegistrationNumber,
         summary: s.summary,
         cEuco: s.cEuco,
@@ -535,7 +544,6 @@ export class UpsertStudyComponent implements OnInit {
 
     // Setting initial boolean variables to display or not certain fields
     for (let i = 0; i < this.fc.length; i++) {
-      this.onChangeAgreementSigned(i);
       this.onChangeComplexTrialDesign(i);
       this.onChangeRegulatoryFramework(i, true);
     }
@@ -552,7 +560,9 @@ export class UpsertStudyComponent implements OnInit {
       this.toastr.error("Please correct the errors in the studies form");
     }
 
-    return this.studyForm.valid && !this.studyCountryComponents.some(b => !b.isFormValid());
+    return this.studyForm.valid
+      && !this.studyCountryComponents.some(b => !b.isFormValid())
+      && !this.studyAgreementComponents.some(b => !b.isFormValid());
   }
 
   updatePayload(payload, projectId, i) {
@@ -578,6 +588,10 @@ export class UpsertStudyComponent implements OnInit {
 
     if (payload.complexTrialType?.id) {
       payload.complexTrialType = payload.complexTrialType.id;
+    }
+
+    if (payload.ecrinContractingEntity?.id) {
+      payload.ecrinContractingEntity = payload.ecrinContractingEntity.id;
     }
 
     if (payload.coordinatingCountry?.iso2) {
@@ -669,11 +683,23 @@ export class UpsertStudyComponent implements OnInit {
               this.id = res.id;
             }
 
-            if (this.studyCountryComponents.get(i)) { // Saving study countries
-              return this.studyCountryComponents.get(i).onSave(res.id).pipe(
-                mergeMap((successArr: boolean[]) => {
-                  return of(successArr.every(b => b));
-                })
+            if (this.studyCountryComponents.get(i) || this.studyAgreementComponents.get(i)) {
+              let subObs$: Observable<boolean>[] = [];
+
+              if (this.studyCountryComponents.get(i)) { // Saving study countries
+                subObs$.push(this.studyCountryComponents.get(i).onSave(res.id).pipe(
+                  map((successArr: boolean[]) => successArr.every(b => b))
+                ));
+              }
+
+              if (this.studyAgreementComponents.get(i)) { // Saving study agreements
+                subObs$.push(this.studyAgreementComponents.get(i).onSave(res.id).pipe(
+                  map((successArr: boolean[]) => successArr.every(b => b))
+                ));
+              }
+
+              return combineLatest(subObs$).pipe(
+                map((successArr: boolean[]) => successArr.every(b => b))
               );
             }
             return of(true);
@@ -703,15 +729,19 @@ export class UpsertStudyComponent implements OnInit {
       if (projectId) {
         this.onSave(projectId).subscribe((success) => {
           this.spinner.hide();
-          if (success) {
+          if (success.every(s => s)) { // success is a boolean[]: a non-empty array is always truthy on its own
             this.toastr.success("Changes saved successfully");
             this.router.navigate([`/studies/${this.id}/view`]);
+          } else {
+            this.toastr.error("One or more items failed to save");
           }
         });
       } else {
         this.spinner.hide();
         this.toastr.error("Couldn't get project ID from study");
       }
+    } else {
+      this.spinner.hide();
     }
   }
 
@@ -726,14 +756,6 @@ export class UpsertStudyComponent implements OnInit {
 
   compareCountries(c1, c2): boolean {
     return c1?.iso2 == c2?.iso2;
-  }
-
-  onChangeAgreementSigned(i) {
-    if (this.studyForm.value?.studies[i].agreementSigned) {
-      this.isAgreementSigned[i] = true;
-    } else {
-      this.isAgreementSigned[i] = false;
-    }
   }
 
   onChangeComplexTrialDesign(i) {
@@ -792,6 +814,7 @@ export class UpsertStudyComponent implements OnInit {
     }
   }
 
+  // No addEcrinContractingEntity/deleteEcrinContractingEntity: the list is fixed for now
   searchCountries = (term: string, item) => {
     return this.contextService.searchCountries(term, item);
   }
