@@ -183,21 +183,21 @@
                             <div for="sasVerification" class="font-style">SAS verification</div>
 
                             <ng-container *ngIf="getSASVerificationResult(i); else noSASVerificationData">
-                            <div class="ctu-evaluation-container align-items-center">
-                                <span class="tag-ctu" [ngClass]="getSASVerificationTagClass(i)">
-                                {{ getSASVerificationResult(i) }}
-                                </span>
-                                <a [href]="sasTrackerListUrl" target="_blank" class="d-inline-flex ms-2">
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                </a>
-                            </div>
+                                <div class="ctu-evaluation-container align-items-center">
+                                    <span class="tag-ctu" [ngClass]="getSASVerificationTagClass(i)">
+                                        {{ getSASVerificationResult(i) }}
+                                    </span>
+                                    <a [href]="sasTrackerListUrl" target="_blank" class="d-inline-flex ms-2">
+                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                    </a>
+                                </div>
                             </ng-container>
 
                             <ng-template #noSASVerificationData>
-                            <span class="text-value">No SAS verification found in SharePoint</span>
-                            <a [href]="sasTrackerListUrl" target="_blank" class="d-inline-flex ms-2">
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                            </a>
+                                <span class="text-value">No SAS verification found in SharePoint</span>
+                                <a [href]="sasTrackerListUrl" target="_blank" class="d-inline-flex ms-2">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                </a>
                             </ng-template>
                         </div>
                         <div class="col-md-4">
@@ -226,14 +226,13 @@
                             <div class="text-value" class="view-sub-title">Agreements</div>
                         </div>
                     </div>
-                    <div class="row section-title">
+                    <div class="row mb-1">
                         <div class="col-md-12 text-left">
                             <div class="view-sub-sub-title underline">CTU status as contracted entity</div>
                         </div>
                     </div>
                     <div class="row form-group">
-                        <div class="col-md-4">
-                            <div for="ctuContractingEntity" class="font-style">CTU contracting entity</div>
+                        <div class="col-md-3">
                             <ng-select [items]="ctuContractingEntities" formControlName="ctuContractingEntity" [searchFn]="searchClassValues" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No CTU contracting entity found" placeholder="Select an entity" *ngIf="!isView" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>

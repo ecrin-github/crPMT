@@ -1,7 +1,6 @@
 <form [formGroup]="form" ngNativeValidate>
     <div formArrayName="ctuAgreements">
-        <div class="row" *ngFor="let ctuAgreement of getCTUAgreementsForm()?.controls; let i = index;"
-            [formGroupName]="i">
+        <div class="row" *ngFor="let ctuAgreement of getCTUAgreementsForm()?.controls; let i = index;" [formGroupName]="i">
             <div class="col">
                 <div class="row mb-1">
                     <div class="col-md-4">
@@ -16,9 +15,7 @@
                     <div>
                         <div for="draftSentDate" class="font-style">Draft sent to CTU</div>
                         <div class="input-group" *ngIf="!isView">
-                            <input class="form-control" placeholder="yyyy-mm-dd" name="draftSentDate" ngbDatepicker
-                                [maxDate]="today" #draftSentDate="ngbDatepicker" formControlName="draftSentDate"
-                                container='body'>
+                            <input class="form-control" placeholder="yyyy-mm-dd" name="draftSentDate" ngbDatepicker [maxDate]="today" #draftSentDate="ngbDatepicker" formControlName="draftSentDate" container='body'>
                             <div class="input-group-append">
                                 <button class="btn btn-primary" (click)="draftSentDate.toggle()" type="button">
                                     <i class="fa fa-calendar"></i>
@@ -30,9 +27,7 @@
                     <div>
                         <div for="signedByCtuDate" class="font-style">Signed by CTU</div>
                         <div class="input-group" *ngIf="!isView">
-                            <input class="form-control" placeholder="yyyy-mm-dd" name="signedByCtuDate" ngbDatepicker
-                                [maxDate]="today" #signedByCtuDate="ngbDatepicker" formControlName="signedByCtuDate"
-                                container='body'>
+                            <input class="form-control" placeholder="yyyy-mm-dd" name="signedByCtuDate" ngbDatepicker [maxDate]="today" #signedByCtuDate="ngbDatepicker" formControlName="signedByCtuDate" container='body'>
                             <div class="input-group-append">
                                 <button class="btn btn-primary" (click)="signedByCtuDate.toggle()" type="button">
                                     <i class="fa fa-calendar"></i>
@@ -44,9 +39,7 @@
                     <div>
                         <div for="signedByEcrinDate" class="font-style">Signed by ECRIN</div>
                         <div class="input-group" *ngIf="!isView">
-                            <input class="form-control" placeholder="yyyy-mm-dd" name="signedByEcrinDate" ngbDatepicker
-                                [maxDate]="today" #signedByEcrinDate="ngbDatepicker" formControlName="signedByEcrinDate"
-                                container='body'>
+                            <input class="form-control" placeholder="yyyy-mm-dd" name="signedByEcrinDate" ngbDatepicker [maxDate]="today" #signedByEcrinDate="ngbDatepicker" formControlName="signedByEcrinDate" container='body'>
                             <div class="input-group-append">
                                 <button class="btn btn-primary" (click)="signedByEcrinDate.toggle()" type="button">
                                     <i class="fa fa-calendar"></i>
@@ -57,8 +50,7 @@
                     </div>
                     <div>
                         <div for="fullyExecuted" class="font-style">Fully executed</div>
-                        <input type="checkbox" id="fullyExecuted" class="form-check-input checkbox" disabled
-                            [checked]="isFullyExecuted(ctuAgreement.value)" />
+                        <input type="checkbox" id="fullyExecuted" class="form-check-input checkbox" disabled [checked]="isFullyExecuted(ctuAgreement.value)" />
                     </div>
                 </div>
                 <div class="row" *ngIf="submitted && ctuAgreement.errors">
@@ -72,8 +64,7 @@
                     <div class="col-md-2">
                         <div for="startDate" class="font-style">Start date</div>
                         <div class="input-group" *ngIf="!isView">
-                            <input class="form-control" placeholder="yyyy-mm-dd" name="startDate" ngbDatepicker
-                                #startDate="ngbDatepicker" formControlName="startDate" container='body'>
+                            <input class="form-control" placeholder="yyyy-mm-dd" name="startDate" ngbDatepicker #startDate="ngbDatepicker" formControlName="startDate" container='body'>
                             <div class="input-group-append">
                                 <button class="btn btn-primary" (click)="startDate.toggle()" type="button">
                                     <i class="fa fa-calendar"></i>
@@ -85,8 +76,7 @@
                     <div class="col-md-2">
                         <div for="endDate" class="font-style">End date</div>
                         <div class="input-group" *ngIf="!isView">
-                            <input class="form-control" placeholder="yyyy-mm-dd" name="endDate" ngbDatepicker
-                                #endDate="ngbDatepicker" formControlName="endDate" container='body'>
+                            <input class="form-control" placeholder="yyyy-mm-dd" name="endDate" ngbDatepicker #endDate="ngbDatepicker" formControlName="endDate" container='body'>
                             <div class="input-group-append">
                                 <button class="btn btn-primary" (click)="endDate.toggle()" type="button">
                                     <i class="fa fa-calendar"></i>
@@ -97,17 +87,13 @@
                     </div>
                     <div class="col-md-6">
                         <div for="comment" class="font-style">Comment</div>
-                        <textarea *ngIf="!isView" class="form-control" rows="2" placeholder="Comment"
-                            formControlName="comment"></textarea>
+                        <textarea *ngIf="!isView" class="form-control" rows="2" placeholder="Comment" formControlName="comment"></textarea>
                         <div *ngIf="isView" class="text-value">{{ctuAgreement.value.comment}}</div>
                     </div>
                 </div>
-                <div class="row mt-2">
+                <div class="row mt-4">
                     <div class="col-md-12">
-                        <app-upsert-ctu-agreement-amendment
-                            [ctuAgreementAmendments]="ctuAgreement.value.ctuAgreementAmendments"
-                            [agreementStartDate]="ctuAgreement.value.startDate"
-                            #ctuAgreementAmendments></app-upsert-ctu-agreement-amendment>
+                        <app-upsert-ctu-agreement-amendment [ctuAgreementAmendments]="ctuAgreement.value.ctuAgreementAmendments" [agreementStartDate]="ctuAgreement.value.startDate" #ctuAgreementAmendments></app-upsert-ctu-agreement-amendment>
                     </div>
                 </div>
             </div>
