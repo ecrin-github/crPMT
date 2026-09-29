@@ -333,14 +333,13 @@
                             <div class="text-value" class="view-sub-title">Agreements</div>
                         </div>
                     </div>
-                    <div class="row section-title">
+                    <div class="row mb-1">
                         <div class="col-md-12 text-left">
                             <div class="view-sub-sub-title underline">ECRIN status as contracted entity</div>
                         </div>
                     </div>
-                    <div class="row form-group">
-                        <div class="col-md-4">
-                            <div for="ecrinContractingEntity" class="font-style">ECRIN contracting entity</div>
+                    <div class="row">
+                        <div class="col-md-3">
                             <ng-select [items]="ecrinContractingEntities" formControlName="ecrinContractingEntity" [searchFn]="searchClassValues" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No ECRIN contracting entity found" placeholder="Select an entity" *ngIf="!isView" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>
@@ -359,8 +358,7 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-12">
-                            <app-upsert-study-agreement [studyAgreements]="study.value.studyAgreements"
-                                #studyAgreements></app-upsert-study-agreement>
+                            <app-upsert-study-agreement [studyAgreements]="study.value.studyAgreements" #studyAgreements></app-upsert-study-agreement>
                         </div>
                     </div>
                     <hr class="hr-m2">
@@ -443,14 +441,7 @@
                             <div *ngIf="riskError" class="text-danger mb-3">{{ riskError }}</div>
                             <div *ngIf="!riskLoading && !riskError && riskItems?.length === 0" class="text-muted mb-3">No SharePoint items found for this project.</div>
 
-                            <div *ngFor="let item of riskItems" class="risk-card mb-3 border rounded p-3 cursor-pointer"
-                                 [ngbTooltip]="riskDescriptionTpl"
-                                 tooltipClass="risk-description-tooltip"
-                                 triggers="mouseenter:mouseleave"
-                                 [openDelay]="0"
-                                 [closeDelay]="0"
-                                 container="body"
-                                 placement="top">
+                            <div *ngFor="let item of riskItems" class="risk-card mb-3 border rounded p-3 cursor-pointer" [ngbTooltip]="riskDescriptionTpl" tooltipClass="risk-description-tooltip" triggers="mouseenter:mouseleave" [openDelay]="0" [closeDelay]="0" container="body" placement="top">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <strong>Next Review:</strong> {{ formatNextReviewDate(item.nextReviewDate) }}
@@ -521,27 +512,19 @@
                         <div class="row form-group">
                             <div class="col-md-12">
                                 <div class="font-style f-bold fs-3 mt-1 pb-2 ">Study countries</div>
-                                
+
                                 <div class="sc-list">
-                                    <a
-                                    *ngFor="let sc of study.value.studyCountries"
-                                    class="sc-card"
-                                    [routerLink]="['/study-countries', sc.id, 'view']"
-                                    >
+                                    <a *ngFor="let sc of study.value.studyCountries" class="sc-card" [routerLink]="['/study-countries', sc.id, 'view']">
                                         <div class="sc-left">
                                             <div class="sc-title">
-                                            <span class="sc-flag">{{ getCountryFlagFromIso2(sc.country?.iso2) }}</span>
-                                            <span class="sc-country">{{ sc.country?.name }}</span>
-                                            <span class="sc-sites">({{ getCountrySitesString(sc) }})</span>
+                                                <span class="sc-flag">{{ getCountryFlagFromIso2(sc.country?.iso2) }}</span>
+                                                <span class="sc-country">{{ sc.country?.name }}</span>
+                                                <span class="sc-sites">({{ getCountrySitesString(sc) }})</span>
                                             </div>
                                             <div class="sc-preview" *ngIf="sc.studyCtus?.length">
                                                 <div class="sc-ctu" *ngFor="let sctu of sc.studyCtus">
-                                                    <span
-                                                    class="sc-ctu-name sc-ctu-link"
-                                                    (click)="goToStudyCtu($event, sctu.id)"
-                                                    title="Open CTU"
-                                                    >
-                                                    {{ sctu.ctu?.name }}
+                                                    <span class="sc-ctu-name sc-ctu-link" (click)="goToStudyCtu($event, sctu.id)" title="Open CTU">
+                                                        {{ sctu.ctu?.name }}
                                                     </span>
                                                     <div class="sc-ctu-sites" *ngIf="sctu.centres?.length">
                                                         <div class="sc-centre" *ngFor="let centre of sctu.centres">
