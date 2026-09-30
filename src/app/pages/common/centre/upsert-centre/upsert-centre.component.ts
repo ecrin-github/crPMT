@@ -68,6 +68,9 @@ export class UpsertCentreComponent implements OnInit {
 
     this.contextService.persons.subscribe((persons) => {
       this.persons = persons;
+      if (this.persons) {
+        this.persons = this.persons.filter(p => !p.isEuco);
+      }
     });
   }
 
@@ -291,10 +294,10 @@ export class UpsertCentreComponent implements OnInit {
     let saveObs$: Array<Observable<boolean>> = [];
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
-    
+
     for (const [i, item] of payload.centres.entries()) {
       this.updatePayload(item, sctuId, studyId, i);
-  
+
       let centreObs$: Observable<Object> = null;
       if (!item.id) { // Add
         centreObs$ = this.centreService.addCentreFromStudyCTU(sctuId, item);
