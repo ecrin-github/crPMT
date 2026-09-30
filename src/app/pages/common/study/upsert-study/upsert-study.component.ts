@@ -81,7 +81,7 @@ export class UpsertStudyComponent implements OnInit {
   nonComplianceLoading: boolean = false;
   nonComplianceError: string = '';
   allNonComplianceItems: any[] = [];
-  
+
 
   constructor(private fb: UntypedFormBuilder,
     private router: Router,
@@ -107,7 +107,7 @@ export class UpsertStudyComponent implements OnInit {
       this.id = this.activatedRoute.snapshot.params.id;
       this.isStudyPage = true;
     }
-    
+
 
     if (this.isStudyPage) {
       setTimeout(() => {
@@ -174,6 +174,9 @@ export class UpsertStudyComponent implements OnInit {
     });
     this.contextService.persons.subscribe((persons) => {
       this.persons = persons;
+      if (this.persons) {
+        this.persons = this.persons.filter(p => !p.isEuco);
+      }
       if (persons) {
         this.eucos = persons.filter(p => p.isEuco);
       }
@@ -199,9 +202,9 @@ export class UpsertStudyComponent implements OnInit {
     }
   }
   goToStudyCtu(event: MouseEvent, studyCtuId: number | string): void {
-  event.preventDefault();
-  event.stopPropagation();
-  this.router.navigate(['/study-ctus', studyCtuId, 'view']);
+    event.preventDefault();
+    event.stopPropagation();
+    this.router.navigate(['/study-ctus', studyCtuId, 'view']);
   }
 
   private subscribeToNonComplianceRegister(): void {
