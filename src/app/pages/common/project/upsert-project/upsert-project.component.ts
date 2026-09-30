@@ -73,7 +73,7 @@ export class UpsertProjectComponent implements OnInit {
     });
   }
 
-  
+
   ngOnInit(): void {
     setTimeout(() => {
       this.spinner.show();
@@ -123,6 +123,9 @@ export class UpsertProjectComponent implements OnInit {
 
     this.contextService.persons.subscribe((persons) => {
       this.persons = persons;
+      if (this.persons) {
+        this.persons = this.persons.filter(p => !p.isEuco);
+      }
     });
 
     this.contextService.services.subscribe((services) => {
@@ -133,7 +136,7 @@ export class UpsertProjectComponent implements OnInit {
         this.spinner.hide();
       });
     }
-    
+
   }
 
 
@@ -151,7 +154,7 @@ export class UpsertProjectComponent implements OnInit {
       this.patchProjectForm();
     }
   }
-  
+
   patchProjectForm() {
     this.projectForm.patchValue({
       name: this.projectData.name,
@@ -179,7 +182,7 @@ export class UpsertProjectComponent implements OnInit {
       this.toastr.error("Please correct the errors in the project form");
     }
 
-   return (
+    return (
       this.projectForm.valid &&
       this.studyComponent?.allFormsValid() &&
       (this.publicationComponent?.allFormsValid())
@@ -213,7 +216,7 @@ export class UpsertProjectComponent implements OnInit {
     this.spinner.show();
 
     if (this.allFormsValid()) {
-      const payload: ProjectInterface = {...this.projectForm.value};
+      const payload: ProjectInterface = { ...this.projectForm.value };
       this.updatePayload(payload);
 
       let projectQueryObs$: Observable<Object>;
