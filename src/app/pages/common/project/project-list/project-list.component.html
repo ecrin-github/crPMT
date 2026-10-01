@@ -1,47 +1,73 @@
 <div class="card">
     <div class="card-header sticky-top">
         <div class="row">
-        <div class="col-md-6 d-inline-flex pt-2 pb-2">
-            <div class="view-title d-flex align-items-center">Projects</div>
-        </div>
+            <div class="col-md-6 d-inline-flex pt-2 pb-2">
+                <div class="view-title d-flex align-items-center">Projects</div>
+            </div>
 
-        <div class="col-md-6 d-flex justify-content-end">
-            <a [routerLink]="['/projects', 'add']" class="btn btn-success">
-            <i class="fa fa-plus"></i> New project
-            </a>
-        </div>
-        </div>
-    </div>
-
-    <div class="card-body">
-    <div class="row">
-        <div class="col-md-3">
-            <select class="form-control" [(ngModel)]="filterColumn" (change)="filterSearch()">
-                <option selected disabled value="">Search by...</option>
-                <option [value]=searchColumn.value *ngFor="let searchColumn of searchColumns">
-                    {{searchColumn.text}}</option>
-            </select>
-        </div>
-        <div class="col-md-9">
-            <div class="form-group">
-                <input type="text" class="form-control" placeholder="Search project..." [(ngModel)]="searchText"
-                    (keyup)="onInputChange($event)" />
+            <div class="col-md-6 d-flex justify-content-end">
+                <div class="d-flex flex-grow-1">
+                    <input type="text" class="form-control" placeholder="Search project..." [(ngModel)]="searchText" (keyup)="onInputChange($event)" />
+                </div>
+                <a [routerLink]="['/projects', 'add']" class="btn btn-success ms-5">
+                    <i class="fa fa-plus"></i> New project
+                </a>
             </div>
         </div>
     </div>
 
+    <div class="card-body">
         <mat-table [dataSource]="dataSource">
             <ng-container matColumnDef="shortName">
-                <mat-header-cell *matHeaderCellDef>Acronym</mat-header-cell>
+                <mat-header-cell *matHeaderCellDef>Short Name</mat-header-cell>
                 <mat-cell *matCellDef="let row">
                     <a [routerLink]="['/projects', row.id, 'view']">{{row.shortName}}</a>
                 </mat-cell>
             </ng-container>
 
-            <ng-container matColumnDef="name">
-                <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
+            <ng-container matColumnDef="startDate">
+                <mat-header-cell *matHeaderCellDef>Start Date</mat-header-cell>
                 <mat-cell *matCellDef="let row">
-                    <a [routerLink]="['/projects', row.id, 'view']">{{row.name}}</a>
+                    <span>{{stringToDate(row.startDate)}}</span>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="endDate">
+                <mat-header-cell *matHeaderCellDef>End Date</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <span>{{stringToDate(row.endDate)}}</span>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="projectCoordinator">
+                <mat-header-cell *matHeaderCellDef>Project Coordinator</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <span>{{row.coordinator?.country ? (getCountryFlag(row.coordinator?.country?.iso2) + '&nbsp;') : ''}}{{row.coordinator?.fullName}}</span>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="coordinatingInstitution">
+                <mat-header-cell *matHeaderCellDef>Coordinating Institution</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <span>{{row.coordinatingInstitution?.country ? (getCountryFlag(row.coordinatingInstitution?.country?.iso2) + '&nbsp;') : ''}}{{row.coordinatingInstitution?.shortName ? row.coordinatingInstitution?.shortName : row.coordinatingInstitution?.name}}</span>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="fundingSources">
+                <mat-header-cell *matHeaderCellDef>Funding Sources</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <div class="tags-container">
+                        <span *ngFor="let fs of row.fundingSources" class="tag" [ngStyle]="{ 'border-color': getTagBorderColor(fs.value), 'background-color': getTagBgColor(fs.value) }">{{fs.value}}</span>
+                    </div>
+                </mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="studies">
+                <mat-header-cell *matHeaderCellDef>Studies</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <span *ngFor="let study of row.studies; let i = index">
+                        <a [routerLink]="['/studies', study.id, 'view']">{{study.shortTitle}}</a>{{i+1 == row.studies.length ? '' : ', '}}
+                    </span>
                 </mat-cell>
             </ng-container>
 
@@ -63,11 +89,10 @@
             <mat-row *matRowDef="let row; columns: displayedColumns;">
             </mat-row>
         </mat-table>
-        <mat-paginator #projectPaginator [pageSizeOptions]="[10, 25, 50, 100]" [length]="projectsLength"
-            [pageSize]="25"></mat-paginator>
+        <mat-paginator #projectPaginator [pageSizeOptions]="[10, 25, 50, 100]" [length]="projectsLength" [pageSize]="25"></mat-paginator>
 
     </div>
-    
+
 </div>
 
 <br />

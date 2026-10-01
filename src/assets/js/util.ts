@@ -37,20 +37,9 @@ export function dateObjToTimeString(date) {
 export function anyStringToDateString(str) {
 	const date = new Date(str);
 	if (date) {
-		return date.toISOString();
+		return getYYYYMMDDFromDateString(date.toISOString());
 	}
 	return "";
-}
-
-export function jsDateStrToString(str) {
-	let retStr = "";
-	if (str) {
-		const date = new Date(str);
-		if (date) {
-			retStr = date.toISOString();
-		}
-	}
-	return retStr;
 }
 
 export function getYYYYMMDDFromDateString(dateStr) {

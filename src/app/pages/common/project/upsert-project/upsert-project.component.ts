@@ -81,8 +81,6 @@ export class UpsertProjectComponent implements OnInit {
 
     this.id = this.activatedRoute.snapshot.params.id;
 
-    // this.scrollService.handleScroll([`/projects/${this.id}/view`, `/projects/${this.id}/edit`, `/projects/add`]);
-
     this.isEdit = this.router.url.includes('edit');
     this.isView = this.router.url.includes('view');
     this.isAdd = this.router.url.includes('add');
