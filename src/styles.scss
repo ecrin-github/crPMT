@@ -647,51 +647,6 @@ mat-footer-cell:first-of-type {
   word-break: break-word;
 }
 
-.mat-column-personName {
-  flex: 0 0 20% !important;
-  width: 20% !important;
-  word-wrap: break-word !important;
-  white-space: unset !important;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.mat-column-personEmail {
-  flex: 0 0 28% !important;
-  width: 28% !important;
-  word-wrap: break-word !important;
-  white-space: unset !important;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.mat-column-personPosition {
-  flex: 0 0 20% !important;
-  width: 20% !important;
-  word-wrap: break-word !important;
-  white-space: unset !important;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.mat-column-personCountry {
-  flex: 0 0 20% !important;
-  width: 20% !important;
-  word-wrap: break-word !important;
-  white-space: unset !important;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.mat-column-personIsEuCo {
-  flex: 0 0 6% !important;
-  width: 6% !important;
-  word-wrap: break-word !important;
-  white-space: unset !important;
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
 /* Stepper */
 .stepper-icon {
   color: $text-muted;
