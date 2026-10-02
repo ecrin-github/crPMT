@@ -28,6 +28,7 @@ export class UpsertVisitComponent implements OnInit {
   submitted: boolean = false;
   maxCharsBeforeTruncate: number = 60;
   reportSent: boolean[] = [];
+  reportApproved: boolean[] = [];
   truncate: boolean[] = [];
 
   constructor(
@@ -57,7 +58,7 @@ export class UpsertVisitComponent implements OnInit {
       id: null,
       visitType: this.visitTypeCode,
       visitDate: null,
-      pharmacy: null,
+      pharmacy: false,
       duration: null,
       durationUnit: null,
       comment: null,
@@ -213,6 +214,14 @@ export class UpsertVisitComponent implements OnInit {
       this.reportSent[i] = true;
     } else {
       this.reportSent[i] = false;
+    }
+  }
+
+  onChangeReportApproved(i) {
+    if (this.fv[i].reportApproved) {
+      this.reportApproved[i] = true;
+    } else {
+      this.reportApproved[i] = false;
     }
   }
 
