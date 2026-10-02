@@ -3,7 +3,7 @@
         <div class="row" *ngFor="let centre of getCentresForm().controls; let i = index;" [formGroupName]="i">
             <div class="col-12" [id]="'featpanel'+i">
                 <hr *ngIf="i > 0">
-                <mat-expansion-panel [expanded]="!centre.value.id ? true : false">
+                <mat-expansion-panel class="centre-panel" [expanded]="!centre.value.id ? true : false">
                     <mat-expansion-panel-header>
                         <span class="view-sub-title">Centre {{i+1}} - {{centre.value.hospital?.name}}</span>
                         <div class="p-0 m-0 d-flex align-items-center justify-content-center">
