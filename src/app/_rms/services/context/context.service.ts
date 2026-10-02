@@ -681,9 +681,11 @@ export class ContextService {
       || item.country?.name.toLocaleLowerCase().indexOf(term) > -1;
   }
 
-  addPersonDropdown(personName) {
+  addPersonDropdown(person, showCountry: boolean, showEuCo: boolean) {
     const addPersonModal = this.modalService.open(PersonModalComponent, { size: 'lg', backdrop: 'static' });
-    addPersonModal.componentInstance.fullName = personName;
+    addPersonModal.componentInstance.loadPerson(person);
+    addPersonModal.componentInstance.showCountry = showCountry;
+    addPersonModal.componentInstance.showEuCo = showEuCo;
 
     return addPersonModal.result.then((result) => {
       if (result === null) {

@@ -138,7 +138,7 @@
                                     </div>
                                 </ng-template>
                             </ng-select>
-                            <div class="text-value" *ngIf="isView">{{getCountryFlagFromIso2(study.value.sponsorCountry?.iso2)}}
+                            <div class="text-value" *ngIf="isView">{{getCountryFlag(study.value.sponsorCountry?.iso2)}}
                                 {{study.value.sponsorCountry?.name}}</div>
                         </div>
                     </div>
@@ -165,8 +165,9 @@
                                     </div>
                                 </ng-template>
                             </ng-select>
-                            <div class="text-value" *ngIf="isView">{{study.value.coordinatingInvestigator?.fullName}}{{study.value.coordinatingInvestigator?.country
-                                ? ' (' + study.value.coordinatingInvestigator.country.name + ')' : ''}}</div>
+                            <div class="text-value" *ngIf="isView">{{study.value.coordinatingInvestigator?.country ? getCountryFlag(study.value.coordinatingInvestigator?.country?.iso2) + '&nbsp;' : ''}}{{study.value.coordinatingInvestigator?.fullName}}
+                                <span *ngIf="study.value.coordinatingInvestigator?.email" class="email-address">(<a [href]="'mailto:' + study.value.coordinatingInvestigator.email">{{study.value.coordinatingInvestigator.email}}</a>)</span>
+                            </div>
                         </div>
                         <div class="col-md-8">
                             <div for="leadCtu" class="font-style">Lead CTU (Clinical Study)</div>
@@ -174,12 +175,12 @@
                                 <ng-container *ngIf="!isView; else displayLeadCTU">
                                     <div class="col-md-6">
                                         <ng-select [items]="ctus" formControlName="leadCtu" [searchFn]="searchCTUs" [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds" notFoundText="No CTUs found" placeholder="Start typing to add a new CTU" addTagText="Add" [addTag]="addCTU" appendTo="body" name="leadCtu" [ngClass]="{ 'is-invalid': submitted && getControls(i).leadCtu.errors?.required }">
-                                            <ng-template ng-label-tmp let-item="item">{{getCountryFlagFromIso2(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName
+                                            <ng-template ng-label-tmp let-item="item">{{getCountryFlag(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName
                                                 ? item.shortName + ' - ' : '' }}{{item.name}}</ng-template>
                                             <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                                 <div class="row m-0">
                                                     <div class="col-md-11 col-11 p-0 m-0">
-                                                        <div class="col-md-12">{{getCountryFlagFromIso2(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName
+                                                        <div class="col-md-12">{{getCountryFlag(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName
                                                             ? item.shortName + ' - ' : '' }}{{item.name}}</div>
                                                     </div>
                                                     <div class="col-md-1 col-1 p-0 m-0 d-flex" *ngIf="item.manualAdd">
@@ -195,7 +196,7 @@
                                 </ng-container>
                                 <ng-template #displayLeadCTU>
                                     <div class="col-md-12">
-                                        <div *ngIf="isView" class="text-value">{{getCountryFlagFromIso2(study.value?.leadCtu?.country?.iso2)}}&nbsp;{{study.value?.leadCtu?.shortName
+                                        <div *ngIf="isView" class="text-value">{{getCountryFlag(study.value?.leadCtu?.country?.iso2)}}&nbsp;{{study.value?.leadCtu?.shortName
                                             ? study.value?.leadCtu?.shortName + ' - ' : ''
                                             }}{{study.value?.leadCtu?.name}}</div>
                                     </div>
@@ -372,7 +373,7 @@
                             <div for="cEuco" class="font-style">Coordinating EuCo</div>
                             <div class="row">
                                 <div class="col-md-10">
-                                    <ng-select [items]="eucos" formControlName="cEuco" [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new EuCo" *ngIf="!isView" addTagText="Add" [addTag]="addPerson" appendTo="body">
+                                    <ng-select [items]="eucos" formControlName="cEuco" [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new EuCo" *ngIf="!isView" addTagText="Add" [addTag]="addEuco" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.fullName}}
                                                 ({{item.country?.name}})</span>
@@ -386,8 +387,7 @@
                                     </ng-select>
                                 </div>
                             </div>
-                            <div class="text-value" *ngIf="isView">{{study.value.cEuco?.fullName}}{{study.value.cEuco?.country ? ' (' +
-                                study.value.cEuco?.country?.name + ')' : ''}}</div>
+                            <div class="text-value" *ngIf="isView">{{study.value.cEuco?.country ? getCountryFlag(study.value.cEuco?.country?.iso2) + '&nbsp;' : ''}}{{study.value.cEuco?.fullName}}</div>
                         </div>
                         <div class="col-md-4">
                             <div for="cEuco" class="font-style">Coordinating country of Clinical Study</div>
@@ -403,7 +403,7 @@
                                     </ng-select>
                                 </div>
                             </div>
-                            <div class="text-value" *ngIf="isView">{{getCountryFlagFromIso2(study.value.coordinatingCountry?.iso2)}}
+                            <div class="text-value" *ngIf="isView">{{getCountryFlag(study.value.coordinatingCountry?.iso2)}}
                                 {{study.value.coordinatingCountry?.name}}</div>
                         </div>
                     </div>
@@ -517,7 +517,7 @@
                                     <a *ngFor="let sc of study.value.studyCountries" class="sc-card" [routerLink]="['/study-countries', sc.id, 'view']">
                                         <div class="sc-left">
                                             <div class="sc-title">
-                                                <span class="sc-flag">{{ getCountryFlagFromIso2(sc.country?.iso2) }}</span>
+                                                <span class="sc-flag">{{ getCountryFlag(sc.country?.iso2) }}</span>
                                                 <span class="sc-country">{{ sc.country?.name }}</span>
                                                 <span class="sc-sites">({{ getCountrySitesString(sc) }})</span>
                                             </div>

@@ -73,7 +73,7 @@ export function getFlagEmoji(countryCode: string) {
 			.map((char) => 127397 + char.charCodeAt(0))
 		return String.fromCodePoint(...codePoints)
 	}
-	return null;
+	return "";
 }
 
 /*
@@ -175,7 +175,7 @@ export function getTagBgColor(str) {
 	return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
 }
 
-export function getCountryFlagFromIso2(iso2) {
+export function getCountryFlag(iso2) {
 	return getFlagEmoji(iso2);
 }
 

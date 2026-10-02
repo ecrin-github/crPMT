@@ -198,8 +198,8 @@ export class UpsertCentreComponent implements OnInit {
     }
   }
 
-  addPerson = (person) => {
-    return this.contextService.addPersonDropdown(person);
+  addPerson = (personName: string) => {
+    return this.contextService.addPersonDropdown({ "fullName": personName, "country": this.studyCTU?.studyCountry?.country }, true, false);
   }
 
   deletePerson($event, pToRemove) {

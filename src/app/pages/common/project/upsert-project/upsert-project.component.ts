@@ -15,7 +15,7 @@ import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-genera
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
 import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
-import { dateToString, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
+import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
 import { UpsertReportingPeriodComponent } from '../../reporting-period/upsert-reporting-period/upsert-reporting-period.component';
 import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.component';
 import { UpsertPublicationComponent } from '../../publication/upsert-publication/upsert-publication.component';
@@ -375,8 +375,8 @@ export class UpsertProjectComponent implements OnInit {
   }
 
   // Necessary to write them as arrow functions
-  addPerson = (person) => {
-    return this.contextService.addPersonDropdown(person);
+  addPerson = (personName: string) => {
+    return this.contextService.addPersonDropdown({ "fullName": personName }, true, false);
   }
 
   deletePerson($event, pToRemove) {
@@ -414,6 +414,13 @@ export class UpsertProjectComponent implements OnInit {
 
   dateToString(date) {
     return dateToString(date);
+  }
+
+  getCountryFlag(iso2: string) {
+    if (iso2) {
+      return getFlagEmoji(iso2);
+    }
+    return '';
   }
 
   print() {

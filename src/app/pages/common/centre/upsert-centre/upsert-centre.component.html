@@ -1,7 +1,6 @@
 <form [formGroup]="form" ngNativeValidate>
     <div formArrayName="centres">
-        <div class="row" *ngFor="let centre of getCentresForm().controls; let i = index;"
-            [formGroupName]="i">
+        <div class="row" *ngFor="let centre of getCentresForm().controls; let i = index;" [formGroupName]="i">
             <div class="col-12" [id]="'featpanel'+i">
                 <hr *ngIf="i > 0">
                 <mat-expansion-panel [expanded]="!centre.value.id ? true : false">
@@ -31,10 +30,7 @@
                             <div for="hospital" class="font-style">Hospital<sup *ngIf="!isView">*</sup></div>
                             <div class="row">
                                 <div class="col-md-10">
-                                    <ng-select [items]="filteredHospitals" formControlName="hospital" [searchFn]="searchHospitals" [compareWith]="compareIds"
-                                        [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No hospital found" 
-                                        placeholder="Start typing to add a new hospital" *ngIf="!isView" [clearSearchOnAdd]="true"
-                                        addTagText="Add" [addTag]="addHospital" appendTo="body">
+                                    <ng-select [items]="filteredHospitals" formControlName="hospital" [searchFn]="searchHospitals" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No hospital found" placeholder="Start typing to add a new hospital" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addHospital" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.name}}, {{item.city}}</span>
                                         </ng-template>
@@ -64,10 +60,10 @@
                             <div for="siteNumber" class="font-style">Site number</div>
                             <div class="row" *ngIf="!isView">
                                 <div class="col-md-4 pe-0">
-                                    <input type="checkbox" id="siteNumberFlag" class="form-check-input checkbox" formControlName="siteNumberFlag" (change)="onChangeSiteNumber(i)"/>
+                                    <input type="checkbox" id="siteNumberFlag" class="form-check-input checkbox" formControlName="siteNumberFlag" (change)="onChangeSiteNumber(i)" />
                                 </div>
                                 <div class="col-md-6 ps-0" *ngIf="hasSiteNumber[i]">
-                                    <input type="text" id="siteNumber" class="form-control" formControlName="siteNumber" *ngIf="!isView"/>
+                                    <input type="text" id="siteNumber" class="form-control" formControlName="siteNumber" *ngIf="!isView" />
                                 </div>
                             </div>
                             <span class="text-value" *ngIf="isView">{{centre.value.siteNumberFlag ? centre.value.siteNumber : 'No'}}</span>
@@ -78,10 +74,7 @@
                             <div for="pi" class="font-style">PI name</div>
                             <div class="row">
                                 <div class="col-md-10">
-                                    <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds"
-                                        [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" 
-                                        placeholder="Start typing to add a new person" *ngIf="!isView" 
-                                        addTagText="Add" [addTag]="addPerson" appendTo="body">
+                                    <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" addTagText="Add" [addTag]="addPerson" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.fullName}}</span>
                                         </ng-template>
@@ -102,11 +95,13 @@
                                     </ng-select>
                                 </div>
                             </div>
-                            <div class="text-value" *ngIf="isView">{{centre.value.pi?.fullName}}{{centre.value.piNationalCoordinator ? ' (National coordinator)' : ''}}</div>
+                            <div class="text-value" *ngIf="isView">{{centre.value.pi?.fullName}}
+                                <span *ngIf="centre.value.pi?.email" class="email-address">(<a [href]="'mailto:' + centre.value.pi?.email">{{centre.value.pi?.email}}</a>)</span>
+                            </div>
                         </div>
                         <div class="col-md-4">
                             <div for="piNationalCoordinator" class="font-style">National PI Coordinator</div>
-                            <input type="checkbox" id="piNationalCoordinator" class="form-check-input checkbox" formControlName="piNationalCoordinator"  *ngIf="!isView"/>
+                            <input type="checkbox" id="piNationalCoordinator" class="form-check-input checkbox" formControlName="piNationalCoordinator" *ngIf="!isView" />
                             <span class="text-value" *ngIf="isView">{{centre.value.piNationalCoordinator ? "Yes" : "No"}}</span>
                         </div>
                     </div>
@@ -121,7 +116,7 @@
                             <div for="patientsExpected" class="font-style">Expected number of patients</div>
                             <div class="row">
                                 <div class="col-md-4 pe-0">
-                                    <input type="text" id="patientsExpected" class="form-control" formControlName="patientsExpected" *ngIf="!isView"/>
+                                    <input type="text" id="patientsExpected" class="form-control" formControlName="patientsExpected" *ngIf="!isView" />
                                     <span class="text-value" *ngIf="isView">{{centre.value.patientsExpected}}</span>
                                 </div>
                                 <div class="row">
@@ -136,14 +131,11 @@
                             <div class="row">
                                 <div class="col-md-9 pe-0">
                                     <div class="input-group" *ngIf="!isView">
-                                        <input class="form-control" placeholder="yyyy-mm-dd"
-                                        name="recruitmentGreenlight" ngbDatepicker #recruitmentGreenlight="ngbDatepicker"
-                                        formControlName="recruitmentGreenlight" container='body'>
+                                        <input class="form-control" placeholder="yyyy-mm-dd" name="recruitmentGreenlight" ngbDatepicker #recruitmentGreenlight="ngbDatepicker" formControlName="recruitmentGreenlight" container='body'>
                                         <div class="input-group-append">
-                                            <button class="btn btn-primary"
-                                            (click)="recruitmentGreenlight.toggle()" type="button">
-                                            <i class="fa fa-calendar"></i>
-                                        </button>
+                                            <button class="btn btn-primary" (click)="recruitmentGreenlight.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
                                         </div>
                                     </div>
                                     <span class="text-value" *ngIf="isView">{{dateToString(centre.value.recruitmentGreenlight)}}</span>
@@ -155,14 +147,11 @@
                             <div class="row">
                                 <div class="col-md-9 pe-0">
                                     <div class="input-group" *ngIf="!isView">
-                                        <input class="form-control" placeholder="yyyy-mm-dd"
-                                        name="firstPatientVisit" ngbDatepicker #firstPatientVisit="ngbDatepicker"
-                                        formControlName="firstPatientVisit" container='body'>
+                                        <input class="form-control" placeholder="yyyy-mm-dd" name="firstPatientVisit" ngbDatepicker #firstPatientVisit="ngbDatepicker" formControlName="firstPatientVisit" container='body'>
                                         <div class="input-group-append">
-                                            <button class="btn btn-primary"
-                                            (click)="firstPatientVisit.toggle()" type="button">
-                                            <i class="fa fa-calendar"></i>
-                                        </button>
+                                            <button class="btn btn-primary" (click)="firstPatientVisit.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
                                         </div>
                                     </div>
                                     <span class="text-value" *ngIf="isView">{{dateToString(centre.value.firstPatientVisit)}}</span>
@@ -190,7 +179,7 @@
                             <div for="movExpectedNumber" class="font-style">Number of Monitoring Visits expected</div>
                             <div class="row">
                                 <div class="col-md-3 pe-0">
-                                    <input type="text" id="movExpectedNumber" class="form-control" formControlName="movExpectedNumber" *ngIf="!isView"/>
+                                    <input type="text" id="movExpectedNumber" class="form-control" formControlName="movExpectedNumber" *ngIf="!isView" />
                                     <span class="text-value" *ngIf="isView">{{centre.value.movExpectedNumber}}</span>
                                 </div>
                                 <div class="row">

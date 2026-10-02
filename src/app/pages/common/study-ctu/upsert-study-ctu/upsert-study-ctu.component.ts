@@ -32,6 +32,7 @@ import { UpsertCentreComponent } from '../../centre/upsert-centre/upsert-centre.
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { UpsertCtuAgreementComponent } from '../../ctu-agreement/upsert-ctu-agreement/upsert-ctu-agreement.component';
 import { CtuEvaluationResults, SasVerificationResults, ctuEvaluationsListUrl, sasTrackerListUrl } from 'src/assets/js/constants';
+import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
 
 @Component({
   selector: 'app-upsert-study-ctu',
@@ -65,6 +66,7 @@ export class UpsertStudyCtuComponent implements OnInit {
   displayCtus: any[] = [];
 
   countries: CountryInterface[] = [];
+  persons: PersonInterface[] = [];
   ctuContractingEntities: ClassValueInterface[] = [];
   services: ClassValueInterface[] = [];
   studyCTUs: StudyCTUInterface[] = [];
@@ -103,6 +105,8 @@ export class UpsertStudyCtuComponent implements OnInit {
     this.subscribeToCountries();
     this.subscribeToSharePointCtus();
     this.subscribeToServices();
+    this.subscribeToPersons();
+
     if (this.isView) {
       this.subscribeToNonComplianceRegister();
     }
@@ -174,6 +178,15 @@ export class UpsertStudyCtuComponent implements OnInit {
     });
   }
 
+  private subscribeToPersons(): void {
+    this.contextService.persons.subscribe((persons) => {
+      this.persons = persons;
+      if (this.persons) {
+        this.persons = this.persons.filter(p => !p.isEuco);
+      }
+    });
+  }
+
   private subscribeToSharePointCtus(): void {
     this.graphApi.ctusServiceProviders$.subscribe((ctus) => {
 
@@ -201,7 +214,7 @@ export class UpsertStudyCtuComponent implements OnInit {
         ? [...this.sharePointCtus]
         : [...this.dbCtus];
 
-      
+
 
       if (this.displayCtus?.length > 0) {
         this.sortCTUs();
@@ -248,7 +261,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     this.nonComplianceItems = allItems.filter(item => {
       const spProject = item.projectName;
       return normalize(spProject).includes(normalize(currentProject)) ||
-             normalize(currentProject).includes(normalize(spProject));
+        normalize(currentProject).includes(normalize(spProject));
     });
   }
 
@@ -277,6 +290,7 @@ export class UpsertStudyCtuComponent implements OnInit {
   newStudyCTU(): UntypedFormGroup {
     return this.fb.group({
       id: null,
+      contactPerson: null,
       leadCtu: false,
       services: [],
       study: this.studyCountry?.study,
@@ -313,6 +327,7 @@ export class UpsertStudyCtuComponent implements OnInit {
 
       formArray.push(this.fb.group({
         id: sctu.id,
+        contactPerson: sctu.contactPerson,
         leadCtu: sctu.leadCtu,
         services: [sctu.services],
         study: sctu.study,
@@ -368,7 +383,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     // Always try to use the real SharePoint version when possible.
     const ctuToResolve = this.getSharePointVersionOfCtu(selectedCtu) || selectedCtu;
 
-    
+
 
     const countryIso2 = this.ctuMapperService.findCountryIso2FromSharePoint(ctuToResolve, this.countries);
 
@@ -390,7 +405,7 @@ export class UpsertStudyCtuComponent implements OnInit {
       address_info: ctuToResolve?.addressInfo || null
     };
 
-    
+
 
 
     return this.contextService.resolveSharePointCtu(payload).pipe(
@@ -435,14 +450,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     }
   }
 
-  getCountryFlag() {
-    if (this.studyCountry?.country?.iso2) {
-      return getFlagEmoji(this.studyCountry.country.iso2);
-    }
-    return '';
-  }
-
-  getCountryFlagFromIso2(iso2) {
+  getCountryFlag(iso2) {
     return getFlagEmoji(iso2);
   }
 
@@ -460,7 +468,7 @@ export class UpsertStudyCtuComponent implements OnInit {
         } else {
           this.ctuEvaluations[i] = [];
         }
-      }  
+      }
       this.sortCTUEvaluations();
       this.loadingCTUEvaluations = false;
     });
@@ -560,14 +568,35 @@ export class UpsertStudyCtuComponent implements OnInit {
     return getTagBgColor(this.getCTUEvaluationResult(i));
   }
 
-
-
   getTagBorderColor(text) {
     return getTagBorderColor(text);
   }
 
   getTagBgColor(text) {
     return getTagBgColor(text);
+  }
+
+  // Necessary to write them as arrow functions
+  searchPersons = (term: string, item) => {
+    return this.contextService.searchPersons(term, item);
+  }
+
+  addPerson = (personName: string) => {
+    const country =
+      this.studyCountry?.country ||
+      this.form.value.studyCTUs[0]?.studyCountry?.country;
+    console.log(country);
+    return this.contextService.addPersonDropdown({ "fullName": personName, "country": country }, true, false);
+  }
+
+  deletePerson($event, pToRemove) {
+    $event.stopPropagation(); // Clicks the option otherwise
+
+    if (pToRemove.id == -1) {  // Created locally by user
+      this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.fullName));
+    } else {  // Already existing
+      this.contextService.deletePersonDropdown(pToRemove, !this.isAdd);
+    }
   }
 
   searchClassValues = (term: string, item) => {
@@ -600,13 +629,13 @@ export class UpsertStudyCtuComponent implements OnInit {
     }
 
     if (changes.studyCTUsData) {
-      
+
       if (this.studyCTUsData === null) {
         this.studyCTUs = [];
       } else {
         this.studyCTUs = this.studyCTUsData;
       }
-      
+
       patchForm = true;
     }
 
@@ -677,6 +706,10 @@ export class UpsertStudyCtuComponent implements OnInit {
       payload.ctu = payload.ctu.id;
     }
 
+    if (payload.contactPerson?.id) {
+      payload.contactPerson = payload.contactPerson.id;
+    }
+
     if (payload.ctuContractingEntity?.id) {
       payload.ctuContractingEntity = payload.ctuContractingEntity.id;
     }
@@ -720,7 +753,7 @@ export class UpsertStudyCtuComponent implements OnInit {
             item.ctu = { id: finalCtuId };
             this.updatePayload(item, scId, studyId, i);
 
-            
+
 
             let itemObs$: Observable<Object>;
             if (!item.id) {
