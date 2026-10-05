@@ -198,7 +198,7 @@ export class UpsertStudyCtuComponent implements OnInit {
         ? [...this.sharePointCtus]
         : [...this.dbCtus];
 
-      
+
 
       if (this.displayCtus?.length > 0) {
         this.sortCTUs();
@@ -245,7 +245,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     this.nonComplianceItems = allItems.filter(item => {
       const spProject = item.projectName;
       return normalize(spProject).includes(normalize(currentProject)) ||
-             normalize(currentProject).includes(normalize(spProject));
+        normalize(currentProject).includes(normalize(spProject));
     });
   }
 
@@ -359,7 +359,7 @@ export class UpsertStudyCtuComponent implements OnInit {
     // Always try to use the real SharePoint version when possible.
     const ctuToResolve = this.getSharePointVersionOfCtu(selectedCtu) || selectedCtu;
 
-    
+
 
     const countryIso2 = this.ctuMapperService.findCountryIso2FromSharePoint(ctuToResolve, this.countries);
 
@@ -381,7 +381,7 @@ export class UpsertStudyCtuComponent implements OnInit {
       address_info: ctuToResolve?.addressInfo || null
     };
 
-    
+
 
 
     return this.contextService.resolveSharePointCtu(payload).pipe(
@@ -451,7 +451,7 @@ export class UpsertStudyCtuComponent implements OnInit {
         } else {
           this.ctuEvaluations[i] = [];
         }
-      }  
+      }
       this.sortCTUEvaluations();
       this.loadingCTUEvaluations = false;
     });
@@ -476,7 +476,9 @@ export class UpsertStudyCtuComponent implements OnInit {
 
   getSASVerificationResult(i): string | null {
     if (this.sasVerifications[i]?.length > 0) {
-      const status = this.sasVerifications[i][0]?.Status?.toLowerCase()?.trim();
+      const rawStatus = this.sasVerifications[i][0]?.Status;
+      // Defensive: SharePoint can return this field as something other than a plain string
+      const status = typeof rawStatus === 'string' ? rawStatus.toLowerCase().trim() : null;
 
       if (status === 'approved') {
         return SasVerificationResults.APPROVED;
@@ -489,6 +491,7 @@ export class UpsertStudyCtuComponent implements OnInit {
 
     return null;
   }
+
   getSASVerificationTagClass(i): string {
     const result = this.getSASVerificationResult(i)?.toLowerCase()?.trim();
 
@@ -588,13 +591,13 @@ export class UpsertStudyCtuComponent implements OnInit {
     }
 
     if (changes.studyCTUsData) {
-      
+
       if (this.studyCTUsData === null) {
         this.studyCTUs = [];
       } else {
         this.studyCTUs = this.studyCTUsData;
       }
-      
+
       patchForm = true;
     }
 
@@ -702,7 +705,7 @@ export class UpsertStudyCtuComponent implements OnInit {
             item.ctu = { id: finalCtuId };
             this.updatePayload(item, scId, studyId, i);
 
-            
+
 
             let itemObs$: Observable<Object>;
             if (!item.id) {
