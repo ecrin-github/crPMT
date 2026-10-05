@@ -32,7 +32,7 @@
                                 <input type="text" id="duration" class="form-control" formControlName="duration" *ngIf="!isView" />
                             </div>
                             <div class="col-md-8 ps-0">
-                                <ng-select [items]="TIME_UNITS" formControlName="durationUnit" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
+                                <ng-select [items]="TIME_UNITS" formControlName="durationUnit" [multiple]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
                                 </ng-select>
                             </div>
                         </div>

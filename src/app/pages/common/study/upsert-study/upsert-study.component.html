@@ -70,7 +70,7 @@
                     <div class="row form-group" *ngIf="isStudyPage && !isView">
                         <div class="col-md-4">
                             <div for="project" class="font-style">European project</div>
-                            <ng-select [items]="projects" formControlName="project" [searchFn]="searchProjects" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No project found" placeholder="Please select a project to link this study to" appendTo="body">
+                            <ng-select [items]="projects" formControlName="project" [searchFn]="searchProjects" [compareWith]="compareIds" class="form-control ng-form-control" notFoundText="No project found" placeholder="Please select a project to link this study to" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.shortName}}</span>
                                 </ng-template>
@@ -105,7 +105,7 @@
                         <div class="col-md-4">
                             <div for="sponsorOrganisation" class="font-style">Name of Sponsor Organisation/Institution
                             </div>
-                            <ng-select [items]="organisations" formControlName="sponsorOrganisation" [searchFn]="searchOrganisations" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No organisation found" placeholder="Start typing to add a new organisation" *ngIf="!isView" addTagText="Add" [addTag]="addOrganisation" appendTo="body">
+                            <ng-select [items]="organisations" formControlName="sponsorOrganisation" [searchFn]="searchOrganisations" [compareWith]="compareIds" class="form-control ng-form-control" notFoundText="No organisation found" placeholder="Start typing to add a new organisation" *ngIf="!isView" addTagText="Add" [addTag]="addOrganisation" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.name}}{{item.shortName ? ' (' + item.shortName +
                                         ')' : ''}}{{item.country?.name ? ', ' + item.country.name : ''}}</span>
@@ -130,7 +130,7 @@
                         </div>
                         <div class="col-md-4">
                             <div for="sponsorCountry" class="font-style">Sponsor Country</div>
-                            <ng-select [items]="countries" formControlName="sponsorCountry" [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true" [compareWith]="compareCountries" notFoundText="No countries found" placeholder="Select sponsor country" *ngIf="!isView" appendTo="body" name="sponsorCountry">
+                            <ng-select [items]="countries" formControlName="sponsorCountry" [searchFn]="searchCountries" [multiple]="false" [compareWith]="compareCountries" notFoundText="No countries found" placeholder="Select sponsor country" *ngIf="!isView" appendTo="body" name="sponsorCountry">
                                 <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
                                 <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                     <div class="row m-0">
@@ -145,7 +145,7 @@
                     <div class="row form-group mt-8">
                         <div class="col-md-4">
                             <div for="coordinatingInvestigator" class="font-style">Coordinating Investigator</div>
-                            <ng-select [items]="persons" formControlName="coordinatingInvestigator" [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addPerson" appendTo="body">
+                            <ng-select [items]="persons" formControlName="coordinatingInvestigator" [searchFn]="searchPersons" [compareWith]="compareIds" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addPerson" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.fullName}}</span>
                                 </ng-template>
@@ -174,7 +174,7 @@
                             <div class="row">
                                 <ng-container *ngIf="!isView; else displayLeadCTU">
                                     <div class="col-md-6">
-                                        <ng-select [items]="ctus" formControlName="leadCtu" [searchFn]="searchCTUs" [multiple]="false" [virtualScroll]="true" [compareWith]="compareIds" notFoundText="No CTUs found" placeholder="Start typing to add a new CTU" addTagText="Add" [addTag]="addCTU" appendTo="body" name="leadCtu" [ngClass]="{ 'is-invalid': submitted && getControls(i).leadCtu.errors?.required }">
+                                        <ng-select [items]="ctus" formControlName="leadCtu" [searchFn]="searchCTUs" [multiple]="false" [compareWith]="compareIds" notFoundText="No CTUs found" placeholder="Start typing to add a new CTU" addTagText="Add" [addTag]="addCTU" appendTo="body" name="leadCtu" [ngClass]="{ 'is-invalid': submitted && getControls(i).leadCtu.errors?.required }">
                                             <ng-template ng-label-tmp let-item="item">{{getCountryFlag(item.country?.iso2)}}&nbsp;&nbsp;{{item.shortName
                                                 ? item.shortName + ' - ' : '' }}{{item.name}}</ng-template>
                                             <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
@@ -207,7 +207,7 @@
                     <div class="row form-group mt-8">
                         <div class="col-md-4">
                             <div for="medicalFields" class="font-style">Medical fields</div>
-                            <ng-select [items]="medicalFields" formControlName="medicalFields" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No medical field found" placeholder="Medical fields" *ngIf="!isView" appendTo="body">
+                            <ng-select [items]="medicalFields" formControlName="medicalFields" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" class="form-control ng-form-control custom" notFoundText="No medical field found" placeholder="Medical fields" *ngIf="!isView" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>
                                     <span class="ng-value-icon right" (click)="clear(item)">×</span>
@@ -224,7 +224,7 @@
                         </div>
                         <div class="col-md-4">
                             <div for="populations" class="font-style">Population(s)</div>
-                            <ng-select [items]="populations" formControlName="populations" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No population found" placeholder="Populations" *ngIf="!isView" appendTo="body">
+                            <ng-select [items]="populations" formControlName="populations" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" class="form-control ng-form-control custom" notFoundText="No population found" placeholder="Populations" *ngIf="!isView" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>
                                     <span class="ng-value-icon right" (click)="clear(item)">×</span>
@@ -250,11 +250,11 @@
                             <div for="regulatoryFramework" class="font-style">Regulatory framework</div>
                             <div class="row" *ngIf="!isView">
                                 <div class="col-md-5 pe-0">
-                                    <ng-select [items]="REGULATORY_FRAMEWORKS" formControlName="regulatoryFramework" (change)="onChangeRegulatoryFramework(i)" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No regulatory frameworks found" placeholder="" *ngIf="!isView" appendTo="body">
+                                    <ng-select [items]="REGULATORY_FRAMEWORKS" formControlName="regulatoryFramework" (change)="onChangeRegulatoryFramework(i)" [multiple]="false" class="form-control ng-form-control" notFoundText="No regulatory frameworks found" placeholder="" *ngIf="!isView" appendTo="body">
                                     </ng-select>
                                 </div>
                                 <div class="col-md-7 ps-0" *ngIf="hasRegulatoryFrameworkDetails[i]">
-                                    <ng-select [items]="filteredRegulatoryFrameworkDetails" formControlName="regulatoryFrameworkDetails" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No regulatory framework found" placeholder="Details" *ngIf="!isView" appendTo="body">
+                                    <ng-select [items]="filteredRegulatoryFrameworkDetails" formControlName="regulatoryFrameworkDetails" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" class="form-control ng-form-control custom" notFoundText="No regulatory framework found" placeholder="Details" *ngIf="!isView" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.value}}</span>
                                             <span class="ng-value-icon right" (click)="clear(item)">×</span>
@@ -284,7 +284,7 @@
                                     <input *ngIf="!isView" type="checkbox" id="complexTrialDesign" class="form-check-input checkbox" (change)="onChangeComplexTrialDesign(i)" formControlName="complexTrialDesign" />
                                 </div>
                                 <div class="col-md-10 ps-0" *ngIf="isComplexTrial[i]">
-                                    <ng-select [items]="complexTrialTypes" formControlName="complexTrialType" [searchFn]="searchClassValues" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No complex trial type found" placeholder="Start typing to add a new type" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addComplexTrialType" appendTo="body">
+                                    <ng-select [items]="complexTrialTypes" formControlName="complexTrialType" [searchFn]="searchClassValues" [compareWith]="compareIds" class="form-control ng-form-control" notFoundText="No complex trial type found" placeholder="Start typing to add a new type" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addComplexTrialType" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.value}}</span>
                                         </ng-template>
@@ -341,7 +341,7 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-3">
-                            <ng-select [items]="ecrinContractingEntities" formControlName="ecrinContractingEntity" [searchFn]="searchClassValues" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No ECRIN contracting entity found" placeholder="Select an entity" *ngIf="!isView" appendTo="body">
+                            <ng-select [items]="ecrinContractingEntities" formControlName="ecrinContractingEntity" [searchFn]="searchClassValues" [compareWith]="compareIds" class="form-control ng-form-control" notFoundText="No ECRIN contracting entity found" placeholder="Select an entity" *ngIf="!isView" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>
                                 </ng-template>
@@ -373,7 +373,7 @@
                             <div for="cEuco" class="font-style">Coordinating EuCo</div>
                             <div class="row">
                                 <div class="col-md-10">
-                                    <ng-select [items]="eucos" formControlName="cEuco" [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new EuCo" *ngIf="!isView" addTagText="Add" [addTag]="addEuco" appendTo="body">
+                                    <ng-select [items]="eucos" formControlName="cEuco" [searchFn]="searchPersons" [compareWith]="compareIds" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new EuCo" *ngIf="!isView" addTagText="Add" [addTag]="addEuco" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.fullName}}
                                                 ({{item.country?.name}})</span>
@@ -393,7 +393,7 @@
                             <div for="cEuco" class="font-style">Coordinating country of Clinical Study</div>
                             <div class="row">
                                 <div class="col-md-10">
-                                    <ng-select [items]="countries" formControlName="coordinatingCountry" [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true" [compareWith]="compareCountries" notFoundText="No countries found" placeholder="Select coordinating country" *ngIf="!isView" appendTo="body" name="coordinatingCountry">
+                                    <ng-select [items]="countries" formControlName="coordinatingCountry" [searchFn]="searchCountries" [multiple]="false" [compareWith]="compareCountries" notFoundText="No countries found" placeholder="Select coordinating country" *ngIf="!isView" appendTo="body" name="coordinatingCountry">
                                         <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
                                         <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                             <div class="row m-0">
@@ -410,7 +410,7 @@
                     <div class="row form-group">
                         <div class="col-md-7">
                             <div for="services" class="font-style">ECRIN services</div>
-                            <ng-select [items]="services" formControlName="services" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No service found" placeholder="" *ngIf="!isView" appendTo="body">
+                            <ng-select [items]="services" formControlName="services" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [hideSelected]="true" [closeOnSelect]="false" class="form-control ng-form-control custom" notFoundText="No service found" placeholder="" *ngIf="!isView" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>
                                     <span class="ng-value-icon right" (click)="clear(item)">×</span>
@@ -565,7 +565,7 @@
                                     <input type="text" id="recruitmentPeriod" class="form-control" formControlName="recruitmentPeriod" *ngIf="!isView" />
                                 </div>
                                 <div class="col-md-6 ps-0">
-                                    <ng-select [items]="TIME_UNITS" formControlName="recruitmentPeriodUnit" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
+                                    <ng-select [items]="TIME_UNITS" formControlName="recruitmentPeriodUnit" [multiple]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
                                     </ng-select>
                                 </div>
                             </div>
@@ -582,7 +582,7 @@
                                     <input type="text" id="treatmentDurationPerPatient" class="form-control" formControlName="treatmentDurationPerPatient" *ngIf="!isView" />
                                 </div>
                                 <div class="col-md-6 ps-0">
-                                    <ng-select [items]="TIME_UNITS" formControlName="treatmentDurationPerPatientUnit" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
+                                    <ng-select [items]="TIME_UNITS" formControlName="treatmentDurationPerPatientUnit" [multiple]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
                                     </ng-select>
                                 </div>
                             </div>
@@ -599,7 +599,7 @@
                                             <input type="text" id="treatmentAndFollowUpDurationPerPatient" class="form-control" formControlName="treatmentAndFollowUpDurationPerPatient" *ngIf="!isView" />
                                         </div>
                                         <div class="col-md-6 ps-0">
-                                            <ng-select [items]="TIME_UNITS" formControlName="treatmentAndFollowUpDurationPerPatientUnit" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
+                                            <ng-select [items]="TIME_UNITS" formControlName="treatmentAndFollowUpDurationPerPatientUnit" [multiple]="false" class="form-control ng-form-control" notFoundText="No units found" placeholder="Select unit" *ngIf="!isView" appendTo="body">
                                             </ng-select>
                                         </div>
                                     </div>
@@ -652,7 +652,7 @@
                     <div class="row form-group">
                         <div class="col-md-6">
                             <div for="status" class="font-style">Status</div>
-                            <ng-select [items]="STUDY_STATUSES" formControlName="status" [multiple]="false" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No study status found" placeholder="Select study status" *ngIf="!isView" appendTo="body">
+                            <ng-select [items]="STUDY_STATUSES" formControlName="status" [multiple]="false" class="form-control ng-form-control" notFoundText="No study status found" placeholder="Select study status" *ngIf="!isView" appendTo="body">
                             </ng-select>
                             <div class="text-value" *ngIf="isView">{{study.value.status}}</div>
                         </div>

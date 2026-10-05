@@ -30,7 +30,7 @@
                             <div for="hospital" class="font-style">Hospital<sup *ngIf="!isView">*</sup></div>
                             <div class="row">
                                 <div class="col-md-10">
-                                    <ng-select [items]="filteredHospitals" formControlName="hospital" [searchFn]="searchHospitals" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No hospital found" placeholder="Start typing to add a new hospital" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addHospital" appendTo="body">
+                                    <ng-select [items]="filteredHospitals" formControlName="hospital" [searchFn]="searchHospitals" [compareWith]="compareIds" class="form-control ng-form-control" notFoundText="No hospital found" placeholder="Start typing to add a new hospital" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addHospital" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.name}}, {{item.city}}</span>
                                         </ng-template>
@@ -74,7 +74,7 @@
                             <div for="pi" class="font-style">PI name</div>
                             <div class="row">
                                 <div class="col-md-10">
-                                    <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" addTagText="Add" [addTag]="addPerson" appendTo="body">
+                                    <ng-select [items]="persons" formControlName="pi" [searchFn]="searchPersons" [compareWith]="compareIds" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" addTagText="Add" [addTag]="addPerson" appendTo="body">
                                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                             <span class="ng-value-label">{{item.fullName}}</span>
                                         </ng-template>

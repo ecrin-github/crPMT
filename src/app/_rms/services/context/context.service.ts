@@ -75,6 +75,7 @@ export class ContextService {
       obsArr.push(funct.pipe(catchError(error => of(this.toastr.error(error.error.title)))));
     });
 
+    // TODO: shouldn't use combine latest, queries are independent
     combineLatest(obsArr).subscribe(res => {
       this.setEcrinContractingEntities(res.pop());
       this.setServices(res.pop());

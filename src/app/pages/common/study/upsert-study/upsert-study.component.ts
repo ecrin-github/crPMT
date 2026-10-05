@@ -25,6 +25,7 @@ import { UpsertStudyAgreementComponent } from '../../study-agreement/upsert-stud
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { REGULATORY_FRAMEWORKS, STUDY_STATUSES, TIME_UNITS } from 'src/assets/js/constants';
 import { ProjectInterface } from 'src/app/_rms/interfaces/core/project.interface';
+import { CtuMapperService } from 'src/app/_rms/services/entities/study-ctu/ctu-mapper.service';
 
 
 @Component({
@@ -43,7 +44,7 @@ export class UpsertStudyComponent implements OnInit {
     // Context
     complexTrialTypes: ClassValueInterface[] = [];
     countries: CountryInterface[] = [];
-    ctus: CTUInterface[] = [];
+    ctus: any[] = [];
     ecrinContractingEntities: ClassValueInterface[] = [];
     eucos: PersonInterface[] = [];
     medicalFields: ClassValueInterface[] = [];
@@ -91,6 +92,7 @@ export class UpsertStudyComponent implements OnInit {
         private modalService: NgbModal,
         private scrollService: ScrollService,
         private activatedRoute: ActivatedRoute,
+        private ctuMapperService: CtuMapperService,
         private graphApiService: GraphApiService,
         private spinner: NgxSpinnerService,
         private toastr: ToastrService,
@@ -158,10 +160,14 @@ export class UpsertStudyComponent implements OnInit {
         });
         this.contextService.countries.subscribe((countries) => {
             this.countries = countries;
+
+            // Need countries for CTUs
+            if (this.countries != null && this.ctus?.length == 0) {
+                this.loadCtus();
+            }
         });
-        this.contextService.ctus.subscribe((ctus) => {
-            this.ctus = ctus;
-        });
+
+
         this.contextService.ecrinContractingEntities.subscribe((ecrinContractingEntities) => {
             this.ecrinContractingEntities = ecrinContractingEntities;
         });
@@ -819,6 +825,61 @@ export class UpsertStudyComponent implements OnInit {
     // No addEcrinContractingEntity/deleteEcrinContractingEntity: the list is fixed for now
     searchCountries = (term: string, item) => {
         return this.contextService.searchCountries(term, item);
+    }
+
+    private loadCtus(): void {
+        combineLatest([this.contextService.ctus, this.graphApi.ctusServiceProviders$]).subscribe((res) => {
+            const sharePointCtus = res.pop();
+            const dbCtus = res.pop();
+
+            let sharePointIds = new Set();
+            this.ctus = [];
+
+            if (sharePointCtus && sharePointCtus?.length > 0) {
+                // Fix country ISO2 for SharePoint CTUs if they have ISO3 codes
+                sharePointCtus.forEach(ctu => {
+                    if (ctu.country?.iso2 && this.countries?.length > 0) {
+                        const correctIso2 = this.ctuMapperService.findCountryIso2FromSharePoint(ctu, this.countries);
+                        if (correctIso2 && correctIso2 !== ctu.country.iso2) {
+                            ctu.country.iso2 = correctIso2;
+                            const countryMatch = this.countries.find(c => c.iso2 === correctIso2);
+                            if (countryMatch) {
+                                ctu.country.name = countryMatch.name;
+                            }
+                        }
+                    }
+                });
+
+                this.ctus = [...sharePointCtus];
+                sharePointCtus.forEach((ctu) => sharePointIds.add(ctu.sharepointItemId));
+            }
+
+            // Add DB CTUs that have been manually added or all of them if the SharePoint query failed
+            if (dbCtus && dbCtus?.length > 0) {
+                dbCtus.forEach((ctu) => {
+                    if (ctu.manualAdd || sharePointCtus?.length == 0) {
+                        this.ctus.push(ctu);
+                    }
+                })
+            }
+
+            this.sortCTUs();
+        });
+    }
+
+    sortCTUs() {
+        const { compare } = Intl.Collator('en-GB');
+
+        this.ctus.sort((a, b) => {
+            const countryCompare = (a.country?.name || 'ZZZ').localeCompare(b.country?.name || 'ZZZ');
+            if (countryCompare > 0) {
+                return 1;
+            } else if (countryCompare < 0) {
+                return -1;
+            } else {
+                return compare((a.shortName || '') + (a.name || ''), (b.shortName || '') + (b.name || ''));
+            }
+        });
     }
 
     addCTU = (ctuName) => {

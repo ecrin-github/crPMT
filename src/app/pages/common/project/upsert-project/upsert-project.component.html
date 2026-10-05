@@ -82,7 +82,7 @@
             <div class="row form-group">
                 <div class="col-md-4">
                     <div for="coordinatingInstitution" class="font-style">Name of the Coordinating Institution</div>
-                    <ng-select [items]="organisations" formControlName="coordinatingInstitution" [searchFn]="searchOrganisations" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" [clearSearchOnAdd]="true" notFoundText="No organisation found" placeholder="Start typing to add a new organisation" *ngIf="!isView" addTagText="Add" [addTag]="addOrganisation" appendTo="body">
+                    <ng-select [items]="organisations" formControlName="coordinatingInstitution" [searchFn]="searchOrganisations" [compareWith]="compareIds" class="form-control ng-form-control" [clearSearchOnAdd]="true" notFoundText="No organisation found" placeholder="Start typing to add a new organisation" *ngIf="!isView" addTagText="Add" [addTag]="addOrganisation" appendTo="body">
                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                             <span class="ng-value-label">{{item.name}}{{item.shortName ? ' (' + item.shortName + ')' :
                                 ''}}{{item.country?.name ? ', ' + item.country.name : ''}}</span>
@@ -112,7 +112,7 @@
                 </div>
                 <div class="col-md-4">
                     <div for="pi" class="font-style">Name of the EU Project Coordinator</div>
-                    <ng-select [items]="persons" formControlName="coordinator" [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addPerson" appendTo="body">
+                    <ng-select [items]="persons" formControlName="coordinator" [searchFn]="searchPersons" [compareWith]="compareIds" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addPerson" appendTo="body">
                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                             <span class="ng-value-label">{{item.fullName}}</span>
                         </ng-template>
@@ -145,7 +145,7 @@
             <div class="row form-group">
                 <div class="col-md-4">
                     <div for="fundingSources" class="font-style">Funding source(s)</div>
-                    <ng-select [items]="fundingSources" formControlName="fundingSources" [multiple]="true" (change)="onChangeFundingSources()" [searchFn]="searchFundingSources" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No funding source found" placeholder="Start typing to add a new funding source" *ngIf="!isView" addTagText="Add" [addTag]="addFundingSource" appendTo="body">
+                    <ng-select [items]="fundingSources" formControlName="fundingSources" [multiple]="true" (change)="onChangeFundingSources()" [searchFn]="searchFundingSources" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" class="form-control ng-form-control custom" notFoundText="No funding source found" placeholder="Start typing to add a new funding source" *ngIf="!isView" addTagText="Add" [addTag]="addFundingSource" appendTo="body">
                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                             <span class="ng-value-label">{{item.value}}</span>
                             <span class="ng-value-icon right" (click)="clear(item)">×</span>
