@@ -318,9 +318,9 @@
                     <div class="row form-group mt-8">
                         <div class="col-md-12">
                             <div for="summary" class="font-style">Summary</div>
-                            <textarea [maxlength]="summaryMaxChars" cols="30" rows="3" class="form-control" placeholder="Study summary" (keyup)="changeRemainingChars($event, i)" formControlName="summary" *ngIf="!isView" id="summary" [ngClass]="{ 'is-invalid': submitted && getControls(i).summary.errors }">
+                            <textarea cols="30" rows="3" class="form-control" placeholder="Study summary" (keyup)="changeRemainingChars($event, i)" formControlName="summary" *ngIf="!isView" id="summary" [ngClass]="{ 'is-invalid': submitted && getControls(i).summary.errors }">
                             </textarea>
-                            <div class="float-right mt-1" *ngIf="!isView">{{summaryRemainingChars[i]}}</div>
+                            <!-- <div class="float-right mt-1" *ngIf="!isView">{{summaryRemainingChars[i]}}</div> -->
                             <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).summary.errors">
                                 <p *ngIf="submitted && getControls(i).summary.errors.required">Please enter the study
                                     summary</p>
