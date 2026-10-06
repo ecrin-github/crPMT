@@ -674,47 +674,108 @@ export class UpsertStudyCtuComponent implements OnInit {
         const payload = JSON.parse(JSON.stringify(this.form.value));
 
         for (const [i, item] of payload.studyCTUs.entries()) {
-            let itemObs$: Observable<Object>;
+            saveObs$.push(
+                this.resolveCtuId(item.ctu).pipe(
+                    mergeMap((ctuId: number | null) => {
+                        const finalCtuId = ctuId ?? item.ctu?.id;
 
-            this.updatePayload(item, scId, studyId, i);
+                        if (!finalCtuId) {
+                            console.error('No CTU ID resolved for item:', item);
+                            return of(false);
+                        }
 
-            if (!item.id) {
-                itemObs$ = this.studyCTUService.addStudyCTUFromStudy(studyId, item);
-            } else {
-                itemObs$ = this.studyCTUService.editStudyCTU(item.id, item);
-            }
+                        item.ctu = { id: finalCtuId };
+                        this.updatePayload(item, scId, studyId, i);
 
-            saveObs$.push(itemObs$.pipe(
-                mergeMap((res: any) => {
-                    if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
-                        const subObs$: Observable<boolean>[] = [];
+                        let itemObs$: Observable<Object>;
+                        if (!item.id) {
+                            itemObs$ = this.studyCTUService.addStudyCTUFromStudy(studyId, item);
+                        } else {
+                            itemObs$ = this.studyCTUService.editStudyCTU(item.id, item);
+                        }
 
-                        subObs$.push(
-                            this.centreComponents.get(i).onSave(res.id, studyId).pipe(
-                                map((successArr: boolean[]) => successArr.every(a => a))
-                            )
+                        return itemObs$.pipe(
+                            mergeMap((res: any) => {
+
+                                if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+                                    const subObs$: Observable<boolean>[] = [];
+
+                                    subObs$.push(
+                                        this.centreComponents.get(i).onSave(res.id, studyId).pipe(
+                                            map((successArr: boolean[]) => successArr.every(a => a))
+                                        )
+                                    );
+
+                                    subObs$.push(
+                                        this.ctuAgreementComponents.get(i).onSave(res.id).pipe(
+                                            map((successArr: boolean[]) => successArr.every(a => a))
+                                        )
+                                    );
+
+                                    return combineLatest(subObs$).pipe(
+                                        map((successArr: boolean[]) => successArr.every(a => a))
+                                    );
+                                }
+
+                                this.toastr.error('Failed to save Study CTU');
+                                return of(false);
+                            }),
+                            catchError((err) => {
+                                this.toastr.error(err);
+                                return of(false);
+                            })
                         );
-
-                        subObs$.push(
-                            this.ctuAgreementComponents.get(i).onSave(res.id).pipe(
-                                map((successArr: boolean[]) => successArr.every(a => a))
-                            )
-                        );
-
-                        return combineLatest(subObs$).pipe(
-                            map((successArr: boolean[]) => successArr.every(a => a))
-                        );
-                    }
-
-                    this.toastr.error('Failed to save Study CTU');
-                    return of(false);
-                }),
-                catchError((err) => {
-                    this.toastr.error(err);
-                    return of(false);
-                })
-            ));
+                    }),
+                    catchError((err) => {
+                        this.toastr.error(err);
+                        return of(false);
+                    })
+                )
+            );
         }
+
+        // for (const [i, item] of payload.studyCTUs.entries()) {
+        //     let itemObs$: Observable<Object>;
+
+        //     this.updatePayload(item, scId, studyId, i);
+
+        //     if (!item.id) {
+        //         itemObs$ = this.studyCTUService.addStudyCTUFromStudy(studyId, item);
+        //     } else {
+        //         itemObs$ = this.studyCTUService.editStudyCTU(item.id, item);
+        //     }
+
+        //     saveObs$.push(itemObs$.pipe(
+        //         mergeMap((res: any) => {
+        //             if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+        //                 const subObs$: Observable<boolean>[] = [];
+
+        //                 subObs$.push(
+        //                     this.centreComponents.get(i).onSave(res.id, studyId).pipe(
+        //                         map((successArr: boolean[]) => successArr.every(a => a))
+        //                     )
+        //                 );
+
+        //                 subObs$.push(
+        //                     this.ctuAgreementComponents.get(i).onSave(res.id).pipe(
+        //                         map((successArr: boolean[]) => successArr.every(a => a))
+        //                     )
+        //                 );
+
+        //                 return combineLatest(subObs$).pipe(
+        //                     map((successArr: boolean[]) => successArr.every(a => a))
+        //                 );
+        //             }
+
+        //             this.toastr.error('Failed to save Study CTU');
+        //             return of(false);
+        //         }),
+        //         catchError((err) => {
+        //             this.toastr.error(err);
+        //             return of(false);
+        //         })
+        //     ));
+        // }
 
         const formIds: Array<String> = payload.studyCTUs.map((item: StudyCTUInterface) => item.id);
         const removedItems: Array<StudyCTUInterface> = this.studyCTUs.filter(
@@ -773,13 +834,54 @@ export class UpsertStudyCtuComponent implements OnInit {
         }
     }
 
+    resolveCtuId(selectedCtu: any): Observable<number | null> {
+        if (!selectedCtu) {
+            return of(null);
+        }
+
+        const fallbackDbId = selectedCtu?.id || null;
+
+        const countryIso2 = this.ctuMapperService.findCountryIso2FromSharePoint(selectedCtu, this.countries);
+
+        if (!countryIso2) {
+            if (fallbackDbId) {
+                return of(fallbackDbId);
+            }
+
+            this.toastr.error('Unable to map CTU country from SharePoint to database country.');
+            return of(null);
+        }
+
+        const payload = {
+            sharepoint_item_id: selectedCtu?.sharepointItemId || null,
+            name: selectedCtu?.name || null,
+            short_name: selectedCtu?.shortName || null,
+            country_iso2: countryIso2,
+            sas_verification: !!selectedCtu?.sasVerification,
+            address_info: selectedCtu?.addressInfo || null
+        };
+
+        return this.contextService.resolveSharePointCtu(payload).pipe(
+            map((res: any) => {
+                return res?.id || fallbackDbId || null;
+            }),
+            catchError(() => {
+                if (fallbackDbId) {
+                    return of(fallbackDbId);
+                }
+
+                this.toastr.error('Failed to resolve CTU from SharePoint.');
+                return of(null);
+            })
+        );
+    }
+
     private mapExistingCtuToDisplayedCtu(ctu: any): any {
         if (!ctu) {
             return ctu;
         }
 
         const sharePointMatch = this.ctuMapperService.mapExistingCtuToDisplayedCtu(ctu, this.ctus, this.countries);
-
         const returned = (sharePointMatch && (sharePointMatch?.sharepointItemId || sharePointMatch?.source === 'sharepoint')) ? sharePointMatch : ctu;
 
         return returned;
