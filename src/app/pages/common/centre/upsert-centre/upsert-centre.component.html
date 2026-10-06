@@ -115,15 +115,27 @@
                         <div class="col-md-3">
                             <div for="patientsExpected" class="font-style">Expected number of patients</div>
                             <div class="row">
-                                <div class="col-md-4 pe-0">
-                                    <input type="text" id="patientsExpected" class="form-control" formControlName="patientsExpected" *ngIf="!isView" />
-                                    <span class="text-value" *ngIf="isView">{{centre.value.patientsExpected}}</span>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).patientsExpected.errors?.pattern">
-                                        <p>If set, the patients expected field should be a number</p>
+                                <ng-container *ngIf="!isView; else patientsNumberView">
+                                    <div class="col-md-3 pe-0">
+                                        <input type="text" id="patientsExpected" class="form-control" formControlName="patientsExpected" />
                                     </div>
-                                </div>
+                                    <div class="col-md-7">
+                                        <div class="d-flex align-items-center">
+                                            <input type="checkbox" id="competitiveEnrollment" class="form-check-input checkbox me-2 mt-0" formControlName="competitiveEnrollment" />
+                                            <div class="text-value">Competitive?</div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 invalid-feedback d-block" *ngIf="submitted && getControls(i).patientsExpected.errors?.pattern">
+                                            <p>If set, the patients expected field should be a number</p>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                                <ng-template #patientsNumberView>
+                                    <div class="col-md-12">
+                                        <span class="text-value">{{centre.value.patientsExpected}} {{centre.value.competitiveEnrollment ? '(Competitive)' : '(Not competitive)'}}</span>
+                                    </div>
+                                </ng-template>
                             </div>
                         </div>
                         <div class="col-md-3">
