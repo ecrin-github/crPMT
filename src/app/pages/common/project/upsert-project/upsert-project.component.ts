@@ -66,7 +66,7 @@ export class UpsertProjectComponent implements OnInit {
             endDate: null,
             fundingSources: [],
             gaNumber: '',
-            privateFundingDetails: false,
+            privateFundingDetails: null,
             studies: [],
             reportingPeriods: [],
             publications: [],
@@ -291,9 +291,9 @@ export class UpsertProjectComponent implements OnInit {
 
     scrollToFirstInvalidControl() {
         /* https://stackoverflow.com/questions/71501822/angular-formgroup-scroll-to-first-invalid-input-in-a-scrolling-div */
-        const form = document.getElementById('formContainer');
+        const form = document.getElementsByClassName('app-content')[0];
         const firstInvalidControl = form.getElementsByClassName('ng-invalid')[0];
-        // firstInvalidControl.scrollIntoView();
+        firstInvalidControl.scrollIntoView();
         (firstInvalidControl as HTMLElement).focus();
     }
 
