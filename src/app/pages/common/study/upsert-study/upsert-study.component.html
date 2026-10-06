@@ -314,6 +314,14 @@
                             <input type="text" id="trialRegistrationNumber" class="form-control" placeholder="" formControlName="trialRegistrationNumber" *ngIf="!isView" />
                             <div *ngIf="isView" class="text-value">{{study.value.trialRegistrationNumber}}</div>
                         </div>
+                        <div class="col-md-8">
+                            <div for="ecrinAcknowledgement" class="font-style">ECRIN Acknowledgement</div>
+                            <div *ngIf="!isView" class="d-flex align-items-center">
+                                <input type="checkbox" id="ecrinAcknowledgement" class="form-check-input checkbox me-2 mt-0" formControlName="ecrinAcknowledgement" />
+                                <div class="text-value">ECRIN mentioned in ClinicalTrials.gov or other database</div>
+                            </div>
+                            <div *ngIf="isView" class="text-value" [ngClass]="study.value.ecrinAcknowledgement ? 'text-success' : 'text-danger'">ECRIN {{study.value.ecrinAcknowledgement ? '' : 'not '}}mentioned in ClinicalTrials.gov or other database</div>
+                        </div>
                     </div>
                     <div class="row form-group mt-8">
                         <div class="col-md-12">
