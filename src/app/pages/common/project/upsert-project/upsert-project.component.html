@@ -144,7 +144,7 @@
             </div>
             <div class="row form-group">
                 <div class="col-md-4">
-                    <div for="fundingSources" class="font-style">Funding source(s)</div>
+                    <div for="fundingSources" class="font-style">Funding sources</div>
                     <ng-select [items]="fundingSources" formControlName="fundingSources" [multiple]="true" (change)="onChangeFundingSources()" [searchFn]="searchFundingSources" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" class="form-control ng-form-control custom" notFoundText="No funding source found" placeholder="Start typing to add a new funding source" *ngIf="!isView" addTagText="Add" [addTag]="addFundingSource" appendTo="body">
                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                             <span class="ng-value-label">{{item.value}}</span>
@@ -168,6 +168,11 @@
                     <div for="gaNumber" class="font-style">GA number</div>
                     <input type="text" id="gaNumber" class="form-control" placeholder="e.g. 101136365" formControlName="gaNumber" *ngIf="!isView" />
                     <div *ngIf="isView" class="text-value">{{fv?.gaNumber ? fv?.gaNumber : ''}}</div>
+                </div>
+                <div class="col-md-4" *ngIf="hasPrivateFunding">
+                    <div for="privateFundingDetails" class="font-style">Private funding source</div>
+                    <input type="text" id="privateFundingDetails" class="form-control" placeholder="e.g. Michael J. Fox Foundation" formControlName="privateFundingDetails" *ngIf="!isView" />
+                    <div *ngIf="isView" class="text-value">{{fv?.privateFundingDetails ? fv?.privateFundingDetails : ''}}</div>
                 </div>
             </div>
             <hr class="hr-m2">

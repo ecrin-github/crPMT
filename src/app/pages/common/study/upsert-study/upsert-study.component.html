@@ -223,7 +223,7 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div for="populations" class="font-style">Population(s)</div>
+                            <div for="populations" class="font-style">Population</div>
                             <ng-select [items]="populations" formControlName="populations" [multiple]="true" [searchFn]="searchClassValues" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" class="form-control ng-form-control custom" notFoundText="No population found" placeholder="Populations" *ngIf="!isView" appendTo="body">
                                 <ng-template ng-label-tmp let-item="item" let-clear="clear">
                                     <span class="ng-value-label">{{item.value}}</span>

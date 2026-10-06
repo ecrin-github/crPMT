@@ -21,440 +21,449 @@ import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.comp
 import { UpsertPublicationComponent } from '../../publication/upsert-publication/upsert-publication.component';
 
 @Component({
-  selector: 'app-upsert-project',
-  templateUrl: './upsert-project.component.html',
-  styleUrls: ['./upsert-project.component.scss'],
-  providers: [ScrollService]
+    selector: 'app-upsert-project',
+    templateUrl: './upsert-project.component.html',
+    styleUrls: ['./upsert-project.component.scss'],
+    providers: [ScrollService]
 })
 export class UpsertProjectComponent implements OnInit {
 
-  @ViewChild(UpsertStudyComponent) studyComponent: UpsertStudyComponent;
-  @ViewChild(UpsertReportingPeriodComponent) reportingPeriodComponent: UpsertReportingPeriodComponent;
-  @ViewChild(UpsertPublicationComponent) publicationComponent: UpsertPublicationComponent;
-  fundingSources: ClassValueInterface[] = [];
-  organisations: OrganisationInterface[] = [];
-  services: ClassValueInterface[] = [];
-  persons: PersonInterface[] = [];
-  id: string;
-  isAdd: boolean = false;
-  isEdit: boolean = false;
-  isView: boolean = false;
-  hasPublicFunding: boolean = false;
-  showEdit: boolean = false;
-  submitted: boolean = false;
-  sticky: boolean = false;
-  projectData: ProjectInterface;
-  projectForm: UntypedFormGroup;
+    @ViewChild(UpsertStudyComponent) studyComponent: UpsertStudyComponent;
+    @ViewChild(UpsertReportingPeriodComponent) reportingPeriodComponent: UpsertReportingPeriodComponent;
+    @ViewChild(UpsertPublicationComponent) publicationComponent: UpsertPublicationComponent;
+    fundingSources: ClassValueInterface[] = [];
+    organisations: OrganisationInterface[] = [];
+    services: ClassValueInterface[] = [];
+    persons: PersonInterface[] = [];
+    id: string;
+    isAdd: boolean = false;
+    isEdit: boolean = false;
+    isView: boolean = false;
+    hasPublicFunding: boolean = false;
+    hasPrivateFunding: boolean = false;
+    showEdit: boolean = false;
+    submitted: boolean = false;
+    sticky: boolean = false;
+    projectData: ProjectInterface;
+    projectForm: UntypedFormGroup;
 
-  constructor(private contextService: ContextService,
-    private fb: UntypedFormBuilder,
-    private router: Router,
-    private projectService: ProjectService,
-    private scrollService: ScrollService,
-    private activatedRoute: ActivatedRoute,
-    private spinner: NgxSpinnerService,
-    private toastr: ToastrService,
-    private jsonGenerator: JsonGeneratorService,
-    private backService: BackService) {
-    this.projectForm = this.fb.group({
-      name: '',
-      shortName: ['', Validators.required],
-      coordinator: null,
-      coordinatingInstitution: null,
-      startDate: null,
-      endDate: null,
-      fundingSources: [],
-      gaNumber: '',
-      studies: [],
-      reportingPeriods: [],
-      publications: [],
-      publicSummary: null,
-      url: '',
-    });
-  }
-
-
-  ngOnInit(): void {
-    setTimeout(() => {
-      this.spinner.show();
-    });
-
-    this.id = this.activatedRoute.snapshot.params.id;
-
-    this.isEdit = this.router.url.includes('edit');
-    this.isView = this.router.url.includes('view');
-    this.isAdd = this.router.url.includes('add');
-
-    let queryFuncs: Array<Observable<any>> = [];
-
-    // Note: be careful if you add new observables because of the way their result is retrieved later (combineLatest + pop)
-    // The code is built like this because in the version of RxJS used here combineLatest does not handle dictionaries
-
-    // Need to pipe both getProject and getAssociatedObjects because they need to be completed in order
-    if (this.isEdit || this.isView) {
-      queryFuncs.push(this.getProjectById(this.id));
+    constructor(private contextService: ContextService,
+        private fb: UntypedFormBuilder,
+        private router: Router,
+        private projectService: ProjectService,
+        private scrollService: ScrollService,
+        private activatedRoute: ActivatedRoute,
+        private spinner: NgxSpinnerService,
+        private toastr: ToastrService,
+        private jsonGenerator: JsonGeneratorService,
+        private backService: BackService) {
+        this.projectForm = this.fb.group({
+            name: '',
+            shortName: ['', Validators.required],
+            coordinator: null,
+            coordinatingInstitution: null,
+            startDate: null,
+            endDate: null,
+            fundingSources: [],
+            gaNumber: '',
+            privateFundingDetails: false,
+            studies: [],
+            reportingPeriods: [],
+            publications: [],
+            publicSummary: null,
+            url: '',
+        });
     }
 
-    // Queries required even for view because of pdf/json exports
-    // queryFuncs.push(this.getProjectTypes());
 
-    let obsArr: Array<Observable<any>> = [];
-    queryFuncs.forEach((funct) => {
-      obsArr.push(funct.pipe(catchError(error => of(this.toastr.error(error.error.title)))));
-    });
+    ngOnInit(): void {
+        setTimeout(() => {
+            this.spinner.show();
+        });
 
-    combineLatest(obsArr).subscribe(res => {
-      this.setProjectById(res.pop());
+        this.id = this.activatedRoute.snapshot.params.id;
 
-      setTimeout(() => {
-        this.spinner.hide();
-      });
-    });
+        this.isEdit = this.router.url.includes('edit');
+        this.isView = this.router.url.includes('view');
+        this.isAdd = this.router.url.includes('add');
 
-    this.contextService.fundingSources.subscribe((fundingSources) => {
-      this.fundingSources = fundingSources;
-    });
+        let queryFuncs: Array<Observable<any>> = [];
 
-    this.contextService.organisations.subscribe((organisations) => {
-      this.organisations = organisations;
-    });
+        // Note: be careful if you add new observables because of the way their result is retrieved later (combineLatest + pop)
+        // The code is built like this because in the version of RxJS used here combineLatest does not handle dictionaries
 
-    this.contextService.persons.subscribe((persons) => {
-      this.persons = persons;
-      if (this.persons) {
-        this.persons = this.persons.filter(p => !p.isEuco);
-      }
-    });
-
-    this.contextService.services.subscribe((services) => {
-      this.services = services;
-    });
-    if (this.isAdd) {
-      setTimeout(() => {
-        this.spinner.hide();
-      });
-    }
-
-  }
-
-
-  get g() { return this.projectForm.controls; }
-  get fv() { return this.projectForm.value; }
-
-  getProjectById(id) {
-    return this.projectService.getProjectById(id);
-  }
-
-  setProjectById(projectData) {
-    if (projectData) {
-      this.projectData = projectData;
-      this.id = projectData.id;
-      this.patchProjectForm();
-    }
-  }
-
-  patchProjectForm() {
-    this.projectForm.patchValue({
-      name: this.projectData.name,
-      shortName: this.projectData.shortName,
-      coordinator: this.projectData.coordinator,
-      coordinatingInstitution: this.projectData.coordinatingInstitution,
-      startDate: this.projectData.startDate ? stringToDate(this.projectData.startDate) : null,
-      endDate: this.projectData.endDate ? stringToDate(this.projectData.endDate) : null,
-      fundingSources: this.projectData.fundingSources,
-      gaNumber: this.projectData.gaNumber,
-      studies: this.projectData.studies,
-      reportingPeriods: this.projectData.reportingPeriods,
-      publications: this.projectData.publications || [],
-      publicSummary: this.projectData.publicSummary,
-      url: this.projectData.url,
-    });
-
-    this.onChangeFundingSources();
-  }
-
-  allFormsValid() {
-    this.submitted = true;
-
-    if (!this.projectForm.valid) {
-      this.toastr.error("Please correct the errors in the project form");
-    }
-
-    return (
-      this.projectForm.valid &&
-      this.studyComponent?.allFormsValid() &&
-      (this.publicationComponent?.allFormsValid())
-    );
-  }
-
-  updatePayload(payload) {
-    payload.startDate = dateToString(payload.startDate);
-    payload.endDate = dateToString(payload.endDate);
-
-    if (payload.coordinator?.id) {
-      payload.coordinator = payload.coordinator.id;
-    }
-
-    if (payload.coordinatingInstitution?.id) {
-      payload.coordinatingInstitution = payload.coordinatingInstitution.id;
-    }
-
-    if (payload.fundingSources?.length > 0) {
-      for (let i = 0; i < payload.fundingSources.length; i++) {
-        if (payload.fundingSources[i]?.id) {
-          payload.fundingSources[i] = payload.fundingSources[i].id;
+        // Need to pipe both getProject and getAssociatedObjects because they need to be completed in order
+        if (this.isEdit || this.isView) {
+            queryFuncs.push(this.getProjectById(this.id));
         }
-      }
-    } else {
-      payload.fundingSources = [];
+
+        // Queries required even for view because of pdf/json exports
+        // queryFuncs.push(this.getProjectTypes());
+
+        let obsArr: Array<Observable<any>> = [];
+        queryFuncs.forEach((funct) => {
+            obsArr.push(funct.pipe(catchError(error => of(this.toastr.error(error.error.title)))));
+        });
+
+        combineLatest(obsArr).subscribe(res => {
+            this.setProjectById(res.pop());
+
+            setTimeout(() => {
+                this.spinner.hide();
+            });
+        });
+
+        this.contextService.fundingSources.subscribe((fundingSources) => {
+            this.fundingSources = fundingSources;
+        });
+
+        this.contextService.organisations.subscribe((organisations) => {
+            this.organisations = organisations;
+        });
+
+        this.contextService.persons.subscribe((persons) => {
+            this.persons = persons;
+            if (this.persons) {
+                this.persons = this.persons.filter(p => !p.isEuco);
+            }
+        });
+
+        this.contextService.services.subscribe((services) => {
+            this.services = services;
+        });
+        if (this.isAdd) {
+            setTimeout(() => {
+                this.spinner.hide();
+            });
+        }
+
     }
-  }
 
-  onSave() {
-    this.spinner.show();
 
-    if (this.allFormsValid()) {
-      const payload: ProjectInterface = { ...this.projectForm.value };
-      this.updatePayload(payload);
+    get g() { return this.projectForm.controls; }
+    get fv() { return this.projectForm.value; }
 
-      let projectQueryObs$: Observable<Object>;
+    getProjectById(id) {
+        return this.projectService.getProjectById(id);
+    }
 
-      if (this.isEdit) {  // Edit
-        projectQueryObs$ = this.projectService.editProject(this.id, payload);
-      } else {  // Add
-        projectQueryObs$ = this.projectService.addProject(payload);
-      }
+    setProjectById(projectData) {
+        if (projectData) {
+            this.projectData = projectData;
+            this.id = projectData.id;
+            this.patchProjectForm();
+        }
+    }
 
-      const success = projectQueryObs$.pipe(
-        mergeMap((res: any) => {
-          if ((this.isEdit && res.statusCode === 200) || (this.isAdd && res.statusCode === 201)) {
-            this.id = res.id;
+    patchProjectForm() {
+        this.projectForm.patchValue({
+            name: this.projectData.name,
+            shortName: this.projectData.shortName,
+            coordinator: this.projectData.coordinator,
+            coordinatingInstitution: this.projectData.coordinatingInstitution,
+            startDate: this.projectData.startDate ? stringToDate(this.projectData.startDate) : null,
+            endDate: this.projectData.endDate ? stringToDate(this.projectData.endDate) : null,
+            fundingSources: this.projectData.fundingSources,
+            gaNumber: this.projectData.gaNumber,
+            privateFundingDetails: this.projectData.privateFundingDetails,
+            studies: this.projectData.studies,
+            reportingPeriods: this.projectData.reportingPeriods,
+            publications: this.projectData.publications || [],
+            publicSummary: this.projectData.publicSummary,
+            url: this.projectData.url,
+        });
 
-            let saveObs$: Array<Observable<boolean>> = [];
+        this.onChangeFundingSources();
+    }
 
-            // Studies
-            saveObs$.push(this.studyComponent.onSave(res.id).pipe(
-              mergeMap((successArr: boolean[]) => {
-                return of(successArr.every(b => b));
-              })
-            ));
+    allFormsValid() {
+        this.submitted = true;
 
-            // Reporting periods
-            saveObs$.push(this.reportingPeriodComponent.onSave(res.id).pipe(
-              mergeMap((successArr: boolean[]) => {
-                return of(successArr.every(b => b));
-              })
-            ));
-            // Publications
-            saveObs$.push(this.publicationComponent.onSave(res.id).pipe(
-              mergeMap((successArr: boolean[]) => {
-                return of(successArr.every(b => b));
-              })
-            ));
+        if (!this.projectForm.valid) {
+            this.toastr.error("Please correct the errors in the project form");
+        }
 
-            if (saveObs$.length === 0) {
-              saveObs$.push(of(true));
+        return (
+            this.projectForm.valid &&
+            this.studyComponent?.allFormsValid() &&
+            (this.publicationComponent?.allFormsValid())
+        );
+    }
+
+    updatePayload(payload) {
+        payload.startDate = dateToString(payload.startDate);
+        payload.endDate = dateToString(payload.endDate);
+
+        if (payload.coordinator?.id) {
+            payload.coordinator = payload.coordinator.id;
+        }
+
+        if (payload.coordinatingInstitution?.id) {
+            payload.coordinatingInstitution = payload.coordinatingInstitution.id;
+        }
+
+        if (payload.fundingSources?.length > 0) {
+            for (let i = 0; i < payload.fundingSources.length; i++) {
+                if (payload.fundingSources[i]?.id) {
+                    payload.fundingSources[i] = payload.fundingSources[i].id;
+                }
+            }
+        } else {
+            payload.fundingSources = [];
+        }
+    }
+
+    onSave() {
+        this.spinner.show();
+
+        if (this.allFormsValid()) {
+            const payload: ProjectInterface = { ...this.projectForm.value };
+            this.updatePayload(payload);
+
+            let projectQueryObs$: Observable<Object>;
+
+            if (this.isEdit) {  // Edit
+                projectQueryObs$ = this.projectService.editProject(this.id, payload);
+            } else {  // Add
+                projectQueryObs$ = this.projectService.addProject(payload);
             }
 
-            return combineLatest(saveObs$);
-          } else {
-            this.toastr.error(res.message, "Error saving project", { timeOut: 60000, extendedTimeOut: 60000 });
-            return of(false);
-          }
-        }), catchError(err => {
-          this.toastr.error(err.message, 'Error saving project', { timeOut: 60000, extendedTimeOut: 60000 });
-          return of(false);
+            const success = projectQueryObs$.pipe(
+                mergeMap((res: any) => {
+                    if ((this.isEdit && res.statusCode === 200) || (this.isAdd && res.statusCode === 201)) {
+                        this.id = res.id;
+
+                        let saveObs$: Array<Observable<boolean>> = [];
+
+                        // Studies
+                        saveObs$.push(this.studyComponent.onSave(res.id).pipe(
+                            mergeMap((successArr: boolean[]) => {
+                                return of(successArr.every(b => b));
+                            })
+                        ));
+
+                        // Reporting periods
+                        saveObs$.push(this.reportingPeriodComponent.onSave(res.id).pipe(
+                            mergeMap((successArr: boolean[]) => {
+                                return of(successArr.every(b => b));
+                            })
+                        ));
+                        // Publications
+                        saveObs$.push(this.publicationComponent.onSave(res.id).pipe(
+                            mergeMap((successArr: boolean[]) => {
+                                return of(successArr.every(b => b));
+                            })
+                        ));
+
+                        if (saveObs$.length === 0) {
+                            saveObs$.push(of(true));
+                        }
+
+                        return combineLatest(saveObs$);
+                    } else {
+                        this.toastr.error(res.message, "Error saving project", { timeOut: 60000, extendedTimeOut: 60000 });
+                        return of(false);
+                    }
+                }), catchError(err => {
+                    this.toastr.error(err.message, 'Error saving project', { timeOut: 60000, extendedTimeOut: 60000 });
+                    return of(false);
+                })
+            );
+
+            success.pipe(
+                map((successArr: boolean[]) => {
+                    this.spinner.hide();
+                    const success: boolean = successArr.every(b => b);
+                    if (success) {
+                        this.toastr.success('Changes saved successfully');
+                        this.router.navigate([`/projects/${this.id}/view`]);
+                    }
+                })
+            ).subscribe();
+        } else {
+            this.spinner.hide();
+            setTimeout(() => {  // Timeout to allow ng-invalid to appear on elements
+                this.toastr.error("Please correct the errors in the form's fields.");
+                this.scrollToFirstInvalidControl();
+            })
+        }
+    }
+
+    scrollToFirstInvalidControl() {
+        /* https://stackoverflow.com/questions/71501822/angular-formgroup-scroll-to-first-invalid-input-in-a-scrolling-div */
+        const form = document.getElementById('formContainer');
+        const firstInvalidControl = form.getElementsByClassName('ng-invalid')[0];
+        // firstInvalidControl.scrollIntoView();
+        (firstInvalidControl as HTMLElement).focus();
+    }
+
+    back(): void {
+        this.backService.back();
+    }
+
+    onChangeFundingSources() {
+        if (this.projectForm.value.fundingSources?.length > 0
+            && !(this.projectForm.value.fundingSources?.length == 1 && this.projectForm.value.fundingSources[0]?.value?.toLowerCase() == "private funding")) {
+            this.hasPublicFunding = true;
+        } else {
+            this.hasPublicFunding = false;
+        }
+
+        if (this.projectForm.value.fundingSources?.length > 0 && this.projectForm.value.fundingSources.some(v => v?.value?.toLowerCase() == "private funding")) {
+            this.hasPrivateFunding = true;
+        } else {
+            this.hasPrivateFunding = false;
+        }
+    }
+
+    // Necessary to write it as an arrow function
+    addFundingSource = (fsValue) => {
+        let fs = { "id": "", "value": "" };
+
+        this.spinner.show();
+        return this.contextService.addFundingSource({ 'value': fsValue }).pipe(
+            mergeMap((s: any) => {
+                fs.id = s.id;
+                fs.value = s.value;
+                return this.contextService.updateFundingSources();
+            }),
+            mergeMap(() => {
+                this.spinner.hide();
+                return of(fs);
+            }),
+            catchError((err) => {
+                this.toastr.error(err, "Error adding funding source", { timeOut: 20000, extendedTimeOut: 20000 });
+                return of(null);
+            })
+        ).toPromise();
+    }
+
+    compareIds(fv1, fv2): boolean {
+        return fv1?.id == fv2?.id;
+    }
+
+    searchFundingSources(term: string, item) {
+        term = term.toLocaleLowerCase();
+        return item.value?.toLocaleLowerCase().indexOf(term) > -1;
+    }
+
+    displayFundingSources(fundingSources) {
+        if (fundingSources) {
+            return fundingSources.map(fs => fs.value).join(", ");
+        }
+        return "";
+    }
+
+    deleteFundingSource($event, fsToRemove) {
+        $event.stopPropagation(); // Clicks the option otherwise
+
+        if (fsToRemove.id == -1) {  // Created locally by user
+            this.fundingSources = this.fundingSources.filter(fs => !(fs.id == fsToRemove.id && fs.value == fsToRemove.value));
+        } else {  // Already existing
+            this.contextService.deleteFundingSourceDropdown(fsToRemove, !this.isAdd);
+        }
+    }
+
+    // Necessary to write them as arrow functions
+    searchOrganisations = (term: string, item) => {
+        return this.contextService.searchOrganisations(term, item);
+    }
+
+    addOrganisation = (orgName) => {
+        return this.contextService.addOrganisationDropdown(orgName);
+    }
+
+    deleteOrganisation($event, oToRemove) {
+        $event.stopPropagation(); // Clicks the option otherwise
+
+        if (oToRemove.id == -1) { // Created locally by user
+            this.organisations = this.organisations.filter(o => !(o.id == oToRemove.id && o.name == oToRemove.name));
+        } else {  // Already existing
+            this.contextService.deleteOrganisationDropdown(oToRemove, !this.isAdd);
+        }
+    }
+
+    // Necessary to write them as arrow functions
+    addPerson = (personName: string) => {
+        return this.contextService.addPersonDropdown({ "fullName": personName }, true, false);
+    }
+
+    deletePerson($event, pToRemove) {
+        $event.stopPropagation(); // Clicks the option otherwise
+
+        if (pToRemove.id == -1) {  // Created locally by user
+            this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.fullName));
+        } else {  // Already existing
+            this.contextService.deletePersonDropdown(pToRemove, !this.isAdd);
+        }
+    }
+
+    searchPersons = (term: string, item) => {
+        return this.contextService.searchPersons(term, item);
+    }
+
+    searchCountries(term: string, item) {
+        return this.contextService.searchCountries(term, item);
+    }
+
+    getTagBorderColor(text) {
+        return getTagBorderColor(text);
+    }
+
+    getTagBgColor(text) {
+        return getTagBgColor(text);
+    }
+
+    getHttpLink(link: string) {
+        if (link && !link.toLowerCase().startsWith("http")) {
+            return "https://" + link;
+        }
+        return link;
+    }
+
+    dateToString(date) {
+        return dateToString(date);
+    }
+
+    getCountryFlag(iso2: string) {
+        if (iso2) {
+            return getFlagEmoji(iso2);
+        }
+        return '';
+    }
+
+    print() {
+        this.projectService.getProjectById(this.id).subscribe((res: any) => {
+            if (res) {
+                const payload = JSON.parse(JSON.stringify(res));
+                payload.projectFeatures = payload.projectFeatures.filter((item: any) => item.featureType?.context?.toLowerCase() === payload.projectType?.name?.toLowerCase());
+                // this.pdfGenerator.projectPdfGenerator(payload);
+            }
+        }, error => {
+            this.toastr.error(error.error.title);
         })
-      );
+    }
 
-      success.pipe(
-        map((successArr: boolean[]) => {
-          this.spinner.hide();
-          const success: boolean = successArr.every(b => b);
-          if (success) {
-            this.toastr.success('Changes saved successfully');
-            this.router.navigate([`/projects/${this.id}/view`]);
-          }
+    jsonExport() {
+        this.projectService.getProjectById(this.id).subscribe((res: any) => {
+            if (res) {
+                const payload = JSON.parse(JSON.stringify(res));
+                this.jsonGenerator.jsonGenerator(payload, 'project');
+            }
+        }, error => {
+            this.toastr.error(error.error.title);
         })
-      ).subscribe();
-    } else {
-      this.spinner.hide();
-      setTimeout(() => {  // Timeout to allow ng-invalid to appear on elements
-        this.toastr.error("Please correct the errors in the form's fields.");
-        this.scrollToFirstInvalidControl();
-      })
     }
-  }
 
-  scrollToFirstInvalidControl() {
-    /* https://stackoverflow.com/questions/71501822/angular-formgroup-scroll-to-first-invalid-input-in-a-scrolling-div */
-    const form = document.getElementById('formContainer');
-    const firstInvalidControl = form.getElementsByClassName('ng-invalid')[0];
-    // firstInvalidControl.scrollIntoView();
-    (firstInvalidControl as HTMLElement).focus();
-  }
-
-  back(): void {
-    this.backService.back();
-  }
-
-  onChangeFundingSources() {
-    if (this.projectForm.value.fundingSources?.length > 0 &&
-      !(this.projectForm.value.fundingSources?.length == 1 && this.projectForm.value.fundingSources[0]?.value?.toLowerCase() == "private funding")) {
-      this.hasPublicFunding = true;
-    } else {
-      this.hasPublicFunding = false;
+    gotoTop() {
+        window.scroll({
+            top: 0,
+            left: 0,
+            behavior: 'smooth'
+        });
     }
-  }
 
-  // Necessary to write it as an arrow function
-  addFundingSource = (fsValue) => {
-    let fs = { "id": "", "value": "" };
-
-    this.spinner.show();
-    return this.contextService.addFundingSource({ 'value': fsValue }).pipe(
-      mergeMap((s: any) => {
-        fs.id = s.id;
-        fs.value = s.value;
-        return this.contextService.updateFundingSources();
-      }),
-      mergeMap(() => {
-        this.spinner.hide();
-        return of(fs);
-      }),
-      catchError((err) => {
-        this.toastr.error(err, "Error adding funding source", { timeOut: 20000, extendedTimeOut: 20000 });
-        return of(null);
-      })
-    ).toPromise();
-  }
-
-  compareIds(fv1, fv2): boolean {
-    return fv1?.id == fv2?.id;
-  }
-
-  searchFundingSources(term: string, item) {
-    term = term.toLocaleLowerCase();
-    return item.value?.toLocaleLowerCase().indexOf(term) > -1;
-  }
-
-  displayFundingSources(fundingSources) {
-    if (fundingSources) {
-      return fundingSources.map(fs => fs.value).join(", ");
+    ngOnDestroy() {
+        this.scrollService.unsubscribeScroll();
     }
-    return "";
-  }
-
-  deleteFundingSource($event, fsToRemove) {
-    $event.stopPropagation(); // Clicks the option otherwise
-
-    if (fsToRemove.id == -1) {  // Created locally by user
-      this.fundingSources = this.fundingSources.filter(fs => !(fs.id == fsToRemove.id && fs.value == fsToRemove.value));
-    } else {  // Already existing
-      this.contextService.deleteFundingSourceDropdown(fsToRemove, !this.isAdd);
-    }
-  }
-
-  // Necessary to write them as arrow functions
-  searchOrganisations = (term: string, item) => {
-    return this.contextService.searchOrganisations(term, item);
-  }
-
-  addOrganisation = (orgName) => {
-    return this.contextService.addOrganisationDropdown(orgName);
-  }
-
-  deleteOrganisation($event, oToRemove) {
-    $event.stopPropagation(); // Clicks the option otherwise
-
-    if (oToRemove.id == -1) { // Created locally by user
-      this.organisations = this.organisations.filter(o => !(o.id == oToRemove.id && o.name == oToRemove.name));
-    } else {  // Already existing
-      this.contextService.deleteOrganisationDropdown(oToRemove, !this.isAdd);
-    }
-  }
-
-  // Necessary to write them as arrow functions
-  addPerson = (personName: string) => {
-    return this.contextService.addPersonDropdown({ "fullName": personName }, true, false);
-  }
-
-  deletePerson($event, pToRemove) {
-    $event.stopPropagation(); // Clicks the option otherwise
-
-    if (pToRemove.id == -1) {  // Created locally by user
-      this.persons = this.persons.filter(s => !(s.id == pToRemove.id && s.fullName == pToRemove.fullName));
-    } else {  // Already existing
-      this.contextService.deletePersonDropdown(pToRemove, !this.isAdd);
-    }
-  }
-
-  searchPersons = (term: string, item) => {
-    return this.contextService.searchPersons(term, item);
-  }
-
-  searchCountries(term: string, item) {
-    return this.contextService.searchCountries(term, item);
-  }
-
-  getTagBorderColor(text) {
-    return getTagBorderColor(text);
-  }
-
-  getTagBgColor(text) {
-    return getTagBgColor(text);
-  }
-
-  getHttpLink(link: string) {
-    if (link && !link.toLowerCase().startsWith("http")) {
-      return "https://" + link;
-    }
-    return link;
-  }
-
-  dateToString(date) {
-    return dateToString(date);
-  }
-
-  getCountryFlag(iso2: string) {
-    if (iso2) {
-      return getFlagEmoji(iso2);
-    }
-    return '';
-  }
-
-  print() {
-    this.projectService.getProjectById(this.id).subscribe((res: any) => {
-      if (res) {
-        const payload = JSON.parse(JSON.stringify(res));
-        payload.projectFeatures = payload.projectFeatures.filter((item: any) => item.featureType?.context?.toLowerCase() === payload.projectType?.name?.toLowerCase());
-        // this.pdfGenerator.projectPdfGenerator(payload);
-      }
-    }, error => {
-      this.toastr.error(error.error.title);
-    })
-  }
-
-  jsonExport() {
-    this.projectService.getProjectById(this.id).subscribe((res: any) => {
-      if (res) {
-        const payload = JSON.parse(JSON.stringify(res));
-        this.jsonGenerator.jsonGenerator(payload, 'project');
-      }
-    }, error => {
-      this.toastr.error(error.error.title);
-    })
-  }
-
-  gotoTop() {
-    window.scroll({
-      top: 0,
-      left: 0,
-      behavior: 'smooth'
-    });
-  }
-
-  ngOnDestroy() {
-    this.scrollService.unsubscribeScroll();
-  }
 }
