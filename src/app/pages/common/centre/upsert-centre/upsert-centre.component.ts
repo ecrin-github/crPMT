@@ -322,33 +322,33 @@ export class UpsertCentreComponent implements OnInit {
                         const movPayload = JSON.parse(JSON.stringify(this.movComponent.get(i).form.value));
                         const covPayload = JSON.parse(JSON.stringify(this.covComponent.get(i).form.value));
 
-                        for (const [i, item] of sivPayload.visits.entries()) {
-                            this.sivComponent.get(i).updatePayload(item, cId, i);
+                        for (const [j, sivItem] of sivPayload.visits.entries()) {
+                            this.sivComponent.get(i).updatePayload(sivItem, cId, j);
 
-                            if (!item.id) {
-                                addPayload.push(item);
+                            if (!sivItem.id) {
+                                addPayload.push(sivItem);
                             } else {
-                                editPayload.push(item);
+                                editPayload.push(sivItem);
                             }
                         }
 
-                        for (const [i, item] of movPayload.visits.entries()) {
-                            this.movComponent.get(i).updatePayload(item, cId, i);
+                        for (const [j, movItem] of movPayload.visits.entries()) {
+                            this.movComponent.get(i).updatePayload(movItem, cId, j);
 
-                            if (!item.id) {
-                                addPayload.push(item);
+                            if (!movItem.id) {
+                                addPayload.push(movItem);
                             } else {
-                                editPayload.push(item);
+                                editPayload.push(movItem);
                             }
                         }
 
-                        for (const [i, item] of covPayload.visits.entries()) {
-                            this.covComponent.get(i).updatePayload(item, cId, i);
+                        for (const [j, covItem] of covPayload.visits.entries()) {
+                            this.covComponent.get(i).updatePayload(covItem, cId, j);
 
-                            if (!item.id) {
-                                addPayload.push(item);
+                            if (!covItem.id) {
+                                addPayload.push(covItem);
                             } else {
-                                editPayload.push(item);
+                                editPayload.push(covItem);
                             }
                         }
 
