@@ -14,7 +14,6 @@ import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
-import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
 import { UpsertReportingPeriodComponent } from '../../reporting-period/upsert-reporting-period/upsert-reporting-period.component';
 import { UpsertStudyComponent } from '../../study/upsert-study/upsert-study.component';
@@ -24,7 +23,6 @@ import { UpsertPublicationComponent } from '../../publication/upsert-publication
     selector: 'app-upsert-project',
     templateUrl: './upsert-project.component.html',
     styleUrls: ['./upsert-project.component.scss'],
-    providers: [ScrollService]
 })
 export class UpsertProjectComponent implements OnInit {
 
@@ -51,7 +49,6 @@ export class UpsertProjectComponent implements OnInit {
         private fb: UntypedFormBuilder,
         private router: Router,
         private projectService: ProjectService,
-        private scrollService: ScrollService,
         private activatedRoute: ActivatedRoute,
         private spinner: NgxSpinnerService,
         private toastr: ToastrService,
@@ -461,9 +458,5 @@ export class UpsertProjectComponent implements OnInit {
             left: 0,
             behavior: 'smooth'
         });
-    }
-
-    ngOnDestroy() {
-        this.scrollService.unsubscribeScroll();
     }
 }

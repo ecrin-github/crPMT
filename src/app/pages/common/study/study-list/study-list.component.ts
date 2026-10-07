@@ -11,7 +11,6 @@ import { StudyListEntryInterface } from 'src/app/_rms/interfaces/core/study-list
 import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
 import { ListUpdateService } from 'src/app/_rms/services/list-update/list-update.service';
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
-import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { getFlagEmoji, resolvePath } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 
@@ -19,7 +18,6 @@ import { ConfirmationWindowComponent } from '../../confirmation-window/confirmat
     selector: 'app-study-list',
     templateUrl: './study-list.component.html',
     styleUrls: ['./study-list.component.scss'],
-    providers: [ScrollService]
 })
 
 export class StudyListComponent implements OnInit {
@@ -47,7 +45,6 @@ export class StudyListComponent implements OnInit {
 
     constructor(private listUpdateService: ListUpdateService,
         private reuseService: ReuseService,
-        private scrollService: ScrollService,
         private spinner: NgxSpinnerService,
         private toastr: ToastrService,
         private modalService: NgbModal,
@@ -167,9 +164,5 @@ export class StudyListComponent implements OnInit {
             return getFlagEmoji(iso2);
         }
         return '';
-    }
-
-    ngOnDestroy() {
-        this.scrollService.unsubscribeScroll();
     }
 }

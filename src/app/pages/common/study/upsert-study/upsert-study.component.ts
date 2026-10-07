@@ -17,7 +17,6 @@ import { BackService } from 'src/app/_rms/services/back/back.service';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
 import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
-import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
@@ -32,7 +31,6 @@ import { CtuMapperService } from 'src/app/_rms/services/entities/study-ctu/ctu-m
     selector: 'app-upsert-study',
     templateUrl: './upsert-study.component.html',
     styleUrls: ['./upsert-study.component.scss'],
-    providers: [ScrollService]
 })
 export class UpsertStudyComponent implements OnInit {
 
@@ -90,7 +88,6 @@ export class UpsertStudyComponent implements OnInit {
         private studyService: StudyService,
         private contextService: ContextService,
         private modalService: NgbModal,
-        private scrollService: ScrollService,
         private activatedRoute: ActivatedRoute,
         private ctuMapperService: CtuMapperService,
         private graphApiService: GraphApiService,
@@ -1021,7 +1018,6 @@ export class UpsertStudyComponent implements OnInit {
     }
 
     ngOnDestroy() {
-        this.scrollService.unsubscribeScroll();
         this.subscriptions.forEach((sub) => sub.unsubscribe());
     }
 }

@@ -11,7 +11,6 @@ import { ProjectListEntryInterface } from 'src/app/_rms/interfaces/core/project-
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { ListUpdateService } from 'src/app/_rms/services/list-update/list-update.service';
 import { ReuseService } from 'src/app/_rms/services/reuse/reuse.service';
-import { ScrollService } from 'src/app/_rms/services/scroll/scroll.service';
 import { anyStringToDateString, getFlagEmoji, getTagBgColor, getTagBorderColor, resolvePath } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 
@@ -19,7 +18,6 @@ import { ConfirmationWindowComponent } from '../../confirmation-window/confirmat
     selector: 'app-project-list',
     templateUrl: './project-list.component.html',
     styleUrls: ['./project-list.component.scss'],
-    providers: [ScrollService]
 })
 
 export class ProjectListComponent implements OnInit {
@@ -44,7 +42,6 @@ export class ProjectListComponent implements OnInit {
 
     constructor(private listUpdateService: ListUpdateService,
         private reuseService: ReuseService,
-        private scrollService: ScrollService,
         private projectService: ProjectService,
         private spinner: NgxSpinnerService,
         private toastr: ToastrService,
@@ -178,9 +175,5 @@ export class ProjectListComponent implements OnInit {
 
     getTagBgColor(text: string) {
         return getTagBgColor(text);
-    }
-
-    ngOnDestroy() {
-        this.scrollService.unsubscribeScroll();
     }
 }

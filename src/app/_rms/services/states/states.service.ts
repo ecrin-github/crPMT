@@ -1,11 +1,11 @@
-import {UserInterface} from '../../interfaces/user/user.interface';
-import {Injectable} from '@angular/core';
+import { UserInterface } from '../../interfaces/user/user.interface';
+import { Injectable } from '@angular/core';
 import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
-import { 
-    EventMessage, 
-    EventType, 
-    AuthenticationResult 
-  } from '@azure/msal-browser';
+import {
+    EventMessage,
+    EventType,
+    AuthenticationResult
+} from '@azure/msal-browser';
 import { filter } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
 
@@ -17,12 +17,12 @@ export class StatesService {
 
     public currentUser: BehaviorSubject<UserInterface> =
         new BehaviorSubject<UserInterface>(undefined);
-    
+
     // public currentAuthRole: BehaviorSubject<string> =
     //     new BehaviorSubject<string>(this.defaultStates.defaultAuthRole);
 
     constructor(
-        private msalService: MsalService, 
+        private msalService: MsalService,
         private msalBroadcast: MsalBroadcastService
     ) {
         // TODO: should be triggered less often
@@ -42,7 +42,7 @@ export class StatesService {
             };
             this.currentUser.next(userInfo);
         }
-      }
+    }
 
     // set currentUser(value: UserInterface) {
     //     this.states.currentUser.next(value);

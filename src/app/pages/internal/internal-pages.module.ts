@@ -9,7 +9,6 @@ import { NgbDatepickerModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstr
 
 // Pages
 import { InternalMainPageComponent } from './main-page/internal-main-page.component';
-import { ReportsPageInternalComponent } from './reports/reports-page-internal.component';
 
 // Additional modules
 import { ReactiveFormsModule } from '@angular/forms';
@@ -31,7 +30,6 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
 @NgModule({
     declarations: [
         InternalMainPageComponent,
-        ReportsPageInternalComponent,
     ],
     imports: [
         NgbDatepickerModule,
