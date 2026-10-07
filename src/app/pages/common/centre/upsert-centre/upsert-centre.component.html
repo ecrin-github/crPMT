@@ -133,7 +133,7 @@
                                 </ng-container>
                                 <ng-template #patientsNumberView>
                                     <div class="col-md-12">
-                                        <span class="text-value">{{centre.value.patientsExpected}} {{centre.value.competitiveEnrollment ? '(Competitive)' : '(Not competitive)'}}</span>
+                                        <span class="text-value">{{centre.value.patientsExpected}} {{centre.value.patientsExpected ? (centre.value.competitiveEnrollment ? '(Competitive)' : '(Not competitive)') : ''}}</span>
                                     </div>
                                 </ng-template>
                             </div>
