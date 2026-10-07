@@ -532,7 +532,7 @@
                                                     </span>
                                                     <div class="sc-ctu-sites" *ngIf="sctu.centres?.length">
                                                         <div class="sc-centre" *ngFor="let centre of sctu.centres">
-                                                            {{ centre.hospital?.name }}, {{ centre.hospital?.city }}
+                                                            {{ centre.hospital?.name }}{{ centre.hospital?.city ? ', ' + centre.hospital?.city : '' }}
                                                         </div>
                                                     </div>
                                                 </div>
