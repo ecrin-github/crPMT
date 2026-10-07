@@ -82,7 +82,7 @@
             <div class="row form-group">
                 <div class="col-md-4">
                     <div for="coordinatingInstitution" class="font-style">Name of the Coordinating Institution</div>
-                    <ng-select [items]="organisations" formControlName="coordinatingInstitution" [searchFn]="searchOrganisations" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" [clearSearchOnAdd]="true" notFoundText="No organisation found" placeholder="Start typing to add a new organisation" *ngIf="!isView" addTagText="Add" [addTag]="addOrganisation" appendTo="body">
+                    <ng-select [items]="organisations" formControlName="coordinatingInstitution" [searchFn]="searchOrganisations" [compareWith]="compareIds" class="form-control ng-form-control" [clearSearchOnAdd]="true" notFoundText="No organisation found" placeholder="Start typing to add a new organisation" *ngIf="!isView" addTagText="Add" [addTag]="addOrganisation" appendTo="body">
                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                             <span class="ng-value-label">{{item.name}}{{item.shortName ? ' (' + item.shortName + ')' :
                                 ''}}{{item.country?.name ? ', ' + item.country.name : ''}}</span>
@@ -112,7 +112,7 @@
                 </div>
                 <div class="col-md-4">
                     <div for="pi" class="font-style">Name of the EU Project Coordinator</div>
-                    <ng-select [items]="persons" formControlName="coordinator" [searchFn]="searchPersons" [compareWith]="compareIds" [virtualScroll]="false" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addPerson" appendTo="body">
+                    <ng-select [items]="persons" formControlName="coordinator" [searchFn]="searchPersons" [compareWith]="compareIds" class="form-control ng-form-control" notFoundText="No people found" placeholder="Start typing to add a new person" *ngIf="!isView" [clearSearchOnAdd]="true" addTagText="Add" [addTag]="addPerson" appendTo="body">
                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                             <span class="ng-value-label">{{item.fullName}}</span>
                         </ng-template>
@@ -131,8 +131,9 @@
                             </div>
                         </ng-template>
                     </ng-select>
-                    <div class="text-value" *ngIf="isView">{{fv?.coordinator?.fullName}}{{fv?.coordinator?.country ? '
-                        (' + fv.coordinator.country?.name + ')' : ''}}</div>
+                    <div class="text-value" *ngIf="isView">{{fv?.coordinator?.country ? getCountryFlag(fv?.coordinator?.country?.iso2) + '&nbsp;' : ''}}{{fv?.coordinator?.fullName}}
+                        <span *ngIf="fv?.coordinator?.email" class="email-address">(<a [href]="'mailto:' + fv.coordinator.email">{{fv.coordinator.email}}</a>)</span>
+                    </div>
                 </div>
             </div>
             <hr class="hr-m2">
@@ -143,8 +144,8 @@
             </div>
             <div class="row form-group">
                 <div class="col-md-4">
-                    <div for="fundingSources" class="font-style">Funding source(s)</div>
-                    <ng-select [items]="fundingSources" formControlName="fundingSources" [multiple]="true" (change)="onChangeFundingSources()" [searchFn]="searchFundingSources" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" [virtualScroll]="false" class="form-control ng-form-control custom" notFoundText="No funding source found" placeholder="Start typing to add a new funding source" *ngIf="!isView" addTagText="Add" [addTag]="addFundingSource" appendTo="body">
+                    <div for="fundingSources" class="font-style">Funding sources</div>
+                    <ng-select [items]="fundingSources" formControlName="fundingSources" [multiple]="true" (change)="onChangeFundingSources()" [searchFn]="searchFundingSources" [compareWith]="compareIds" [clearSearchOnAdd]="true" [hideSelected]="true" [closeOnSelect]="false" class="form-control ng-form-control custom" notFoundText="No funding source found" placeholder="Start typing to add a new funding source" *ngIf="!isView" addTagText="Add" [addTag]="addFundingSource" appendTo="body">
                         <ng-template ng-label-tmp let-item="item" let-clear="clear">
                             <span class="ng-value-label">{{item.value}}</span>
                             <span class="ng-value-icon right" (click)="clear(item)">×</span>
@@ -168,6 +169,11 @@
                     <input type="text" id="gaNumber" class="form-control" placeholder="e.g. 101136365" formControlName="gaNumber" *ngIf="!isView" />
                     <div *ngIf="isView" class="text-value">{{fv?.gaNumber ? fv?.gaNumber : ''}}</div>
                 </div>
+                <div class="col-md-4" *ngIf="hasPrivateFunding">
+                    <div for="privateFundingDetails" class="font-style">Private funding source</div>
+                    <input type="text" id="privateFundingDetails" class="form-control" placeholder="e.g. Michael J. Fox Foundation" formControlName="privateFundingDetails" *ngIf="!isView" />
+                    <div *ngIf="isView" class="text-value">{{fv?.privateFundingDetails ? fv?.privateFundingDetails : ''}}</div>
+                </div>
             </div>
             <hr class="hr-m2">
             <div class="row section-title-field">
@@ -182,29 +188,25 @@
             <ng-template #viewStudies>
                 <div class="row form-group">
                     <div class="col-md-12">
-                    <div class="study-list">
-                        <a
-                        *ngFor="let study of fv?.studies"
-                        class="study-item"
-                        [routerLink]="['/studies', study.id, 'view']"
-                        >
-                        <div class="study-badge">
-                         {{ study.shortTitle }}
-                        </div>
+                        <div class="study-list">
+                            <a *ngFor="let study of fv?.studies" class="study-item" [routerLink]="['/studies', study.id, 'view']">
+                                <div class="study-badge">
+                                    {{ study.shortTitle }}
+                                </div>
 
-                        <div class="study-content">
-                            <div class="study-title">
-                            <span *ngIf="study.cEuco" class="study-meta">
-                                 cEuCo: {{ study.cEuco.fullName }} ({{ study.cEuco.country?.name }})
-                            </span>
-                            </div>
+                                <div class="study-content">
+                                    <div class="study-title">
+                                        <span *ngIf="study.cEuco" class="study-meta">
+                                            cEuCo: {{study.cEuco.country ? getCountryFlag(study.cEuco.country?.iso2) + '&nbsp;' : ''}}{{ study.cEuco.fullName }}
+                                        </span>
+                                    </div>
 
-                            <!-- <div *ngIf="study.cEuco" class="study-subtitle">
+                                    <!-- <div *ngIf="study.cEuco" class="study-subtitle">
                             {{ study.cEuco.fullName }} ({{ study.cEuco.country?.name }})
                             </div> -->
+                                </div>
+                            </a>
                         </div>
-                        </a>
-                    </div>
                     </div>
                 </div>
             </ng-template>
@@ -242,12 +244,7 @@
             </div>
             <hr class="hr-m2">
             <div class="col-md-12">
-                <app-upsert-publication
-                    [publicationsData]="fv?.publications"
-                    [projectId]="id"
-                    [isView]="isView"
-                    [isEdit]="isEdit"
-                    [isAdd]="isAdd">
+                <app-upsert-publication [publicationsData]="fv?.publications" [projectId]="id" [isView]="isView" [isEdit]="isEdit" [isAdd]="isAdd">
                 </app-upsert-publication>
             </div>
         </form>

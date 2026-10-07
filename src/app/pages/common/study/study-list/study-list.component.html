@@ -1,33 +1,21 @@
 <div class="card">
     <div class="card-header sticky-top">
-        <div class="row" [ngClass]="sticky ? '' : ''">
+        <div class="row">
             <div class="col-md-6 d-inline-flex pt-2 pb-2">
                 <div class="view-title d-flex align-items-center">Clinical Studies</div>
+            </div>
+
+            <div class="col-md-6 d-flex justify-content-end">
+                <input type="text" class="form-control" placeholder="Search study..." [(ngModel)]="searchText" (keyup)="onInputChange($event)" />
             </div>
         </div>
     </div>
     <div id="permanentNavbar"></div>
 
     <div class="card-body">
-        <div class="row">
-            <div class="col-md-3">
-                <select class="form-control" [(ngModel)]="filterColumn" (change)="filterSearch()">
-                    <option selected disabled value="">Search by...</option>
-                    <option [value]=searchColumn.value *ngFor="let searchColumn of searchColumns">
-                        {{searchColumn.text}}</option>
-                </select>
-            </div>
-            <div class="col-md-9">
-                <div class="form-group">
-                    <input type="text" class="form-control" placeholder="Search study..." [(ngModel)]="searchText"
-                        (keyup)="onInputChange($event)" />
-                </div>
-            </div>
-        </div>
-
         <mat-table [dataSource]="dataSource">
             <ng-container matColumnDef="shortTitle">
-                <mat-header-cell *matHeaderCellDef>Short Title</mat-header-cell>
+                <mat-header-cell *matHeaderCellDef>Short Name</mat-header-cell>
                 <mat-cell *matCellDef="let row">
                     <a [routerLink]="['/studies', row.id, 'view']">{{row.shortTitle}}</a>
                 </mat-cell>
@@ -38,9 +26,28 @@
                 <mat-cell *matCellDef="let row">{{row.status}}</mat-cell>
             </ng-container>
 
-            <ng-container matColumnDef="category">
-                <mat-header-cell *matHeaderCellDef>Category</mat-header-cell>
-                <mat-cell *matCellDef="let row">{{row.category}}</mat-cell>
+            <ng-container matColumnDef="sponsorOrganisation">
+                <mat-header-cell *matHeaderCellDef>Sponsor Organisation</mat-header-cell>
+                <mat-cell *matCellDef="let row"><span>{{row.sponsorOrganisation?.country ? (getCountryFlag(row.sponsorOrganisation?.country?.iso2) + '&nbsp;') : ''}}{{row.sponsorOrganisation?.shortName ? row.sponsorOrganisation?.shortName : row.sponsorOrganisation?.name}}</span></mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="sponsorCountry">
+                <mat-header-cell *matHeaderCellDef>Sponsor Country</mat-header-cell>
+                <mat-cell *matCellDef="let row">{{row.sponsorCountry ? (getCountryFlag(row.sponsorCountry?.iso2) + '&nbsp;' + row.sponsorCountry?.name) : ''}}</mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="cEuco">
+                <mat-header-cell *matHeaderCellDef>Coordinating EuCo</mat-header-cell>
+                <mat-cell *matCellDef="let row"><span>{{row.cEuco?.country ? (getCountryFlag(row.cEuco?.country?.iso2) + '&nbsp;') : ''}}{{row.cEuco?.fullName}}</span></mat-cell>
+            </ng-container>
+
+            <ng-container matColumnDef="studyCountries">
+                <mat-header-cell *matHeaderCellDef>Study Countries</mat-header-cell>
+                <mat-cell *matCellDef="let row">
+                    <span *ngFor="let sc of row.studyCountries; let i = index">
+                        <a [routerLink]="['/study-countries', sc.id, 'view']">{{sc.country ? getCountryFlag(sc.country?.iso2) : ''}}</a>{{i+1 == row.studyCountries.length ? '' : '&nbsp;'}}
+                    </span>
+                </mat-cell>
             </ng-container>
 
             <ng-container matColumnDef="project">
@@ -68,8 +75,7 @@
             <mat-row *matRowDef="let row; columns: displayedColumns;">
             </mat-row>
         </mat-table>
-        <mat-paginator #studyPaginator [pageSizeOptions]="[10, 25, 50, 100]" [length]="studyLength"
-            [pageSize]="25"></mat-paginator>
+        <mat-paginator #studyPaginator [pageSizeOptions]="[10, 25, 50, 100]" [length]="studyLength" [pageSize]="25"></mat-paginator>
     </div>
 </div>
 

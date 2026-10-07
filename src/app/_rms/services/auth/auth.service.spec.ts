@@ -7,11 +7,9 @@ import {
 } from '@angular/common/http/testing';
 import { HttpClient } from '@angular/common/http';
 import { Routes, RouterModule } from '@angular/router';
-import {LoginComponent} from '../../../modules/auth/login/login.component';
-import {LogoutComponent} from '../../../modules/auth/logout/logout.component';
+import { LogoutComponent } from '../../../modules/auth/logout/logout.component';
 
 const fakeRoutes: Routes = [
-  { path: 'auth/login', component: LoginComponent },
   { path: 'auth/logout', component: LogoutComponent },
   { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
 ];

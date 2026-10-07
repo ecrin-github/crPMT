@@ -1,8 +1,7 @@
-import {NgModule} from '@angular/core';
-import {Routes, RouterModule} from '@angular/router';
-import {AuthComponent} from './auth.component';
-import {LoginComponent} from './login/login.component';
-import {LogoutComponent} from './logout/logout.component';
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { AuthComponent } from './auth.component';
+import { LogoutComponent } from './logout/logout.component';
 // import { UserGuideComponent } from './user-guide/user-guide.component';
 
 
@@ -32,14 +31,14 @@ const routes: Routes = [
         path: 'logout',
         component: LogoutComponent
       },
-      {path: '', redirectTo: 'login', pathMatch: 'full'},
-      {path: '**', redirectTo: 'login', pathMatch: 'full'},
+      { path: '', redirectTo: 'login', pathMatch: 'full' },
+      { path: '**', redirectTo: 'login', pathMatch: 'full' },
     ]
   }
 ];
 
 @NgModule({
-  imports: [ RouterModule.forChild(routes) ],
-  exports: [ RouterModule ]
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
 })
-export class AuthRoutingModule {}
+export class AuthRoutingModule { }

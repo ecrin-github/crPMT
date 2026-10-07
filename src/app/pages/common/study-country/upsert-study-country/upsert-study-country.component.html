@@ -67,7 +67,7 @@
                     </div>
                     <div class="row form-group">
                         <div class="col-md-3">
-                            <ng-select [items]="countries" formControlName="country" [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true" [compareWith]="compareCountries" (change)="onChangeCountry(i)" notFoundText="No countries found" placeholder="Select country" *ngIf="!isView && !isSCPage" appendTo="body" name="country" [ngClass]="{ 'is-invalid': submitted && getControls(i).country.errors?.required }">
+                            <ng-select [items]="countries" formControlName="country" [searchFn]="searchCountries" [multiple]="false" [compareWith]="compareCountries" (change)="onChangeCountry(i)" notFoundText="No countries found" placeholder="Select country" *ngIf="!isView && !isSCPage" appendTo="body" name="country" [ngClass]="{ 'is-invalid': submitted && getControls(i).country.errors?.required }">
                                 <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
                                 <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                                     <div class="row m-0">

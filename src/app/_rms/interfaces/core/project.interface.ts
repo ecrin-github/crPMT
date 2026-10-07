@@ -15,6 +15,7 @@ export interface ProjectInterface {
     // Project funding
     fundingSources: ClassValueInterface[];
     gaNumber: string;
+    privateFundingDetails: string;
     // Clinical study information
     studies: StudyDataInterface[];
     reportingPeriods: [];

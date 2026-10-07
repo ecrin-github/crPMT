@@ -1,7 +1,7 @@
 import { CountryInterface } from "./country.interface";
 
 export interface PersonInterface {
-    id: number;
+    id: string;
     country: CountryInterface;
     email: string;
     isEuco: boolean;
