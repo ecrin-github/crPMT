@@ -51,7 +51,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 pathMatch: 'full',
                 component: InternalMainPageComponent,
                 data: {
-                    shouldReuse: true,
+                    shouldReuse: false,
                     key: 'internalmainpagecomponent'
                 }
             },
@@ -61,7 +61,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 pathMatch: 'full',
                 component: StudyListComponent,
                 data: {
-                    shouldReuse: true,
+                    shouldReuse: false,
                     key: 'summarystudycomponent',
                     reuseRoutesFrom: ['studies/:id/view', 'studies/:id/add', 'studies/:id/edit']
                 }
@@ -91,7 +91,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 pathMatch: 'full',
                 component: ProjectListComponent,
                 data: {
-                    shouldReuse: true,
+                    shouldReuse: false,
                     key: 'ProjectListComponent'
                 }
             },
@@ -101,7 +101,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 pathMatch: 'full',
                 component: PersonListComponent,
                 data: {
-                    shouldReuse: true,
+                    shouldReuse: false,
                     key: 'summaryusercomponent',
                     reuseRoutesFrom: ['people/:id/view', 'people/:id/add', 'people/:id/edit']
                 }
