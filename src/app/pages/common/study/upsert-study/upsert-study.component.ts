@@ -669,56 +669,72 @@ export class UpsertStudyComponent implements OnInit {
 
     onSave(projectId: string): Observable<boolean[]> {
         let saveObs$: Array<Observable<boolean>> = [];
-
         const payload = JSON.parse(JSON.stringify(this.studyForm.value));
 
         for (const [i, item] of payload.studies.entries()) {
-            this.updatePayload(item, projectId, i);
+            saveObs$.push(
+                this.resolveCtuId(item.leadCtu).pipe(
+                    mergeMap((ctuId: number | null) => {
+                        const finalCtuId = ctuId ?? item.leadCtu?.id;
 
-            let itemObs$: Observable<Object> = null;
-
-            if (!item.id) {  // Add
-                itemObs$ = this.studyService.addStudy(item);
-            } else {
-                itemObs$ = this.studyService.editStudy(item.id, item);
-            }
-
-            saveObs$.push(itemObs$.pipe(
-                mergeMap((res: any) => {
-                    if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
-                        if (this.isStudyPage && this.isAdd) {  // Need id for redirection if single study add
-                            this.id = res.id;
+                        if (!finalCtuId) {
+                            console.error('No CTU ID resolved for item:', item);
+                            return of(false);
                         }
 
-                        if (this.studyCountryComponents.get(i) || this.studyAgreementComponents.get(i)) {
-                            let subObs$: Observable<boolean>[] = [];
+                        item.leadCtu = { id: finalCtuId };
+                        this.updatePayload(item, projectId, i);
 
-                            if (this.studyCountryComponents.get(i)) { // Saving study countries
-                                subObs$.push(this.studyCountryComponents.get(i).onSave(res.id).pipe(
-                                    map((successArr: boolean[]) => successArr.every(b => b))
-                                ));
-                            }
-
-                            if (this.studyAgreementComponents.get(i)) { // Saving study agreements
-                                subObs$.push(this.studyAgreementComponents.get(i).onSave(res.id).pipe(
-                                    map((successArr: boolean[]) => successArr.every(b => b))
-                                ));
-                            }
-
-                            return combineLatest(subObs$).pipe(
-                                map((successArr: boolean[]) => successArr.every(b => b))
-                            );
+                        let itemObs$: Observable<Object>;
+                        if (!item.id) {  // Add
+                            itemObs$ = this.studyService.addStudy(item);
+                        } else {
+                            itemObs$ = this.studyService.editStudy(item.id, item);
                         }
-                        return of(true);
-                    }
 
-                    this.toastr.error(res.message, "Failed to save study", { timeOut: 60000, extendedTimeOut: 60000 });
-                    return of(false);
-                }), catchError(err => {
-                    this.toastr.error(err.message, 'Failed to save study', { timeOut: 60000, extendedTimeOut: 60000 });
-                    return of(false);
-                })
-            ));
+                        return itemObs$.pipe(
+                            mergeMap((res: any) => {
+                                if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+                                    if (this.isStudyPage && this.isAdd) {  // Need id for redirection if single study add
+                                        this.id = res.id;
+                                    }
+
+                                    if (this.studyCountryComponents.get(i) || this.studyAgreementComponents.get(i)) {
+                                        let subObs$: Observable<boolean>[] = [];
+
+                                        if (this.studyCountryComponents.get(i)) { // Saving study countries
+                                            subObs$.push(this.studyCountryComponents.get(i).onSave(res.id).pipe(
+                                                map((successArr: boolean[]) => successArr.every(b => b))
+                                            ));
+                                        }
+
+                                        if (this.studyAgreementComponents.get(i)) { // Saving study agreements
+                                            subObs$.push(this.studyAgreementComponents.get(i).onSave(res.id).pipe(
+                                                map((successArr: boolean[]) => successArr.every(b => b))
+                                            ));
+                                        }
+
+                                        return combineLatest(subObs$).pipe(
+                                            map((successArr: boolean[]) => successArr.every(b => b))
+                                        );
+                                    }
+                                    return of(true);
+                                }
+
+                                this.toastr.error(res.message, "Failed to save study", { timeOut: 60000, extendedTimeOut: 60000 });
+                                return of(false);
+                            }), catchError(err => {
+                                this.toastr.error(err.message, 'Failed to save study', { timeOut: 60000, extendedTimeOut: 60000 });
+                                return of(false);
+                            })
+                        );
+                    }),
+                    catchError((err) => {
+                        this.toastr.error(err);
+                        return of(false);
+                    })
+                )
+            );
         }
 
         if (saveObs$.length == 0) {
@@ -864,6 +880,48 @@ export class UpsertStudyComponent implements OnInit {
 
             this.sortCTUs();
         });
+    }
+
+    resolveCtuId(selectedCtu: any): Observable<number | null> {
+        if (!selectedCtu) {
+            return of(null);
+        }
+
+        const fallbackDbId = selectedCtu?.id || null;
+
+        const countryIso2 = this.ctuMapperService.findCountryIso2FromSharePoint(selectedCtu, this.countries);
+
+        if (!countryIso2) {
+            if (fallbackDbId) {
+                return of(fallbackDbId);
+            }
+
+            this.toastr.error('Unable to map CTU country from SharePoint to database country.');
+            return of(null);
+        }
+
+        const payload = {
+            sharepoint_item_id: selectedCtu?.sharepointItemId || null,
+            name: selectedCtu?.name || null,
+            short_name: selectedCtu?.shortName || null,
+            country_iso2: countryIso2,
+            sas_verification: !!selectedCtu?.sasVerification,
+            address_info: selectedCtu?.addressInfo || null
+        };
+
+        return this.contextService.resolveSharePointCtu(payload).pipe(
+            map((res: any) => {
+                return res?.id || fallbackDbId || null;
+            }),
+            catchError(() => {
+                if (fallbackDbId) {
+                    return of(fallbackDbId);
+                }
+
+                this.toastr.error('Failed to resolve CTU from SharePoint.');
+                return of(null);
+            })
+        );
     }
 
     sortCTUs() {
