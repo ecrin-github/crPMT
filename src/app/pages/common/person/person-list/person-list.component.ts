@@ -18,7 +18,7 @@ import { PersonModalComponent } from '../../person-modal/person-modal.component'
   styleUrls: ['./person-list.component.scss']
 })
 export class PersonListComponent implements OnInit {
-  displayedColumns = ['personName', 'personEmail', 'personPosition', 'personCountry', 'personIsEuCo', 'actions'];
+  displayedColumns = ['personName', 'personEmail', 'personCountry', 'personIsEuCo', 'actions'];
   dataSource: MatTableDataSource<any>;
   searchText: string = '';
   personsLength: number = 0;
@@ -26,14 +26,14 @@ export class PersonListComponent implements OnInit {
   searchDebounce: Subject<string> = new Subject();
   detachedRouteHandlesService: any;
   dataChanged: boolean = false;
-  
+
   @ViewChild(MatPaginator, { static: false }) paginator: MatPaginator;
   constructor(private statesService: StatesService,
-              private contextService: ContextService, 
-              private spinner: NgxSpinnerService, 
-              private toastr: ToastrService, 
-              private modalService: NgbModal, 
-              private router: Router) { }
+    private contextService: ContextService,
+    private spinner: NgxSpinnerService,
+    private toastr: ToastrService,
+    private modalService: NgbModal,
+    private router: Router) { }
 
   ngOnInit(): void {
     this.getPersons();
@@ -83,11 +83,11 @@ export class PersonListComponent implements OnInit {
         this.contextService.addPerson(result).subscribe(() => {
           this.getPersons();
         }),
-        catchError((err) => {
-          this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
-          this.spinner.hide();
-          return of(null);
-        });
+          catchError((err) => {
+            this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
+            this.spinner.hide();
+            return of(null);
+          });
       } else {
         this.spinner.hide();
       }
@@ -107,11 +107,11 @@ export class PersonListComponent implements OnInit {
         this.contextService.editPerson(person.id, result).subscribe(() => {
           this.getPersons();
         }),
-        catchError((err) => {
-          this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
-          this.spinner.hide();
-          return of(null);
-        });
+          catchError((err) => {
+            this.toastr.error(err, "Error adding person", { timeOut: 20000, extendedTimeOut: 20000 });
+            this.spinner.hide();
+            return of(null);
+          });
       } else {
         this.spinner.hide();
       }

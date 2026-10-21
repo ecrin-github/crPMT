@@ -8,8 +8,6 @@ import {
 // language list
 import { Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
-import { SplashScreenService } from './_rms/partials/layout/splash-screen/splash-screen.service';
-import { TableExtendedService } from './_rms/shared/crud-table';
 
 // Required for MSAL
 import { MSAL_GUARD_CONFIG, MsalBroadcastService, MsalGuardConfiguration, MsalService } from '@azure/msal-angular';
@@ -39,9 +37,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private authService: MsalService,
     private msalBroadcastService: MsalBroadcastService,
     // private translationService: TranslationService,
-    private splashScreenService: SplashScreenService,
     private router: Router,
-    private tableService: TableExtendedService,
   ) {
     // register translations
     // this.translationService.loadTranslations(

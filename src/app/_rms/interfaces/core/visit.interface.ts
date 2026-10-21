@@ -4,7 +4,7 @@ export interface VisitInterface {
     id: string;
     visitType: string,
     visitDate: string,
-    pharmacy: string,
+    pharmacy: boolean,
     duration: string,
     durationUnit: string,
     comment: string,

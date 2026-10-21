@@ -1,5 +1,6 @@
 import { ClassValueInterface } from "../context/class-value.interface";
 import { CTUInterface } from "../context/ctu.interface";
+import { PersonInterface } from "../context/person.interface";
 import { CentreInterface } from "./centre.interface";
 import { CTUAgreementInterface } from "./ctu-agreement.interface";
 import { StudyCountryInterface } from "./study-country.interface";
@@ -7,6 +8,7 @@ import { StudyMainDataInterface } from "./study.interface";
 
 export interface StudyCTUInterface {
     id: string;
+    contactPerson: PersonInterface;
     leadCtu: boolean;
     services: ClassValueInterface[];
     study: StudyMainDataInterface;

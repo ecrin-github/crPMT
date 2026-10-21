@@ -18,7 +18,7 @@ export class VisitService {
   getStudyCTUVisits(sctuId) {
     return this.http.get(`${base}/core/study-ctus/${sctuId}/visits`);
   }
-  
+
   /* Visit CRUD */
   addVisitFromCentre(cid, payload) {
     return this.http.post(`${base}/core/centres/${cid}/visits`, payload);
@@ -31,6 +31,15 @@ export class VisitService {
     return this.http.put(`${base}/core/visits/${id}`, payload);
   }
   deleteVisit(id) {
-    return this.http.delete(`${base}/core/visits/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${base}/core/visits/${id}`, { observe: "response", responseType: 'json' });
+  }
+
+  /* Bulk queries */
+  addVisits(payload) {
+    return this.http.post(`${base}/core/visits/bulk_create`, payload, { observe: 'response' });
+  }
+
+  editVisits(payload) {
+    return this.http.put(`${base}/core/visits/bulk_update`, payload, { observe: 'response' });
   }
 }
