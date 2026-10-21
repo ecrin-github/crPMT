@@ -677,12 +677,7 @@ export class UpsertStudyComponent implements OnInit {
                     mergeMap((ctuId: number | null) => {
                         const finalCtuId = ctuId ?? item.leadCtu?.id;
 
-                        if (!finalCtuId) {
-                            console.error('No CTU ID resolved for item:', item);
-                            return of(false);
-                        }
-
-                        item.leadCtu = { id: finalCtuId };
+                        item.leadCtu = finalCtuId;
                         this.updatePayload(item, projectId, i);
 
                         let itemObs$: Observable<Object>;
