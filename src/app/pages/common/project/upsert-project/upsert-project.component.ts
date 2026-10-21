@@ -61,6 +61,7 @@ export class UpsertProjectComponent implements OnInit {
             coordinatingInstitution: null,
             startDate: null,
             endDate: null,
+            projectKoMeeting: null,
             fundingSources: [],
             gaNumber: '',
             privateFundingDetails: null,
@@ -160,6 +161,7 @@ export class UpsertProjectComponent implements OnInit {
             coordinatingInstitution: this.projectData.coordinatingInstitution,
             startDate: this.projectData.startDate ? stringToDate(this.projectData.startDate) : null,
             endDate: this.projectData.endDate ? stringToDate(this.projectData.endDate) : null,
+            projectKoMeeting: this.projectData.projectKoMeeting ? stringToDate(this.projectData.projectKoMeeting) : null,
             fundingSources: this.projectData.fundingSources,
             gaNumber: this.projectData.gaNumber,
             privateFundingDetails: this.projectData.privateFundingDetails,
@@ -190,6 +192,7 @@ export class UpsertProjectComponent implements OnInit {
     updatePayload(payload) {
         payload.startDate = dateToString(payload.startDate);
         payload.endDate = dateToString(payload.endDate);
+        payload.projectKoMeeting = dateToString(payload.projectKoMeeting);
 
         if (payload.coordinator?.id) {
             payload.coordinator = payload.coordinator.id;

@@ -136,6 +136,20 @@
                     </div>
                 </div>
             </div>
+            <div class="row form-group">
+                <div class="col-md-2">
+                    <div for="projectKoMeeting" class="font-style">Project KO meeting</div>
+                    <div class="input-group" *ngIf="!isView">
+                        <input class="form-control" placeholder="yyyy-mm-dd" name="projectKoMeeting" ngbDatepicker #projectKoMeeting="ngbDatepicker" [ngClass]="{ 'is-invalid': submitted && g.projectKoMeeting.errors }" formControlName="projectKoMeeting" container='body'>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" (click)="projectKoMeeting.toggle()" type="button">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div *ngIf="isView" class="text-value">{{dateToString(fv?.projectKoMeeting)}}</div>
+                </div>
+            </div>
             <hr class="hr-m2">
             <div class="row section-title">
                 <div class="col-md-12 text-left">
