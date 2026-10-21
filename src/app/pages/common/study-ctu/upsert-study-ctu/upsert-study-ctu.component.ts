@@ -428,9 +428,14 @@ export class UpsertStudyCtuComponent implements OnInit {
 
     getSASVerificationResult(i): string | null {
         if (this.sasVerifications[i]?.length > 0) {
+            let status;
             const rawStatus = this.sasVerifications[i][0]?.Status;
-            // Defensive: SharePoint can return this field as something other than a plain string
-            const status = typeof rawStatus === 'string' ? rawStatus.toLowerCase().trim() : null;
+
+            if (typeof rawStatus === 'string') {
+                status = rawStatus.toLowerCase().trim();
+            } else if (rawStatus?.length > 0) {
+                status = rawStatus[0].toLowerCase().trim();
+            }
 
             if (status === 'approved') {
                 return SasVerificationResults.APPROVED;
@@ -456,9 +461,11 @@ export class UpsertStudyCtuComponent implements OnInit {
     }
 
     sortCTUEvaluations() {
-        this.ctuEvaluations.sort((a, b) =>
-            (a.Created > b.Created) ? 1 : ((b.Created > a.Created) ? -1 : 0)
-        );
+        this.ctuEvaluations.forEach((evaluations) => {
+            evaluations.sort((a, b) =>
+                (a.Created < b.Created) ? 1 : ((b.Created > a.Created) ? -1 : 0)
+            );
+        });
     }
 
     getCTUEvaluationResult(i) {
