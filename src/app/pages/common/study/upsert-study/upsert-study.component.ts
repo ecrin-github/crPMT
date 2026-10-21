@@ -333,6 +333,10 @@ export class UpsertStudyComponent implements OnInit {
             firstPatientIn: null,
             lastPatientOut: null,
             status: null,
+            internalKoMeeting: null,
+            stakeholderKoMeeting: null,
+            internalClosingKoMeeting: null,
+            archiveDate: null,
             project: this.project,
             studyCountries: [],
         });
@@ -531,6 +535,10 @@ export class UpsertStudyComponent implements OnInit {
                 firstPatientIn: s.firstPatientIn ? stringToDate(s.firstPatientIn) : null,
                 lastPatientOut: s.lastPatientOut ? stringToDate(s.lastPatientOut) : null,
                 status: s.status,
+                internalKoMeeting: s.internalKoMeeting ? stringToDate(s.internalKoMeeting) : null,
+                stakeholderKoMeeting: s.stakeholderKoMeeting ? stringToDate(s.stakeholderKoMeeting) : null,
+                internalClosingMeeting: s.internalClosingMeeting ? stringToDate(s.internalClosingMeeting) : null,
+                archiveDate: s.archiveDate ? stringToDate(s.archiveDate) : null,
                 project: s.project,
                 // Note: unknown why this array needs to be wrapped in another array
                 studyCountries: [s.studyCountries]
@@ -588,6 +596,10 @@ export class UpsertStudyComponent implements OnInit {
         payload.agreementSignedDate = dateToString(payload.agreementSignedDate);
         payload.firstPatientIn = dateToString(payload.firstPatientIn);
         payload.lastPatientOut = dateToString(payload.lastPatientOut);
+        payload.internalKoMeeting = dateToString(payload.internalKoMeeting);
+        payload.stakeholderKoMeeting = dateToString(payload.stakeholderKoMeeting);
+        payload.internalClosingMeeting = dateToString(payload.internalClosingMeeting);
+        payload.archiveDate = dateToString(payload.archiveDate);
 
         if (payload.cEuco?.id) {
             payload.cEuco = payload.cEuco.id;

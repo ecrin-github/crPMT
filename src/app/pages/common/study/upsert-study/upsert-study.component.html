@@ -665,6 +665,74 @@
                             <div class="text-value" *ngIf="isView">{{study.value.status}}</div>
                         </div>
                     </div>
+                    <div class="row form-group">
+                        <div class="col-md-3">
+                            <div for="internalKoMeeting" class="font-style">Internal KO Meeting</div>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd" name="internalKoMeeting" ngbDatepicker #internalKoMeeting="ngbDatepicker" [ngClass]="{ 'is-invalid': submitted && getControls(i).internalKoMeeting.errors }" formControlName="internalKoMeeting" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" (click)="internalKoMeeting.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isView" class="text-value">{{dateToString(study.value.internalKoMeeting)}}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div for="stakeholderKoMeeting" class="font-style">Stakeholder KO meeting</div>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd" name="stakeholderKoMeeting" ngbDatepicker #stakeholderKoMeeting="ngbDatepicker" [ngClass]="{ 'is-invalid': submitted && getControls(i).stakeholderKoMeeting.errors }" formControlName="stakeholderKoMeeting" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" (click)="stakeholderKoMeeting.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isView" class="text-value">{{dateToString(study.value.stakeholderKoMeeting)}}</div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-3">
+                            <div for="internalClosingMeeting" class="font-style">Internal closing meeting</div>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd" name="internalClosingMeeting" ngbDatepicker #internalClosingMeeting="ngbDatepicker" [ngClass]="{ 'is-invalid': submitted && getControls(i).internalClosingMeeting.errors }" formControlName="internalClosingMeeting" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" (click)="internalClosingMeeting.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isView" class="text-value">{{dateToString(study.value.internalClosingMeeting)}}</div>
+                        </div>
+                        <div class="col-md-3">
+                            <div for="archiveDate" class="font-style">Archive date</div>
+                            <div class="row">
+                                <div class="col-md-9">
+                                    <div class="input-group" *ngIf="!isView">
+                                        <input class="form-control" placeholder="yyyy-mm-dd" name="archiveDate" ngbDatepicker #archiveDate="ngbDatepicker" [ngClass]="{ 'is-invalid': submitted && getControls(i).archiveDate.errors }" formControlName="archiveDate" container='body'>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" (click)="archiveDate.toggle()" type="button">
+                                                <i class="fa fa-calendar"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isView" class="text-value">{{dateToString(study.value.archiveDate)}}</div>
+                        </div>
+                    </div>
                 </ng-template>
             </div>
         </div>
