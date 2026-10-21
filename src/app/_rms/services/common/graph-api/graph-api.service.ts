@@ -13,7 +13,7 @@ export class GraphApiService {
 
     public SITE_NAME_QUALITY = "Quality";
     public CTU_EVALUATIONS_GUID = "d4cb819a-40b0-4adc-ad14-9aafd4bd5c9d";
-    public CTU_SERVICE_PROVIDERS_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";
+    public CTU_SERVICE_PROVIDERS_GUID = "abdded09-d227-4ff6-ac42-7baba643a850";
     public SAS_TRACKER_GUID = "7C480809-EDA4-4773-936B-0FE9C6284EDE";
     public RISK_REGISTER_GUID = "E63CD96C-A388-42B8-85F5-30B88848A0BE";
     public RISK_REGISTER_TITLE = "QAFOR0425 Risk Register";
@@ -377,7 +377,7 @@ export class GraphApiService {
             mergeMap((res: any) => {
                 if (res?.id) {
                     return this.http.get(
-                        `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_SERVICE_PROVIDERS_GUID}}/items?$expand=fields($select=Title,Short_x0020_Name,Country,SAS_x0020_Verification,AddressInfo,Contact,Contactemail,ContactTitle)`
+                        `https://graph.microsoft.com/v1.0/sites/${res.id}/lists/{${this.CTU_SERVICE_PROVIDERS_GUID}}/items?$expand=fields($select=CTU_x0020_Name,CTU_x0020_Short_x0020_Name,Country,Address_x0020_Info)`
                     );
                 }
                 return of(null);
@@ -405,31 +405,16 @@ export class GraphApiService {
                 .map((item: any) => {
                     const fields = item?.fields || {};
 
-                    // Extract contact information from SharePoint fields using discovered internal names
-                    const contactName = fields?.Contact || '';
-                    const contactEmail = fields?.Contactemail || '';
-                    const contactTitle = fields?.ContactTitle || '';
-
                     const mapped = {
                         id: null,
                         sharepointItemId: item?.id || null,
-                        shortName: fields?.Short_x0020_Name || '',
-                        name: fields?.Title || '',
-                        sasVerification: !!fields?.SAS_x0020_Verification,
-                        addressInfo: fields?.AddressInfo || null,
+                        shortName: fields?.CTU_x0020_Short_x0020_Name || '',
+                        name: fields?.CTU_x0020_Name || '',
+                        addressInfo: fields?.Address_x0020_Info || null,
                         country: {
                             iso2: fields?.Country || null,
                             name: fields?.Country || null
                         },
-                        // Build PersonInterface for contact
-                        contact: contactName || contactEmail ? {
-                            id: null,
-                            country: null,
-                            email: contactEmail || '',
-                            isEuco: false,
-                            fullName: contactName || '',
-                            position: contactTitle || ''
-                        } : null,
                         source: 'sharepoint'
                     };
 
