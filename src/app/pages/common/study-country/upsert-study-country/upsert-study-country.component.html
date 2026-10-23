@@ -62,7 +62,7 @@
                 <ng-template #scView>
                     <div class="row section-title-field">
                         <div class="col-md-12 text-left">
-                            <div class="text-value" class="view-sub-title">Country<sup *ngIf="!isView">*</sup></div>
+                            <div class="text-value" class="view-sub-title">Country<sup *ngIf="!isView && !isSCPage">*</sup></div>
                         </div>
                     </div>
                     <div class="row form-group">
@@ -180,9 +180,9 @@
                     <div class="row">
                         <div class="col-md-12 d-flex align-items-center">
                             <ng-container *ngIf="isCtisCountry(sc.value.country); else nonCtisCountry">
-                                <input type="checkbox" class="form-check-input checkbox-2 me-2 mt-0" *ngIf="!isView" [checked]="studyUsesCtisForSafetyNotifications" (click)="onChangeCtis($event, i)" />
+                                <input type="checkbox" class="form-check-input checkbox-2 me-2 mt-0" *ngIf="!isView" [checked]="studyUsesCtisForSNs" (click)="onChangeCtis($event, i)" />
                                 <span class="text-value" *ngIf="!isView">Reports submitted through CTIS</span>
-                                <span class="text-value" *ngIf="isView">{{studyUsesCtisForSafetyNotifications ? "Reports submitted through CTIS" : "Reports not submitted through CTIS"}}</span>
+                                <span class="text-value" *ngIf="isView">{{studyUsesCtisForSNs ? "Reports submitted through CTIS" : "Reports not submitted through CTIS"}}</span>
                             </ng-container>
                             <ng-template #nonCtisCountry>
                                 <span class="text-value">N/A for non-CTIS countries</span>

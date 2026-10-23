@@ -196,7 +196,7 @@
                                 </ng-container>
                                 <ng-template #displayLeadCTU>
                                     <div class="col-md-12">
-                                        <div *ngIf="isView" class="text-value">{{getCountryFlag(study.value?.leadCtu?.country?.iso2)}}&nbsp;{{study.value?.leadCtu?.shortName
+                                        <div *ngIf="isView" class="text-value">{{study.value?.leadCtu?.country?.iso2? getCountryFlag(study.value?.leadCtu?.country?.iso2) + '&nbsp;' : ''}}{{study.value?.leadCtu?.shortName
                                             ? study.value?.leadCtu?.shortName + ' - ' : ''
                                             }}{{study.value?.leadCtu?.name}}</div>
                                     </div>

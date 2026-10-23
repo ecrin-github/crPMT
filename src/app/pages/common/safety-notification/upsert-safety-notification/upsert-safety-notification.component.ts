@@ -97,7 +97,7 @@ export class UpsertSafetyNotificationComponent implements OnInit {
       this.formValueChangesSub = this.form.valueChanges.subscribe((change) => {
         if (change.safetyNotifications) {
           this.form.patchValue({ "safetyNotifications": change.safetyNotifications }, { emitEvent: false });
-  
+
           // Further hack to update ngbdate fields (submission date) because patchValue expects a ngbdate, otherwise you cannot type in the field
           Promise.resolve().then(() => {
             for (const [index, c] of change.safetyNotifications?.entries()) {
@@ -118,27 +118,7 @@ export class UpsertSafetyNotificationComponent implements OnInit {
 
   deleteSafetyNotification(i: number) {
     const nId = this.getSafetyNotificationsForm().value[i].id;
-    if (!nId) { // Notification has been locally added only
-      this.getSafetyNotificationsForm().removeAt(i);
-    } else {  // Existing notification
-      const removeModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-      removeModal.componentInstance.setDefaultDeleteMessage("safety notification");
-
-      removeModal.result.then((remove) => {
-        if (remove) {
-          this.safetyNotificationService.deleteSafetyNotification(nId).subscribe((res: any) => {
-            if (res.status === 204) {
-              this.getSafetyNotificationsForm().removeAt(i);
-              this.toastr.success('Safety notification deleted successfully');
-            } else {
-              this.toastr.error('Error when deleting safety notification', res.statusText);
-            }
-          }, error => {
-            this.toastr.error(error);
-          })
-        }
-      }, error => { this.toastr.error(error) });
-    }
+    this.getSafetyNotificationsForm().removeAt(i);
   }
 
   // TODO?

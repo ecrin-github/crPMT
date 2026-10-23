@@ -15,13 +15,20 @@ export class SafetyNotificationService {
   addSafetyNotification(payload) {
     return this.http.post(`${base}/core/safety-notifications`, payload);
   }
+
   getSafetyNotification(id) {
     return this.http.get(`${base}/core/safety-notifications/${id}`);
   }
+
   editSafetyNotification(id, payload) {
     return this.http.put(`${base}/core/safety-notifications/${id}`, payload);
   }
+
   deleteSafetyNotification(id) {
-    return this.http.delete(`${base}/core/safety-notifications/${id}`, {observe: "response", responseType: 'json'});
+    return this.http.delete(`${base}/core/safety-notifications/${id}`, { observe: "response", responseType: 'json' });
+  }
+
+  deleteOrphanSafetyNotifications() {
+    return this.http.delete(`${base}/core/safety-notifications-cleaning`);
   }
 }
