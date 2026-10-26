@@ -21,7 +21,7 @@ import { UpsertNotificationComponent } from '../../notification/upsert-notificat
 import { UpsertSafetyNotificationComponent } from '../../safety-notification/upsert-safety-notification/upsert-safety-notification.component';
 import { UpsertStudyCtuComponent } from '../../study-ctu/upsert-study-ctu/upsert-study-ctu.component';
 import { UpsertSubmissionComponent } from '../../submission/upsert-submission/upsert-submission.component';
-import { AuthorityCodes, SafetyNotificationTypeCodes } from 'src/assets/js/constants';
+import { AuthorityCodes, SafetyNotificationTypeCodes, CA_TEXT, EC_TEXT } from 'src/assets/js/constants';
 import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-link/regulatory-link.service';
 
 @Component({
@@ -144,6 +144,10 @@ export class UpsertStudyCountryComponent implements OnInit {
             otherNotifications: [[]],
             safetyNotifications: [[]],  // Used when saving
             submissions: [[]],
+            snAnnualEcNa: false,
+            snAnnualCaNa: false,
+            snDsurEcNa: false,
+            snDsurCaNa: false,
             study: this.study,
             studyCtus: null
         });
@@ -184,6 +188,10 @@ export class UpsertStudyCountryComponent implements OnInit {
                 otherNotifications: [[]],
                 safetyNotifications: [[]],  // Used when saving
                 submissions: [[]],
+                snAnnualEcNa: sc.snAnnualEcNa,
+                snAnnualCaNa: sc.snAnnualCaNa,
+                snDsurEcNa: sc.snDsurEcNa,
+                snDsurCaNa: sc.snDsurCaNa,
                 study: sc.study,
                 studyCtus: [sc.studyCtus]
             };
@@ -333,6 +341,10 @@ export class UpsertStudyCountryComponent implements OnInit {
             this.snForms[this.snFormSharedIndex].snDsurEcForm,
             this.snForms[this.snFormSharedIndex].snDsurCaForm
         );
+    }
+
+    emptySnForm(snForm) {
+        snForm.setControl('safetyNotifications', new UntypedFormArray([]));
     }
 
     // Note: doesn't trigger on SC page as country cannot be changed from there
@@ -604,7 +616,7 @@ export class UpsertStudyCountryComponent implements OnInit {
                         sc.safetyNotifications = scWithSn.safetyNotifications;
                     }
                 }
-            } else if (!(this.isSCPage && !this.isCtisCountry(studyCountries[0]?.country))) { // TODO: potentially change single page logic
+            } else if (!(this.isSCPage && !this.isCtisCountry(studyCountries[0]?.country))) {
                 this.toastr.error("Couldn't find study country where CTIS flag was checked");
             }
         } else if (this.isSCPage && !this.studyUsesCtisForSNs && this.studyUsesCtisForSNsChanged) {
@@ -617,6 +629,22 @@ export class UpsertStudyCountryComponent implements OnInit {
             }
         }
 
+        return studyCountries;
+    }
+
+    setSharedNotApplicableFields(studyCountries: StudyCountryInterface[]): StudyCountryInterface[] {
+        if (this.studyUsesCtisForSNs && this.isSCPage) {
+            const currCountry = studyCountries[0];
+
+            for (const sc of studyCountries) {
+                if (this.contextService.isCtisCountry(sc.country) && sc.id != currCountry?.id) {
+                    sc.snAnnualEcNa = currCountry.snAnnualEcNa;
+                    sc.snAnnualCaNa = currCountry.snAnnualCaNa;
+                    sc.snDsurEcNa = currCountry.snDsurEcNa;
+                    sc.snDsurCaNa = currCountry.snDsurCaNa;
+                }
+            }
+        }
         return studyCountries;
     }
 
@@ -770,6 +798,7 @@ export class UpsertStudyCountryComponent implements OnInit {
                 .pipe(
                     mergeMap((studyCountries: StudyCountryInterface[]) => this.getSafetyNotificationsForSC(studyCountries)),  // Save SNs and populates sc.safetyNotifications (except for ctis countries with shared SNs)
                     map((studyCountries: StudyCountryInterface[]) => this.setSharedSafetyNotifications(studyCountries)),  // Populate sc.safetyNotifications for ctis countries with shared SNs
+                    map((studyCountries: StudyCountryInterface[]) => this.setSharedNotApplicableFields(studyCountries)),  // When saving from a CTIS study country page, sync not applicable fields with other CTIS countries
                     map((studyCountries: StudyCountryInterface[]) => this.updateFullPayload(studyCountries, studyId)),
                     mergeMap((studyCountries: StudyCountryInterface[]) => forkJoin(this.getScSaveObs$(studyCountries))),  // Save SCs + other subcomponents
                     mergeMap((res: boolean[]) => this.getSNDeleteObs$(res)),    // Deleting orphan SNs
@@ -825,7 +854,7 @@ export class UpsertStudyCountryComponent implements OnInit {
         if (!this.studyUsesCtisForSNs) {
             confirmationModal.componentInstance.message = `This will replace all other CTIS study countries' safety notifications with the data from this study country (${countryName}). Continue?`;
         } else {
-            confirmationModal.componentInstance.message = `This will remove all other CTIS study countries' safety notifications from this study country (${countryName}). Continue?`;
+            confirmationModal.componentInstance.message = `This will delete all other CTIS study countries' safety notifications. Continue?`;
         }
 
         confirmationModal.result.then((proceed) => {
@@ -867,6 +896,86 @@ export class UpsertStudyCountryComponent implements OnInit {
         }, error => { this.toastr.error(error) });
     }
 
+    getSNItemsForTickedNA(fcName: string, i) {
+        if (fcName) {
+            if (fcName === "snAnnualEcNa") {
+                return this.snForms[i].snAnnualEcForm;
+            } else if (fcName === "snAnnualCaNa") {
+                return this.snForms[i].snAnnualCaForm;
+            } else if (fcName === "snDsurEcNa") {
+                return this.snForms[i].snDsurEcForm;
+            } else if (fcName === "snDsurCaNa") {
+                return this.snForms[i].snDsurCaForm;
+            }
+        }
+        return null;
+    }
+
+    onChangeNotApplicable($event, i) {
+        // Case 4: study country, CTIS - ???
+
+        // Only showing on ticking box and if there are existing safety notifications
+        const fcName = $event?.target?.getAttribute("formControlName");
+        let snFormTicked = this.getSNItemsForTickedNA(fcName, i);
+
+        const currSCValue = this.getStudyCountriesForm().at(i).value;
+        const ctisCase = this.studyUsesCtisForSNs && this.isCtisCountry(currSCValue?.country);
+
+        if ($event.target.checked && snFormTicked?.value?.safetyNotifications?.length > 0) {
+            // Not checking the checkbox or setting boolean to true for now
+            $event.target.checked = false;
+            this.getStudyCountriesForm().at(i).get(fcName)?.setValue(false);
+
+            const confirmationModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
+            confirmationModal.componentInstance.title = "Safety notification - N/A";
+            confirmationModal.componentInstance.buttonClass = "btn-success";
+            confirmationModal.componentInstance.buttonMessage = "Apply";
+
+            const snNumber = snFormTicked?.value?.safetyNotifications?.length;
+            if (!ctisCase) {
+                confirmationModal.componentInstance.message = `This will delete the existing ${snNumber === 1 ? '' : snNumber} safety notification item${snNumber === 1 ? '' : 's'}. Continue?`;
+            } else {
+                confirmationModal.componentInstance.message = `This will delete the existing ${snNumber === 1 ? '' : snNumber} safety notification item${snNumber === 1 ? '' : 's'} this country as well as all the other CTIS countries too. Continue?`;
+            }
+
+            confirmationModal.result.then((proceed) => {
+                if (proceed) {
+                    // Setting checkbox field to true, hides SNs form
+                    this.getStudyCountriesForm().at(i).get(fcName)?.setValue(true);
+
+                    // Emptying form
+                    this.emptySnForm(snFormTicked);
+
+                    if (ctisCase) {
+                        // Update other CTIS countries boolean fields
+                        this.patchNotApplicable(i);
+                    }
+                }
+
+                $event.target.checked = proceed;
+            }, error => { this.toastr.error(error) });
+        } else if (ctisCase) {
+            // Update other CTIS countries boolean fields
+            this.patchNotApplicable(i);
+        }
+    }
+
+    patchNotApplicable(i) {
+        if (!this.isSCPage) {
+            const currSCValue = this.getStudyCountriesForm().at(i).value;
+            for (const [index, sc] of this.form.value.studyCountries?.entries()) {
+                if (this.isCtisCountry(sc.country) && sc.country?.iso2 != currSCValue?.country?.iso2) {
+                    this.getStudyCountriesForm().at(index).patchValue({
+                        snAnnualEcNa: currSCValue.snAnnualEcNa,
+                        snAnnualCaNa: currSCValue.snAnnualCaNa,
+                        snDsurEcNa: currSCValue.snDsurEcNa,
+                        snDsurCaNa: currSCValue.snDsurCaNa
+                    });
+                }
+            }
+        }
+    }
+
     compareIds(fv1, fv2): boolean {
         return fv1?.id == fv2?.id;
     }
@@ -897,6 +1006,18 @@ export class UpsertStudyCountryComponent implements OnInit {
 
     isCtisCountry(c: CountryInterface) {
         return this.contextService.isCtisCountry(c);
+    }
+
+    getAuthorityLabel(authorityCode: string) {
+        let label: String = "";
+
+        if (authorityCode === AuthorityCodes.EC) {
+            label = EC_TEXT;
+        } else if (authorityCode === AuthorityCodes.CA) {
+            label = CA_TEXT;
+        }
+
+        return label;
     }
 
     back(): void {

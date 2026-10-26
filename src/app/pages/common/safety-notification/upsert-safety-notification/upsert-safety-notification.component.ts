@@ -12,197 +12,163 @@ import { ConfirmationWindowComponent } from '../../confirmation-window/confirmat
 import { AuthorityCodes, CA_TEXT, EC_TEXT } from 'src/assets/js/constants';
 
 @Component({
-  selector: 'app-upsert-safety-notification',
-  templateUrl: './upsert-safety-notification.component.html',
-  styleUrls: ['./upsert-safety-notification.component.scss']
+    selector: 'app-upsert-safety-notification',
+    templateUrl: './upsert-safety-notification.component.html',
+    styleUrls: ['./upsert-safety-notification.component.scss']
 })
 export class UpsertSafetyNotificationComponent implements OnInit {
-  AuthorityCodes = AuthorityCodes;
+    AuthorityCodes = AuthorityCodes;
 
-  @ViewChildren('submissionDate', { read: ElementRef }) submissionDateInputs: QueryList<ElementRef>;
+    @ViewChildren('submissionDate', { read: ElementRef }) submissionDateInputs: QueryList<ElementRef>;
 
-  @Input() authorityCode: String;
-  @Input() typeCode: String;
-  @Input() form: UntypedFormGroup;
+    @Input() authorityCode: String;
+    @Input() display: boolean;
+    @Input() typeCode: String;
+    @Input() form: UntypedFormGroup;
 
-  formValueChangesSub: Subscription = null;
-  submitted: boolean = false;
-  isEdit: boolean = false;
-  isView: boolean = false;
-  isAdd: boolean = false;
+    formValueChangesSub: Subscription = null;
+    submitted: boolean = false;
+    isEdit: boolean = false;
+    isView: boolean = false;
+    isAdd: boolean = false;
 
-  constructor(
-    private cdr: ChangeDetectorRef,
-    private fb: UntypedFormBuilder,
-    private contextService: ContextService,
-    private modalService: NgbModal,
-    private router: Router,
-    private safetyNotificationService: SafetyNotificationService,
-    private toastr: ToastrService) {
-  }
+    constructor(
+        private cdr: ChangeDetectorRef,
+        private fb: UntypedFormBuilder,
+        private contextService: ContextService,
+        private modalService: NgbModal,
+        private router: Router,
+        private safetyNotificationService: SafetyNotificationService,
+        private toastr: ToastrService) {
+    }
 
-  ngOnInit(): void {
-    this.isEdit = this.router.url.includes('edit');
-    this.isView = this.router.url.includes('view');
-    this.isAdd = this.router.url.includes('add');
-  }
+    ngOnInit(): void {
+        this.isEdit = this.router.url.includes('edit');
+        this.isView = this.router.url.includes('view');
+        this.isAdd = this.router.url.includes('add');
+    }
 
-  get g() { return this.form.get('safetyNotifications')["controls"]; }
+    get g() { return this.form.get('safetyNotifications')["controls"]; }
 
-  getControls(i) {
-    return this.g[i].controls;
-  }
+    getControls(i) {
+        return this.g[i].controls;
+    }
 
-  getSafetyNotificationsForm(): UntypedFormArray {
-    return this.form.get('safetyNotifications') as UntypedFormArray;
-  }
+    getSafetyNotificationsForm(): UntypedFormArray {
+        return this.form.get('safetyNotifications') as UntypedFormArray;
+    }
 
-  newSafetyNotification(): UntypedFormGroup {
-    return this.fb.group({
-      id: null,
-      authority: this.authorityCode,
-      submissionDate: null,
-      year: null,
-      notApplicable: false,
-      notificationType: this.typeCode,
-    });
-  }
+    newSafetyNotification(): UntypedFormGroup {
+        return this.fb.group({
+            id: null,
+            authority: this.authorityCode,
+            submissionDate: null,
+            year: null,
+            notificationType: this.typeCode,
+        });
+    }
 
-  // patchForm() {
-  //   this.form.setControl('safetyNotifications', this.patchArray());
-  // }
+    ngOnChanges(changes: SimpleChanges) {
+        // Note: have to do this because shared forms values don't update in the UI (thanks Angular!)
+        // See: https://stackoverflow.com/questions/77694477/update-the-view-of-two-forms-sharing-a-formgroup
+        if (changes.form && this.form) {
+            this.formValueChangesSub?.unsubscribe();
 
-  // patchArray(): UntypedFormArray {
-  //   const formArray = new UntypedFormArray([]);
-  //   this.safetyNotifications.forEach((sn, index) => {
-  //     formArray.push(this.fb.group({
-  //       id: sn.id,
-  //       authority: sn.authority,
-  //       submissionDate: sn.submissionDate ? stringToDate(sn.submissionDate) : null,
-  //       year: sn.year,
-  //       notApplicable: sn.notApplicable,
-  //       notificationType: sn.notificationType?.code ? sn.notificationType.code : sn.notificationType,
-  //       studyCountry: sn.studyCountry?.id,
-  //     }));
-  //   });
-  //   return formArray;
-  // }
+            this.formValueChangesSub = this.form.valueChanges.subscribe((change) => {
+                if (change.safetyNotifications) {
+                    this.form.patchValue({ "safetyNotifications": change.safetyNotifications }, { emitEvent: false });
 
-  ngOnChanges(changes: SimpleChanges) {
-    // Note: have to do this because shared forms values don't update in the UI (thanks Angular!)
-    // See: https://stackoverflow.com/questions/77694477/update-the-view-of-two-forms-sharing-a-formgroup
-    if (changes.form && this.form) {
-      this.formValueChangesSub?.unsubscribe();
-
-      this.formValueChangesSub = this.form.valueChanges.subscribe((change) => {
-        if (change.safetyNotifications) {
-          this.form.patchValue({ "safetyNotifications": change.safetyNotifications }, { emitEvent: false });
-
-          // Further hack to update ngbdate fields (submission date) because patchValue expects a ngbdate, otherwise you cannot type in the field
-          Promise.resolve().then(() => {
-            for (const [index, c] of change.safetyNotifications?.entries()) {
-              if (typeof c?.submissionDate === 'string' && this.submissionDateInputs.get(index)) {
-                this.submissionDateInputs.get(index).nativeElement.value = c.submissionDate;
-              }
-            }
-            this.cdr.detectChanges();
-          });
+                    // Further hack to update ngbdate fields (submission date) because patchValue expects a ngbdate, otherwise you cannot type in the field
+                    Promise.resolve().then(() => {
+                        for (const [index, c] of change.safetyNotifications?.entries()) {
+                            if (typeof c?.submissionDate === 'string' && this.submissionDateInputs.get(index)) {
+                                this.submissionDateInputs.get(index).nativeElement.value = c.submissionDate;
+                            }
+                        }
+                        this.cdr.detectChanges();
+                    });
+                }
+            });
         }
-      });
-    }
-  }
-
-  addSafetyNotification() {
-    this.getSafetyNotificationsForm().push(this.newSafetyNotification());
-  }
-
-  deleteSafetyNotification(i: number) {
-    const nId = this.getSafetyNotificationsForm().value[i].id;
-    this.getSafetyNotificationsForm().removeAt(i);
-  }
-
-  // TODO?
-  formValid() {
-    // this.submitted = true;
-
-    // // Manually checking CTU field (shouldn't be empty)
-    // for (const i in this.form.get("notifications")['controls']) {
-    //   if (this.form.get("notifications")['controls'][i].value.ctu == null) {
-    //     this.form.get("notifications")['controls'][i].controls.ctu.setErrors({'required': true});
-    //   }
-    // }
-
-    return this.form.valid;
-  }
-
-  updatePayload(payload, i) {
-    if (payload.notApplicable) {
-      payload.submissionDate = null;
-    } else if (payload.submissionDate) {
-      payload.submissionDate = dateToString(payload.submissionDate);
     }
 
-    payload.authority = this.authorityCode;
-
-    payload.order = i;
-  }
-
-  onSave(): Observable<string[]> {
-    this.submitted = true;
-    let saveObs$: Array<Observable<string>> = [];
-
-    const payload = JSON.parse(JSON.stringify(this.form.value));
-
-    for (const [i, item] of payload.safetyNotifications.entries()) {
-      this.updatePayload(item, i);
-
-      let onSaveObs$;
-
-      if (!item.id) { // Add
-        onSaveObs$ = this.safetyNotificationService.addSafetyNotification(item);
-      } else {  // Edit
-        onSaveObs$ = this.safetyNotificationService.editSafetyNotification(item.id, item);
-      }
-
-      saveObs$.push(onSaveObs$.pipe(
-        mergeMap((res: any) => {
-          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
-            return of(res.id);
-          }
-          return of(null);
-        })
-      ));
+    addSafetyNotification() {
+        this.getSafetyNotificationsForm().push(this.newSafetyNotification());
     }
 
-    if (saveObs$.length == 0) {
-      saveObs$.push(of(null));
+    deleteSafetyNotification(i: number) {
+        const nId = this.getSafetyNotificationsForm().value[i].id;
+        this.getSafetyNotificationsForm().removeAt(i);
     }
 
-    return combineLatest(saveObs$);
-  }
+    // TODO?
+    formValid() {
+        // this.submitted = true;
 
-  getAuthorityLabel() {
-    let label: String = "";
+        // // Manually checking CTU field (shouldn't be empty)
+        // for (const i in this.form.get("notifications")['controls']) {
+        //   if (this.form.get("notifications")['controls'][i].value.ctu == null) {
+        //     this.form.get("notifications")['controls'][i].controls.ctu.setErrors({'required': true});
+        //   }
+        // }
 
-    if (this.authorityCode === AuthorityCodes.EC) {
-      label = EC_TEXT;
-    } else if (this.authorityCode === AuthorityCodes.CA) {
-      label = CA_TEXT;
+        return this.form.valid;
     }
 
-    return label;
-  }
+    updatePayload(payload, i) {
+        if (payload.submissionDate) {
+            payload.submissionDate = dateToString(payload.submissionDate);
+        }
 
-  dateToString(date) {
-    return dateToString(date);
-  }
+        payload.authority = this.authorityCode;
 
-  compareIds(fv1, fv2): boolean {
-    return fv1?.id == fv2?.id;
-  }
+        payload.order = i;
+    }
 
-  ngOnDestroy(): void {
-    this.formValueChangesSub?.unsubscribe();
-  }
+    onSave(): Observable<string[]> {
+        this.submitted = true;
+        let saveObs$: Array<Observable<string>> = [];
+
+        const payload = JSON.parse(JSON.stringify(this.form.value));
+
+        for (const [i, item] of payload.safetyNotifications.entries()) {
+            this.updatePayload(item, i);
+
+            let onSaveObs$;
+
+            if (!item.id) { // Add
+                onSaveObs$ = this.safetyNotificationService.addSafetyNotification(item);
+            } else {  // Edit
+                onSaveObs$ = this.safetyNotificationService.editSafetyNotification(item.id, item);
+            }
+
+            saveObs$.push(onSaveObs$.pipe(
+                mergeMap((res: any) => {
+                    if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+                        return of(res.id);
+                    }
+                    return of(null);
+                })
+            ));
+        }
+
+        if (saveObs$.length == 0) {
+            saveObs$.push(of(null));
+        }
+
+        return combineLatest(saveObs$);
+    }
+
+    dateToString(date) {
+        return dateToString(date);
+    }
+
+    compareIds(fv1, fv2): boolean {
+        return fv1?.id == fv2?.id;
+    }
+
+    ngOnDestroy(): void {
+        this.formValueChangesSub?.unsubscribe();
+    }
 }
 

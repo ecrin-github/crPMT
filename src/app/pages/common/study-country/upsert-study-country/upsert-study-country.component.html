@@ -151,10 +151,36 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <app-upsert-safety-notification #safetyNotificationsAnnualEC [form]="snForms[i]?.snAnnualEcForm" [typeCode]="SafetyNotificationTypeCodes.AnnualProgressReport" [authorityCode]="AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            <div class="ps-6 pe-6">
+                                <div class="row mb-2">
+                                    <div class="col-md-12 d-flex">
+                                        <span class="safety-notification-table-title">{{getAuthorityLabel(AuthorityCodes.EC)}}</span>
+                                        <div class="row">
+                                            <div class="col-md-12 ms-5 d-flex align-items-center" *ngIf="!isView">
+                                                <input type="checkbox" class="form-check-input checkbox-2 me-2 mt-0" formControlName="snAnnualEcNa" (change)="onChangeNotApplicable($event, i)" />
+                                                <span class="text-value">N/A</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <app-upsert-safety-notification #safetyNotificationsAnnualEC [display]="!sc.value.snAnnualEcNa" [form]="snForms[i]?.snAnnualEcForm" [typeCode]="SafetyNotificationTypeCodes.AnnualProgressReport" [authorityCode]="AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <app-upsert-safety-notification #safetyNotificationsAnnualCA [form]="snForms[i]?.snAnnualCaForm" [typeCode]="SafetyNotificationTypeCodes.AnnualProgressReport" [authorityCode]="AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            <div class="ps-6 pe-6">
+                                <div class="row mb-2">
+                                    <div class="col-md-12 d-flex">
+                                        <span class="safety-notification-table-title">{{getAuthorityLabel(AuthorityCodes.CA)}}</span>
+                                        <div class="row">
+                                            <div class="col-md-12 ms-5 d-flex align-items-center" *ngIf="!isView">
+                                                <input type="checkbox" class="form-check-input checkbox-2 me-2 mt-0" formControlName="snAnnualCaNa" (change)="onChangeNotApplicable($event, i)" />
+                                                <span class="text-value">N/A</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <app-upsert-safety-notification #safetyNotificationsAnnualCA [display]="!sc.value.snAnnualCaNa" [form]="snForms[i]?.snAnnualCaForm" [typeCode]="SafetyNotificationTypeCodes.AnnualProgressReport" [authorityCode]="AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            </div>
                         </div>
                     </div>
                     <hr class="hr-m2">
@@ -165,10 +191,36 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <app-upsert-safety-notification #safetyNotificationsDsurEC [form]="snForms[i]?.snDsurEcForm" [typeCode]="SafetyNotificationTypeCodes.DSUR" [authorityCode]="AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            <div class="ps-6 pe-6">
+                                <div class="row mb-2">
+                                    <div class="col-md-12 d-flex">
+                                        <span class="safety-notification-table-title">{{getAuthorityLabel(AuthorityCodes.EC)}}</span>
+                                        <div class="row">
+                                            <div class="col-md-12 ms-5 d-flex align-items-center" *ngIf="!isView">
+                                                <input type="checkbox" class="form-check-input checkbox-2 me-2 mt-0" formControlName="snDsurEcNa" (change)="onChangeNotApplicable($event, i)" />
+                                                <span class="text-value">N/A</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <app-upsert-safety-notification #safetyNotificationsDsurEC [display]="!sc.value.snDsurEcNa" [form]="snForms[i]?.snDsurEcForm" [typeCode]="SafetyNotificationTypeCodes.DSUR" [authorityCode]="AuthorityCodes.EC" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <app-upsert-safety-notification #safetyNotificationsDsurCA [form]="snForms[i]?.snDsurCaForm" [typeCode]="SafetyNotificationTypeCodes.DSUR" [authorityCode]="AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            <div class="ps-6 pe-6">
+                                <div class="row mb-2">
+                                    <div class="col-md-12 d-flex">
+                                        <span class="safety-notification-table-title">{{getAuthorityLabel(AuthorityCodes.CA)}}</span>
+                                        <div class="row">
+                                            <div class="col-md-12 ms-5 d-flex align-items-center" *ngIf="!isView">
+                                                <input type="checkbox" class="form-check-input checkbox-2 me-2 mt-0" formControlName="snDsurCaNa" (change)="onChangeNotApplicable($event, i)" />
+                                                <span class="text-value">N/A</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <app-upsert-safety-notification #safetyNotificationsDsurCA [display]="!sc.value.snDsurCaNa" [form]="snForms[i]?.snDsurCaForm" [typeCode]="SafetyNotificationTypeCodes.DSUR" [authorityCode]="AuthorityCodes.CA" [studyCountry]="sc.value"></app-upsert-safety-notification>
+                            </div>
                         </div>
                     </div>
                     <hr class="hr-m2">
