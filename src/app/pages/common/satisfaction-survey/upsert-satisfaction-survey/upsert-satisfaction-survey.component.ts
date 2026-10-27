@@ -135,6 +135,14 @@ export class UpsertSatisfactionSurveyComponent implements OnInit {
     return followUpRank * SATISFACTION_SURVEY_INTERVAL_MONTHS / 12;
   }
 
+  // Year shown in the "Year" column: 0 for the initial survey (reference year), none for the end of project survey
+  displayYear(i: number): number {
+    if (this.fv[i]?.surveyType === SATISFACTION_SURVEY_TYPES.INITIAL) {
+      return 0;
+    }
+    return this.followUpYear(i);
+  }
+
   surveyLabel(i: number): string {
     const year = this.followUpYear(i);
     return year ? `${this.fv[i].surveyType} – Year ${year}` : this.fv[i]?.surveyType;
@@ -251,7 +259,6 @@ export class UpsertSatisfactionSurveyComponent implements OnInit {
   updatePayload(payload, studyId, i) {
     payload.study = studyId;
     payload.sentDate = this.dateToString(payload.sentDate);
-    payload.year = this.followUpYear(i);
     payload.order = i;
   }
 

@@ -30,7 +30,7 @@
                     </ng-template>
                 </div>
                 <div>
-                    <div class="text-value" *ngIf="followUpYear(i)">Year {{followUpYear(i)}}</div>
+                    <div class="text-value" *ngIf="displayYear(i) !== null">Year {{displayYear(i)}}</div>
                 </div>
                 <div>
                     <input *ngIf="!isView" type="number" min="1" class="form-control" placeholder="No. of recipients"
