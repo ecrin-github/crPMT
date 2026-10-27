@@ -1,0 +1,75 @@
+<div class="row mb-2">
+    <div class="col-md-12">
+        <span class="font-style">Next survey due: </span>
+        <span class="text-value" *ngIf="nextSurveyDueDate(); else noNextSurvey">{{nextSurveyDueDate()}}</span>
+        <ng-template #noNextSurvey>
+            <span class="text-muted fst-italic">{{isEndOfProjectSurveySent() ? 'No further survey (end of project survey sent)' : 'No survey sent yet'}}</span>
+        </ng-template>
+    </div>
+</div>
+<form [formGroup]="form" ngNativeValidate>
+    <div formArrayName="satisfactionSurveys">
+        <div class="survey-fields-grid" *ngIf="getSatisfactionSurveysForm()?.length > 0">
+            <div class="font-style">Survey</div>
+            <div class="font-style">Year</div>
+            <div class="font-style">No. of recipients</div>
+            <div class="font-style">Date sent</div>
+            <div></div>
+        </div>
+        <div *ngFor="let satisfactionSurvey of getSatisfactionSurveysForm()?.controls; let i = index;" [formGroupName]="i">
+            <hr *ngIf="i > 0" class="mt-1 mb-1">
+            <div class="survey-fields-grid">
+                <div>
+                    <ng-select *ngIf="!isView && i > 0; else surveyTypeText" [items]="surveyTypeOptions(i)" formControlName="surveyType"
+                        [multiple]="false" [virtualScroll]="false" [clearable]="false" class="form-control ng-form-control"
+                        placeholder="Select survey" appendTo="body"
+                        [ngClass]="{ 'is-invalid': submitted && satisfactionSurvey.get('surveyType')?.errors }">
+                    </ng-select>
+                    <ng-template #surveyTypeText>
+                        <div class="text-value">{{isView ? surveyLabel(i) : satisfactionSurvey.value.surveyType}}</div>
+                    </ng-template>
+                </div>
+                <div>
+                    <div class="text-value" *ngIf="followUpYear(i)">Year {{followUpYear(i)}}</div>
+                </div>
+                <div>
+                    <input *ngIf="!isView" type="number" min="1" class="form-control" placeholder="No. of recipients"
+                        formControlName="numberOfRecipients"
+                        [ngClass]="{ 'is-invalid': submitted && satisfactionSurvey.get('numberOfRecipients')?.errors }">
+                    <div *ngIf="isView" class="text-value">{{satisfactionSurvey.value.numberOfRecipients}}</div>
+                </div>
+                <div>
+                    <div class="input-group" *ngIf="!isView">
+                        <input class="form-control" placeholder="yyyy-mm-dd" name="sentDate" ngbDatepicker
+                            [markDisabled]="markDisabled(i)" [startDate]="calendarStartDate(i)"
+                            #sentDate="ngbDatepicker" formControlName="sentDate" container='body'
+                            [ngClass]="{ 'is-invalid': submitted && sentDateError(i) }">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" (click)="sentDate.toggle()" type="button">
+                                <i class="fa fa-calendar"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div *ngIf="isView" class="text-value">{{dateToString(satisfactionSurvey.value.sentDate)}}</div>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fa fa-trash" style="color:#f24437; cursor: pointer;" *ngIf="!isView && isLastSurvey(i)" (click)="removeSatisfactionSurvey(i)"></i>
+                </div>
+            </div>
+            <div class="row" *ngIf="submitted && (satisfactionSurvey.invalid || sentDateError(i))">
+                <div class="col-md-12 invalid-feedback d-block">
+                    <p *ngIf="satisfactionSurvey.get('surveyType')?.errors?.required">Survey type is required</p>
+                    <p *ngIf="satisfactionSurvey.get('numberOfRecipients')?.errors?.min">There must be at least 1 recipient</p>
+                    <p *ngIf="sentDateError(i)">{{sentDateError(i)}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<div class="row mt-2" *ngIf="!isView && canAddSurvey()">
+    <div class="col-4 d-flex align-items-center justify-content-left">
+        <button class="btn btn-primary" (click)="addSatisfactionSurvey()">
+            <i class="fa fa-plus"></i>New survey sent
+        </button>
+    </div>
+</div>

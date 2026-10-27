@@ -733,6 +733,17 @@
                             <div *ngIf="isView" class="text-value">{{dateToString(study.value.archiveDate)}}</div>
                         </div>
                     </div>
+                    <hr class="hr-m2">
+                    <div class="row section-title">
+                        <div class="col-md-12 text-left">
+                            <div class="text-value" class="view-sub-title">User satisfaction survey</div>
+                        </div>
+                    </div>
+                    <div class="row form-group">
+                        <div class="col-md-12">
+                            <app-upsert-satisfaction-survey [satisfactionSurveys]="study.value.satisfactionSurveys" #satisfactionSurveys></app-upsert-satisfaction-survey>
+                        </div>
+                    </div>
                 </ng-template>
             </div>
         </div>
