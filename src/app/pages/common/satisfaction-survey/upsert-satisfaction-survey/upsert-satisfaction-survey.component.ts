@@ -16,7 +16,8 @@ import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util'
  * - The end of project survey is necessarily the last one: once chosen, no other survey can be added
  * - A follow-up survey of year X can be sent at any time during the year X years after the initial survey's year, not before
  * - The end of project survey can't be sent before the previous survey
- * - Only the last survey can be removed, so that the order of the surveys stays consistent
+ * - Any survey can be removed, the remaining ones keep their creation order. The initial survey can only be removed
+ *   when it is the only one, since the follow-up years and dates are computed from it
  */
 @Component({
   selector: 'app-upsert-satisfaction-survey',
@@ -109,9 +110,16 @@ export class UpsertSatisfactionSurveyComponent implements OnInit {
     return i === this.fv.length - 1;
   }
 
+  canRemoveSurvey(i: number): boolean {
+    return i > 0 || this.fv.length === 1;
+  }
+
   removeSatisfactionSurvey(i: number) {
-    if (this.isLastSurvey(i)) {
+    if (this.canRemoveSurvey(i)) {
       this.getSatisfactionSurveysForm().removeAt(i);
+      // The cached datepicker inputs are bound to row indexes, which shift after a removal
+      this.calendarStartDates = [];
+      this.markDisabledFns = [];
     }
   }
 
@@ -141,11 +149,6 @@ export class UpsertSatisfactionSurveyComponent implements OnInit {
       return 0;
     }
     return this.followUpYear(i);
-  }
-
-  surveyLabel(i: number): string {
-    const year = this.followUpYear(i);
-    return year ? `${this.fv[i].surveyType} – Year ${year}` : this.fv[i]?.surveyType;
   }
 
   // Earliest date the survey can be sent, null if there is no constraint (yet)
