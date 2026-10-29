@@ -42,4 +42,8 @@ export class VisitService {
   editVisits(payload) {
     return this.http.put(`${base}/core/visits/bulk_update`, payload, { observe: 'response' });
   }
+
+  deleteVisits(ids) {
+    return this.http.post(`${base}/core/visits/bulk_delete`, { ids: ids }, { observe: 'response' });
+  }
 }

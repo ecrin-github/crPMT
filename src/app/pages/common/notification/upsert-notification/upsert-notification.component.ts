@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, combineLatest, of, Subject } from 'rxjs';
-import { mergeMap, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { catchError, mergeMap, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { NotificationInterface } from 'src/app/_rms/interfaces/core/notification.interface';
 import { NotificationService } from 'src/app/_rms/services/entities/notification/notification.service';
 import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-link/regulatory-link.service';
@@ -238,27 +238,48 @@ export class UpsertNotificationComponent implements OnInit, OnDestroy {
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
+    // One bulk query for the added items and one for the edited items, instead of one query per item (#18)
+    const addPayload = [];
+    const editPayload = [];
+
     for (const [i, item] of payload.notifications.entries()) {
       this.updatePayload(item, scId, i);
+
       if (!item.id) { // Add
-        saveObs$.push(this.notificationService.addNotificationFromStudyCountry(scId, item).pipe(
-          mergeMap((res: any) => {
-            if (res.statusCode === 201) {
-              return of(true);
-            }
-            return of(false);
-          })
-        ));
+        addPayload.push(item);
       } else {  // Edit
-        saveObs$.push(this.notificationService.editNotification(item.id, item).pipe(
-          mergeMap((res: any) => {
-            if (res.statusCode === 200) {
-              return of(true);
-            }
-            return of(false);
-          })
-        ));
+        editPayload.push(item);
       }
+    }
+
+    if (addPayload.length > 0) {
+      saveObs$.push(this.notificationService.addNotifications(addPayload).pipe(
+        mergeMap((res: any) => {
+          if (res.status === 201) {
+            return of(true);
+          }
+          this.toastr.error("Failed to save notifications");
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to save notifications");
+          return of(false);
+        })
+      ));
+    }
+
+    if (editPayload.length > 0) {
+      saveObs$.push(this.notificationService.editNotifications(editPayload).pipe(
+        mergeMap((res: any) => {
+          if (res.status === 200) {
+            return of(true);
+          }
+          this.toastr.error("Failed to save notifications");
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to save notifications");
+          return of(false);
+        })
+      ));
     }
 
     if (saveObs$.length == 0) {

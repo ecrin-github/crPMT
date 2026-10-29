@@ -149,23 +149,45 @@ export class UpsertStudyAgreementAmendmentComponent implements OnInit {
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
-    // Add/edit amendments
+    // One bulk query for the added items and one for the edited items, instead of one query per item (#18)
+    const addPayload = [];
+    const editPayload = [];
+
     for (const [i, item] of payload.studyAgreementAmendments.entries()) {
       this.updatePayload(item, saId, i);
 
-      let amendmentObs$: Observable<Object> = null;
       if (!item.id) { // Add
-        amendmentObs$ = this.studyAgreementAmendmentService.addAmendmentFromStudyAgreement(saId, item);
-      } else {
-        amendmentObs$ = this.studyAgreementAmendmentService.editStudyAgreementAmendment(item.id, item);
+        addPayload.push(item);
+      } else {  // Edit
+        editPayload.push(item);
       }
+    }
 
-      saveObs$.push(amendmentObs$.pipe(
+    if (addPayload.length > 0) {
+      saveObs$.push(this.studyAgreementAmendmentService.addStudyAgreementAmendments(addPayload).pipe(
         mergeMap((res: any) => {
-          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+          if (res.status === 201) {
             return of(true);
           }
           this.toastr.error("Failed to save Study Agreement Amendment");
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to save Study Agreement Amendment");
+          return of(false);
+        })
+      ));
+    }
+
+    if (editPayload.length > 0) {
+      saveObs$.push(this.studyAgreementAmendmentService.editStudyAgreementAmendments(editPayload).pipe(
+        mergeMap((res: any) => {
+          if (res.status === 200) {
+            return of(true);
+          }
+          this.toastr.error("Failed to save Study Agreement Amendment");
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to save Study Agreement Amendment");
           return of(false);
         })
       ));
@@ -173,23 +195,22 @@ export class UpsertStudyAgreementAmendmentComponent implements OnInit {
 
     // Deleting items deleted in the UI
     const formItemIds: Set<String> = new Set(payload.studyAgreementAmendments.map((item: StudyAgreementAmendmentInterface) => { return item.id; }));
-    const removedItems: Array<StudyAgreementAmendmentInterface> = this.studyAgreementAmendments.filter((initialItem) => !formItemIds.has(initialItem.id));
+    const removedIds: Array<number> = this.studyAgreementAmendments.filter((initialItem) => !formItemIds.has(initialItem.id)).map((item) => Number(item.id));
 
-    removedItems.forEach((item) => {
-      saveObs$.push(this.studyAgreementAmendmentService.deleteStudyAgreementAmendment(item.id).pipe(
+    if (removedIds.length > 0) {
+      saveObs$.push(this.studyAgreementAmendmentService.deleteStudyAgreementAmendments(removedIds).pipe(
         mergeMap((res: any) => {
           if (res.status === 204) {
             return of(true);
-          } else {
-            this.toastr.error(res);
-            return of(false);
           }
-        }), catchError(err => {
-          this.toastr.error(err);
+          this.toastr.error("Failed to delete Study Agreement Amendment");
           return of(false);
-        }))
-      );
-    });
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to delete Study Agreement Amendment");
+          return of(false);
+        })
+      ));
+    }
 
     if (saveObs$.length == 0) {
       saveObs$.push(of(true));

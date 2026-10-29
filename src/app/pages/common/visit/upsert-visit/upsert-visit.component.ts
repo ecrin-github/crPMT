@@ -1,11 +1,7 @@
 import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
-import { Observable, combineLatest, of } from 'rxjs';
-import { catchError, mergeMap } from 'rxjs/operators';
 import { VisitInterface } from 'src/app/_rms/interfaces/core/visit.interface';
-import { VisitService } from 'src/app/_rms/services/entities/visit/visit.service';
 import { TIME_UNITS, VisitTypeCodes } from 'src/assets/js/constants';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 
@@ -33,9 +29,7 @@ export class UpsertVisitComponent implements OnInit {
 
     constructor(
         private fb: UntypedFormBuilder,
-        private router: Router,
-        private visitService: VisitService,
-        private toastr: ToastrService) {
+        private router: Router) {
         this.form = this.fb.group({
             visits: this.fb.array([])
         });
@@ -147,36 +141,10 @@ export class UpsertVisitComponent implements OnInit {
         payload.order = i;
     }
 
-    getDeletedVisits$(): Observable<boolean[]> {
-        let saveObs$: Array<Observable<boolean>> = [];
-
-        const payload = JSON.parse(JSON.stringify(this.form.value));
-
-        // Deleting visits deleted in the UI
-        const formVIds: Set<String> = new Set(payload.visits.map((item: VisitInterface) => { return item.id; }));
-        const removedVisits: Array<VisitInterface> = this.visits.filter((initialSc) => !formVIds.has(initialSc.id));
-
-        removedVisits.forEach((v) => {
-            saveObs$.push(this.visitService.deleteVisit(v.id).pipe(
-                mergeMap((res: any) => {
-                    if (res.status === 204) {
-                        return of(true);
-                    } else {
-                        this.toastr.error(res);
-                        return of(false);
-                    }
-                }), catchError(err => {
-                    this.toastr.error(err);
-                    return of(false);
-                }))
-            );
-        });
-
-        if (saveObs$.length == 0) {
-            saveObs$.push(of(true));
-        }
-
-        return combineLatest(saveObs$);
+    // Ids of the visits deleted in the UI, deleted by the parent centre component in a single bulk query
+    getDeletedVisitIds(): Array<number> {
+        const formVIds: Set<String> = new Set(this.form.value.visits.map((item: VisitInterface) => { return item.id; }));
+        return this.visits.filter((initialV) => !formVIds.has(initialV.id)).map((v) => Number(v.id));
     }
 
     stringToDate(date) {

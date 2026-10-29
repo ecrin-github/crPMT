@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, Subscription, combineLatest, of } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { SafetyNotificationService } from 'src/app/_rms/services/entities/safety-notification/safety-notification.service';
 import { dateToString } from 'src/assets/js/util';
@@ -127,36 +127,52 @@ export class UpsertSafetyNotificationComponent implements OnInit {
 
     onSave(): Observable<string[]> {
         this.submitted = true;
-        let saveObs$: Array<Observable<string>> = [];
+        let saveObs$: Array<Observable<string[]>> = [];
 
         const payload = JSON.parse(JSON.stringify(this.form.value));
+
+        // One bulk query for the added items and one for the edited items, instead of one query per item (#18)
+        const addPayload = [];
+        const editPayload = [];
 
         for (const [i, item] of payload.safetyNotifications.entries()) {
             this.updatePayload(item, i);
 
-            let onSaveObs$;
-
             if (!item.id) { // Add
-                onSaveObs$ = this.safetyNotificationService.addSafetyNotification(item);
+                addPayload.push(item);
             } else {  // Edit
-                onSaveObs$ = this.safetyNotificationService.editSafetyNotification(item.id, item);
+                editPayload.push(item);
             }
+        }
 
-            saveObs$.push(onSaveObs$.pipe(
-                mergeMap((res: any) => {
-                    if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
-                        return of(res.id);
-                    }
-                    return of(null);
-                })
-            ));
+        if (addPayload.length > 0) {
+            saveObs$.push(this.savedIds$(this.safetyNotificationService.addSafetyNotifications(addPayload), addPayload, 201));
+        }
+
+        if (editPayload.length > 0) {
+            saveObs$.push(this.savedIds$(this.safetyNotificationService.editSafetyNotifications(editPayload), editPayload, 200));
         }
 
         if (saveObs$.length == 0) {
-            saveObs$.push(of(null));
+            saveObs$.push(of([null]));
         }
 
-        return combineLatest(saveObs$);
+        return combineLatest(saveObs$).pipe(map((idsArr: string[][]) => [].concat(...idsArr)));
+    }
+
+    // Ids of the safety notifications saved by a bulk query, null for each item if the query failed
+    savedIds$(query$: Observable<any>, items: any[], expectedStatus: number): Observable<string[]> {
+        return query$.pipe(
+            map((res: any) => {
+                if (res.status === expectedStatus) {
+                    return res.body.map((sn) => sn.id);
+                }
+                return items.map(() => null);
+            }), catchError(err => {
+                this.toastr.error(err?.message, "Failed to save safety notifications");
+                return of(items.map(() => null));
+            })
+        );
     }
 
     dateToString(date) {
