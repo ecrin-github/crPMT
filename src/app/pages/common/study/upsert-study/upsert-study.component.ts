@@ -21,6 +21,7 @@ import { dateToString, getFlagEmoji, getTagBgColor, getTagBorderColor, stringToD
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { UpsertStudyCountryComponent } from '../../study-country/upsert-study-country/upsert-study-country.component';
 import { UpsertStudyAgreementComponent } from '../../study-agreement/upsert-study-agreement/upsert-study-agreement.component';
+import { UpsertSatisfactionSurveyComponent } from '../../satisfaction-survey/upsert-satisfaction-survey/upsert-satisfaction-survey.component';
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
 import { REGULATORY_FRAMEWORKS, STUDY_STATUSES, TIME_UNITS } from 'src/assets/js/constants';
 import { ProjectInterface } from 'src/app/_rms/interfaces/core/project.interface';
@@ -36,6 +37,7 @@ export class UpsertStudyComponent implements OnInit {
 
     @ViewChildren('studyCountries') studyCountryComponents: QueryList<UpsertStudyCountryComponent>;
     @ViewChildren('studyAgreements') studyAgreementComponents: QueryList<UpsertStudyAgreementComponent>;
+    @ViewChildren('satisfactionSurveys') satisfactionSurveyComponents: QueryList<UpsertSatisfactionSurveyComponent>;
     @Input() studiesData: Array<StudyInterface>;
     @Input() project: ProjectInterface;
 
@@ -337,6 +339,7 @@ export class UpsertStudyComponent implements OnInit {
             stakeholderKoMeeting: null,
             internalClosingKoMeeting: null,
             archiveDate: null,
+            satisfactionSurveys: [],
             project: this.project,
             studyCountries: [],
         });
@@ -539,6 +542,7 @@ export class UpsertStudyComponent implements OnInit {
                 stakeholderKoMeeting: s.stakeholderKoMeeting ? stringToDate(s.stakeholderKoMeeting) : null,
                 internalClosingMeeting: s.internalClosingMeeting ? stringToDate(s.internalClosingMeeting) : null,
                 archiveDate: s.archiveDate ? stringToDate(s.archiveDate) : null,
+                satisfactionSurveys: [s.satisfactionSurveys],
                 project: s.project,
                 // Note: unknown why this array needs to be wrapped in another array
                 studyCountries: [s.studyCountries]
@@ -577,7 +581,8 @@ export class UpsertStudyComponent implements OnInit {
 
         return this.studyForm.valid
             && !this.studyCountryComponents.some(b => !b.isFormValid())
-            && !this.studyAgreementComponents.some(b => !b.isFormValid());
+            && !this.studyAgreementComponents.some(b => !b.isFormValid())
+            && !this.satisfactionSurveyComponents.some(b => !b.isFormValid());
     }
 
     updatePayload(payload, projectId, i) {
@@ -706,7 +711,7 @@ export class UpsertStudyComponent implements OnInit {
                                         this.id = res.id;
                                     }
 
-                                    if (this.studyCountryComponents.get(i) || this.studyAgreementComponents.get(i)) {
+                                    if (this.studyCountryComponents.get(i) || this.studyAgreementComponents.get(i) || this.satisfactionSurveyComponents.get(i)) {
                                         let subObs$: Observable<boolean>[] = [];
 
                                         if (this.studyCountryComponents.get(i)) { // Saving study countries
@@ -717,6 +722,12 @@ export class UpsertStudyComponent implements OnInit {
 
                                         if (this.studyAgreementComponents.get(i)) { // Saving study agreements
                                             subObs$.push(this.studyAgreementComponents.get(i).onSave(res.id).pipe(
+                                                map((successArr: boolean[]) => successArr.every(b => b))
+                                            ));
+                                        }
+
+                                        if (this.satisfactionSurveyComponents.get(i)) { // Saving user satisfaction surveys
+                                            subObs$.push(this.satisfactionSurveyComponents.get(i).onSave(res.id).pipe(
                                                 map((successArr: boolean[]) => successArr.every(b => b))
                                             ));
                                         }
