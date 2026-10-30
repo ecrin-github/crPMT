@@ -24,4 +24,13 @@ export class SubmissionService {
     deleteSubmission(id) {
       return this.http.delete(`${base}/core/submissions/${id}`, {observe: "response", responseType: 'json'});
     }
+
+    /* Bulk queries */
+    addSubmissions(payload) {
+      return this.http.post(`${base}/core/submissions/bulk_create`, payload, { observe: 'response' });
+    }
+
+    editSubmissions(payload) {
+      return this.http.put(`${base}/core/submissions/bulk_update`, payload, { observe: 'response' });
+    }
 }

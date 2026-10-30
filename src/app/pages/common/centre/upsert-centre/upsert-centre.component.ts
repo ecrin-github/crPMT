@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, combineLatest, of } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { catchError, mergeMap } from 'rxjs/operators';
 import { HospitalInterface } from 'src/app/_rms/interfaces/context/hospital.interface';
 import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
 import { CentreInterface } from 'src/app/_rms/interfaces/core/centre.interface';
@@ -376,27 +376,26 @@ export class UpsertCentreComponent implements OnInit {
                             ));
                         }
 
-                        /* Deleted visits queries */
-                        subObs$.push(this.sivComponent.get(i).getDeletedVisits$().pipe(
-                            mergeMap((successArr: Boolean[]) => {
-                                const success: boolean = successArr.every(b => b);
-                                return of(success);
-                            })
-                        ));
+                        // Bulk delete queries
+                        const deletedIds = [
+                            ...this.sivComponent.get(i).getDeletedVisitIds(),
+                            ...this.movComponent.get(i).getDeletedVisitIds(),
+                            ...this.covComponent.get(i).getDeletedVisitIds()
+                        ];
 
-                        subObs$.push(this.movComponent.get(i).getDeletedVisits$().pipe(
-                            mergeMap((successArr: Boolean[]) => {
-                                const success: boolean = successArr.every(b => b);
-                                return of(success);
-                            })
-                        ));
-
-                        subObs$.push(this.covComponent.get(i).getDeletedVisits$().pipe(
-                            mergeMap((successArr: Boolean[]) => {
-                                const success: boolean = successArr.every(b => b);
-                                return of(success);
-                            })
-                        ));
+                        if (deletedIds.length > 0) {
+                            subObs$.push(this.visitService.deleteVisits(deletedIds).pipe(
+                                mergeMap((res: any) => {
+                                    if (res.status === 204) {
+                                        return of(true);
+                                    }
+                                    return of(false);
+                                }), catchError(err => {
+                                    this.toastr.error(err?.message, 'Failed to delete visits');
+                                    return of(false);
+                                })
+                            ));
+                        }
 
                         if (subObs$.length == 0) {
                             subObs$.push(of(true));

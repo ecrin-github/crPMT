@@ -31,4 +31,13 @@ export class SafetyNotificationService {
   deleteOrphanSafetyNotifications() {
     return this.http.delete(`${base}/core/safety-notifications-cleaning`);
   }
+
+  /* Bulk queries (#18) */
+  addSafetyNotifications(payload) {
+    return this.http.post(`${base}/core/safety-notifications/bulk_create`, payload, { observe: 'response' });
+  }
+
+  editSafetyNotifications(payload) {
+    return this.http.put(`${base}/core/safety-notifications/bulk_update`, payload, { observe: 'response' });
+  }
 }

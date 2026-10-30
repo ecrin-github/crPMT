@@ -68,15 +68,19 @@ export class UpsertPublicationComponent implements OnChanges {
   }
 
   onSave(projectId: string | number): Observable<boolean[]> {
-    const deleteRequests = this.deletedPublicationIds.map((id) =>
-      this.publicationService.deletePublication(id).pipe(
-        map(() => true),
-        catchError(() => of(false))
-      )
-    );
+    // One bulk query per action (delete, add, edit) instead of one query per publication (#18)
+    const requests: Observable<boolean>[] = [];
+    const addPayload: PublicationInterface[] = [];
+    const editPayload: PublicationInterface[] = [];
 
-    const upsertRequests = this.publications
-      .map((publication, index) => {
+    if (this.deletedPublicationIds.length > 0) {
+      requests.push(this.publicationService.deletePublications(this.deletedPublicationIds).pipe(
+        map((res: any) => res.status === 204),
+        catchError(() => of(false))
+      ));
+    }
+
+    this.publications.forEach((publication, index) => {
         const payload: PublicationInterface = {
           title: publication.title,
           pubmedUrl: publication.pubmedUrl,
@@ -87,19 +91,25 @@ export class UpsertPublicationComponent implements OnChanges {
         };
 
         if (publication.id) {
-          return this.publicationService.editPublication(publication.id, payload).pipe(
-            map(() => true),
-            catchError(() => of(false))
-          );
+          editPayload.push({ ...payload, id: publication.id });
+        } else {
+          addPayload.push(payload);
         }
+    });
 
-        return this.publicationService.addPublication(payload).pipe(
-          map(() => true),
-          catchError(() => of(false))
-        );
-      });
+    if (addPayload.length > 0) {
+      requests.push(this.publicationService.addPublications(addPayload).pipe(
+        map((res: any) => res.status === 201),
+        catchError(() => of(false))
+      ));
+    }
 
-    const requests = [...deleteRequests, ...upsertRequests];
+    if (editPayload.length > 0) {
+      requests.push(this.publicationService.editPublications(editPayload).pipe(
+        map((res: any) => res.status === 200),
+        catchError(() => of(false))
+      ));
+    }
 
     if (!requests.length) {
       return of([true]);
