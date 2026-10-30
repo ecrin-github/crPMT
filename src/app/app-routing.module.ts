@@ -29,6 +29,7 @@ export const routes: Routes = [
     RouterModule.forRoot(routes, {
       scrollPositionRestoration: 'enabled',
       onSameUrlNavigation: 'reload',
+      canceledNavigationResolution: 'computed',  // Keeps the browser history consistent when leaving a page is cancelled (#6)
     }),
   ],
   exports: [RouterModule],

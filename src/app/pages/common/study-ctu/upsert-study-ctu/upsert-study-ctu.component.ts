@@ -14,6 +14,7 @@ import { StudyCountryInterface } from 'src/app/_rms/interfaces/core/study-countr
 import { StudyCTUInterface } from 'src/app/_rms/interfaces/core/study-ctus.interface';
 
 import { BackService } from 'src/app/_rms/services/back/back.service';
+import { UnsavedChangesService } from 'src/app/_rms/services/unsaved-changes/unsaved-changes.service';
 import { GraphApiService } from 'src/app/_rms/services/common/graph-api/graph-api.service';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { CtuContractingEntityService } from 'src/app/_rms/services/context/ctu-contracting-entity/ctu-contracting-entity.service';
@@ -82,7 +83,8 @@ export class UpsertStudyCtuComponent implements OnInit {
         private spinner: NgxSpinnerService,
         private studyCTUService: StudyCtuService,
         private ctuMapperService: CtuMapperService,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private unsavedChangesService: UnsavedChangesService
     ) {
         this.form = this.fb.group({
             studyCTUs: this.fb.array([])
@@ -827,6 +829,7 @@ export class UpsertStudyCtuComponent implements OnInit {
                     this.spinner.hide();
                     if (success.every(s => s)) { // success is a boolean[]: a non-empty array is always truthy on its own
                         this.toastr.success("Changes saved successfully");
+                        this.unsavedChangesService.markAllAsPristine();
                         this.router.navigate([`/study-ctus/${this.id}/view`]);
                     } else {
                         this.toastr.error("One or more items failed to save");
