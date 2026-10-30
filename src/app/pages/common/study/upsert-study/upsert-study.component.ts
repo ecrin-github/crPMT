@@ -14,6 +14,7 @@ import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisat
 import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
 import { StudyInterface } from 'src/app/_rms/interfaces/core/study.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
+import { UnsavedChangesService } from 'src/app/_rms/services/unsaved-changes/unsaved-changes.service';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
 import { StudyService } from 'src/app/_rms/services/entities/study/study.service';
@@ -97,7 +98,8 @@ export class UpsertStudyComponent implements OnInit {
         private toastr: ToastrService,
         private jsonGenerator: JsonGeneratorService,
         private backService: BackService,
-        private graphApi: GraphApiService) {
+        private graphApi: GraphApiService,
+        private unsavedChangesService: UnsavedChangesService) {
         this.studyForm = this.fb.group({
             studies: this.fb.array([])
         });
@@ -772,6 +774,7 @@ export class UpsertStudyComponent implements OnInit {
                     this.spinner.hide();
                     if (success.every(s => s)) { // success is a boolean[]: a non-empty array is always truthy on its own
                         this.toastr.success("Changes saved successfully");
+                        this.unsavedChangesService.markAllAsPristine();
                         this.router.navigate([`/studies/${this.id}/view`]);
                     } else {
                         this.toastr.error("One or more items failed to save");

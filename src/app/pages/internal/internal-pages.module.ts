@@ -24,6 +24,7 @@ import { NgxPermissionsModule } from 'ngx-permissions';
 import { CommonPagesModule } from '../common/common-pages.module';
 import { ManagerGuard } from 'src/app/_rms/guards/role/manager.guard';
 import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
+import { UnsavedChangesGuard } from 'src/app/_rms/guards/unsaved-changes/unsaved-changes.guard';
 import { PersonListComponent } from '../common/person/person-list/person-list.component';
 
 
@@ -74,7 +75,8 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                     shouldReuse: false,
                     key: 'upsertstudycomponentadd'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'projects/add',
@@ -84,7 +86,8 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                     shouldReuse: false,
                     key: 'upsertprojectcomponentadd'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'projects',
