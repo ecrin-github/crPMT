@@ -12,9 +12,11 @@ export interface ProjectInterface {
     coordinatingInstitution: OrganisationInterface;
     startDate: string;
     endDate: string;
+    projectKoMeeting: string;
     // Project funding
     fundingSources: ClassValueInterface[];
     gaNumber: string;
+    privateFundingDetails: string;
     // Clinical study information
     studies: StudyDataInterface[];
     reportingPeriods: [];

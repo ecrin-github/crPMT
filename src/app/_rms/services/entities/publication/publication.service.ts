@@ -36,4 +36,17 @@ export class PublicationService {
   deletePublication(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
+  /* Bulk queries (#18) */
+  addPublications(payload) {
+    return this.http.post(`${this.apiUrl}/bulk_create`, payload, { observe: 'response' });
+  }
+
+  editPublications(payload) {
+    return this.http.put(`${this.apiUrl}/bulk_update`, payload, { observe: 'response' });
+  }
+
+  deletePublications(ids) {
+    return this.http.post(`${this.apiUrl}/bulk_delete`, { ids: ids }, { observe: 'response' });
+  }
 }

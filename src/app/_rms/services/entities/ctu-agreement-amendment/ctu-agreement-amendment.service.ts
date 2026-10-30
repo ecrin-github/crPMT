@@ -30,4 +30,17 @@ export class CtuAgreementAmendmentService {
   deleteCTUAgreementAmendment(id) {
     return this.http.delete(`${base}/core/ctu-agreement-amendments/${id}`, {observe: "response", responseType: 'json'});
   }
+
+  /* Bulk queries (#18) */
+  addCTUAgreementAmendments(payload) {
+    return this.http.post(`${base}/core/ctu-agreement-amendments/bulk_create`, payload, { observe: 'response' });
+  }
+
+  editCTUAgreementAmendments(payload) {
+    return this.http.put(`${base}/core/ctu-agreement-amendments/bulk_update`, payload, { observe: 'response' });
+  }
+
+  deleteCTUAgreementAmendments(ids) {
+    return this.http.post(`${base}/core/ctu-agreement-amendments/bulk_delete`, { ids: ids }, { observe: 'response' });
+  }
 }

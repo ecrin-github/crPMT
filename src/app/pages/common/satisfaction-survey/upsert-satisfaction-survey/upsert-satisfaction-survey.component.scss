@@ -1,0 +1,15 @@
+// Same approach as the agreement grid: guaranteed minimum widths so the datepicker input is never clipped
+.survey-fields-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 2fr) minmax(80px, 1fr) minmax(120px, 1fr) minmax(170px, 1.5fr) 30px;
+  gap: 1rem;
+  align-items: center;
+
+  @media (max-width: 930px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+  }
+}

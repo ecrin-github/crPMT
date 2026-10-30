@@ -24,4 +24,13 @@ export class ReportingPeriodService {
   deleteReportingPeriod(id) {
     return this.http.delete(`${base}/core/reporting-periods/${id}`, {observe: "response", responseType: 'json'});
   }
+
+  /* Bulk queries (#18) */
+  addReportingPeriods(payload) {
+    return this.http.post(`${base}/core/reporting-periods/bulk_create`, payload, { observe: 'response' });
+  }
+
+  editReportingPeriods(payload) {
+    return this.http.put(`${base}/core/reporting-periods/bulk_update`, payload, { observe: 'response' });
+  }
 }

@@ -15,6 +15,14 @@ export const STUDY_STATUSES: String[] = [
     "On hold"
 ];
 
+// User satisfaction survey (specs L2): sent after the submission phase, then every 2 years, and at the end of the project
+export const SATISFACTION_SURVEY_TYPES = {
+    INITIAL: "Initial survey",
+    FOLLOW_UP: "Follow-up survey",
+    END_OF_PROJECT: "End of project survey"
+};
+export const SATISFACTION_SURVEY_INTERVAL_MONTHS: number = 24;
+
 export enum Levels {
     PROJECT = 1,
     STUDY = 2,

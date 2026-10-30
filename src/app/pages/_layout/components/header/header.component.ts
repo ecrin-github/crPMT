@@ -20,7 +20,6 @@ import KTLayoutHeaderMenu from '../../../../../assets/js/layout/base/header-menu
 import { KTUtil } from '../../../../../assets/js/components/util';
 import { Subscription, Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../../../environments/environment';
-import { UserInterface } from 'src/app/_rms/interfaces/user/user.interface';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
 import { MsalService } from '@azure/msal-angular';
 

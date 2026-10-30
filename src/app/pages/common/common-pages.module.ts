@@ -40,6 +40,7 @@ import { UpsertCtuAgreementAmendmentComponent } from './ctu-agreement-amendment/
 import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amendment-modal.component';
 import { UpsertStudyAgreementComponent } from './study-agreement/upsert-study-agreement/upsert-study-agreement.component';
 import { UpsertStudyAgreementAmendmentComponent } from './study-agreement-amendment/upsert-study-agreement-amendment/upsert-study-agreement-amendment.component';
+import { UpsertSatisfactionSurveyComponent } from './satisfaction-survey/upsert-satisfaction-survey/upsert-satisfaction-survey.component';
 
 
 
@@ -69,6 +70,7 @@ import { UpsertStudyAgreementAmendmentComponent } from './study-agreement-amendm
         AmendmentModalComponent,
         UpsertStudyAgreementComponent,
         UpsertStudyAgreementAmendmentComponent,
+        UpsertSatisfactionSurveyComponent,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [

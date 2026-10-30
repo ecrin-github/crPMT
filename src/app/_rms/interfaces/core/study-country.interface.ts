@@ -13,6 +13,10 @@ export interface StudyCountryInterface {
     study: StudyMainDataInterface;
     studyCtus: StudyCTUInterface[];
     submissions: SubmissionInterface[];
+    snAnnualEcNa: boolean;
+    snAnnualCaNa: boolean;
+    snDsurEcNa: boolean;
+    snDsurCaNa: boolean;
     isCountryWhereCtisFlagChecked: boolean;
 }
 

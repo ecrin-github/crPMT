@@ -30,4 +30,17 @@ export class StudyAgreementAmendmentService {
   deleteStudyAgreementAmendment(id) {
     return this.http.delete(`${base}/core/study-agreement-amendments/${id}`, {observe: "response", responseType: 'json'});
   }
+
+  /* Bulk queries (#18) */
+  addStudyAgreementAmendments(payload) {
+    return this.http.post(`${base}/core/study-agreement-amendments/bulk_create`, payload, { observe: 'response' });
+  }
+
+  editStudyAgreementAmendments(payload) {
+    return this.http.put(`${base}/core/study-agreement-amendments/bulk_update`, payload, { observe: 'response' });
+  }
+
+  deleteStudyAgreementAmendments(ids) {
+    return this.http.post(`${base}/core/study-agreement-amendments/bulk_delete`, { ids: ids }, { observe: 'response' });
+  }
 }

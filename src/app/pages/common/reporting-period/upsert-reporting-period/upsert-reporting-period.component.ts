@@ -3,7 +3,7 @@ import { UntypedFormArray, UntypedFormBuilder, UntypedFormGroup } from '@angular
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, combineLatest, of } from 'rxjs';
-import { mergeMap } from 'rxjs/operators';
+import { catchError, mergeMap } from 'rxjs/operators';
 import { ReportingPeriodInterface } from 'src/app/_rms/interfaces/core/reporting-period.interface';
 import { ReportingPeriodService } from 'src/app/_rms/services/entities/reporting-period/reporting-period.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
@@ -154,22 +154,45 @@ export class UpsertReportingPeriodComponent implements OnInit {
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
+    // One bulk query for the added items and one for the edited items, instead of one query per item (#18)
+    const addPayload = [];
+    const editPayload = [];
+
     for (const [i, item] of payload.reportingPeriods.entries()) {
       this.updatePayload(item, i, projectId);
 
-      let rpObs$;
-
       if (!item.id) { // Add
-        rpObs$ = this.reportingPeriodService.addReportingPeriod(item);
+        addPayload.push(item);
       } else {  // Edit
-        rpObs$ = this.reportingPeriodService.editReportingPeriod(item.id, item);
+        editPayload.push(item);
       }
+    }
 
-      saveObs$.push(rpObs$.pipe(
+    if (addPayload.length > 0) {
+      saveObs$.push(this.reportingPeriodService.addReportingPeriods(addPayload).pipe(
         mergeMap((res: any) => {
-          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+          if (res.status === 201) {
             return of(true);
           }
+          this.toastr.error("Failed to save reporting periods");
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to save reporting periods");
+          return of(false);
+        })
+      ));
+    }
+
+    if (editPayload.length > 0) {
+      saveObs$.push(this.reportingPeriodService.editReportingPeriods(editPayload).pipe(
+        mergeMap((res: any) => {
+          if (res.status === 200) {
+            return of(true);
+          }
+          this.toastr.error("Failed to save reporting periods");
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to save reporting periods");
           return of(false);
         })
       ));
