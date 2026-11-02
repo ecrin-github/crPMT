@@ -120,6 +120,8 @@ export class UpsertStudyAgreementComponent implements OnInit {
 
   removeStudyAgreement(i: number) {
     this.getStudyAgreementsForm().removeAt(i);
+    // Removing a row doesn't make the form dirty, needed for the unsaved changes popup (#6)
+    this.getStudyAgreementsForm().markAsDirty();
   }
 
   ngOnChanges(changes: SimpleChanges) {

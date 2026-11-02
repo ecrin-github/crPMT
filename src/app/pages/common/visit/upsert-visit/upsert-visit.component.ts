@@ -106,6 +106,8 @@ export class UpsertVisitComponent implements OnInit {
 
     removeVisit(i: number) {
         this.getVisitsForm().removeAt(i);
+        // Removing a row doesn't make the form dirty, needed for the unsaved changes popup (#6)
+        this.getVisitsForm().markAsDirty();
     }
 
     ngOnChanges(changes: SimpleChanges) {

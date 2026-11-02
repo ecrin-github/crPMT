@@ -104,12 +104,16 @@ export class UpsertStudyAgreementAmendmentComponent implements OnInit {
 
   removeAmendment(i) {
     this.getAmendmentsForm().removeAt(i);
+    // Removing a row doesn't make the form dirty, needed for the unsaved changes popup (#6)
+    this.getAmendmentsForm().markAsDirty();
     this.changesEndDate.splice(i, 1);
   }
 
   onChangeEndDateToggle(i: number) {
     if (!this.changesEndDate[i]) { // Switched back to "No": clearing the stale date so it isn't saved
       this.getAmendmentsForm().at(i).get('newEndDate').setValue(null);
+      // The toggle isn't part of the form: marking the date as changed for the unsaved changes popup (#6)
+      this.getAmendmentsForm().at(i).get('newEndDate').markAsDirty();
     }
   }
 

@@ -99,6 +99,8 @@ export class UpsertSafetyNotificationComponent implements OnInit {
     deleteSafetyNotification(i: number) {
         const nId = this.getSafetyNotificationsForm().value[i].id;
         this.getSafetyNotificationsForm().removeAt(i);
+        // Removing a row doesn't make the form dirty, needed for the unsaved changes popup (#6)
+        this.getSafetyNotificationsForm().markAsDirty();
     }
 
     // TODO?

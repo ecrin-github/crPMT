@@ -15,6 +15,8 @@ import { CalendarModule } from 'primeng/calendar';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgxPermissionsModule } from 'ngx-permissions';
 import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
+import { UnsavedChangesGuard } from 'src/app/_rms/guards/unsaved-changes/unsaved-changes.guard';
+import { UnsavedChangesDirective } from 'src/app/_rms/directives/unsaved-changes.directive';
 import { UpsertCentreComponent } from './centre/upsert-centre/upsert-centre.component';
 import { ConfirmationWindowComponent } from './confirmation-window/confirmation-window.component';
 import { CtuModalComponent } from './ctu-modal/ctu-modal.component';
@@ -71,6 +73,7 @@ import { UpsertSatisfactionSurveyComponent } from './satisfaction-survey/upsert-
         UpsertStudyAgreementComponent,
         UpsertStudyAgreementAmendmentComponent,
         UpsertSatisfactionSurveyComponent,
+        UnsavedChangesDirective,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [
@@ -85,7 +88,8 @@ import { UpsertSatisfactionSurveyComponent } from './satisfaction-survey/upsert-
                     shouldReuse: false,
                     key: 'upsertprojectcomponentedit'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'projects/:id/view',
@@ -105,7 +109,8 @@ import { UpsertSatisfactionSurveyComponent } from './satisfaction-survey/upsert-
                     shouldReuse: false,
                     key: 'upsertstudycomponentedit'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'studies/:id/view',
@@ -125,7 +130,8 @@ import { UpsertSatisfactionSurveyComponent } from './satisfaction-survey/upsert-
                     shouldReuse: false,
                     key: 'upsertstudycountrycomponentedit'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'study-countries/:id/view',
@@ -145,7 +151,8 @@ import { UpsertSatisfactionSurveyComponent } from './satisfaction-survey/upsert-
                     shouldReuse: false,
                     key: 'upsertstudyctucomponentedit'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'study-ctus/:id/view',

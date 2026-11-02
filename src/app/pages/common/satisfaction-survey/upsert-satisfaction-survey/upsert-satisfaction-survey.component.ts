@@ -117,6 +117,8 @@ export class UpsertSatisfactionSurveyComponent implements OnInit {
   removeSatisfactionSurvey(i: number) {
     if (this.canRemoveSurvey(i)) {
       this.getSatisfactionSurveysForm().removeAt(i);
+      // Removing a row doesn't make the form dirty, needed for the unsaved changes popup (#6)
+      this.getSatisfactionSurveysForm().markAsDirty();
       // The cached datepicker inputs are bound to row indexes, which shift after a removal
       this.calendarStartDates = [];
       this.markDisabledFns = [];

@@ -125,6 +125,8 @@ export class UpsertCtuAgreementComponent implements OnInit {
 
   removeCTUAgreemen(i: number) {
     this.getCTUAgreementsForm().removeAt(i);
+    // Removing a row doesn't make the form dirty, needed for the unsaved changes popup (#6)
+    this.getCTUAgreementsForm().markAsDirty();
   }
 
   ngOnChanges(changes: SimpleChanges) {

@@ -10,6 +10,7 @@ import { OrganisationInterface } from 'src/app/_rms/interfaces/context/organisat
 import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
 import { ProjectInterface } from 'src/app/_rms/interfaces/core/project.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
+import { UnsavedChangesService } from 'src/app/_rms/services/unsaved-changes/unsaved-changes.service';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { JsonGeneratorService } from 'src/app/_rms/services/entities/json-generator/json-generator.service';
 import { ProjectService } from 'src/app/_rms/services/entities/project/project.service';
@@ -53,7 +54,8 @@ export class UpsertProjectComponent implements OnInit {
         private spinner: NgxSpinnerService,
         private toastr: ToastrService,
         private jsonGenerator: JsonGeneratorService,
-        private backService: BackService) {
+        private backService: BackService,
+        private unsavedChangesService: UnsavedChangesService) {
         this.projectForm = this.fb.group({
             name: '',
             shortName: ['', Validators.required],
@@ -276,6 +278,7 @@ export class UpsertProjectComponent implements OnInit {
                     const success: boolean = successArr.every(b => b);
                     if (success) {
                         this.toastr.success('Changes saved successfully');
+                        this.unsavedChangesService.markAllAsPristine();
                         this.router.navigate([`/projects/${this.id}/view`]);
                     }
                 })

@@ -11,6 +11,7 @@ import { SafetyNotificationFormsInterface, SafetyNotificationInterface } from 's
 import { StudyCountryInterface } from 'src/app/_rms/interfaces/core/study-country.interface';
 import { StudyInterface } from 'src/app/_rms/interfaces/core/study.interface';
 import { BackService } from 'src/app/_rms/services/back/back.service';
+import { UnsavedChangesService } from 'src/app/_rms/services/unsaved-changes/unsaved-changes.service';
 import { ContextService } from 'src/app/_rms/services/context/context.service';
 import { SafetyNotificationService } from 'src/app/_rms/services/entities/safety-notification/safety-notification.service';
 import { StudyCountryService } from 'src/app/_rms/services/entities/study-country/study-country.service';
@@ -75,7 +76,8 @@ export class UpsertStudyCountryComponent implements OnInit {
         public contextService: ContextService,
         private backService: BackService,
         private regulatoryLinkService: RegulatoryLinkService,
-        private toastr: ToastrService) {
+        private toastr: ToastrService,
+        private unsavedChangesService: UnsavedChangesService) {
         this.form = this.fb.group({
             studyCountries: this.fb.array([])
         });
@@ -486,6 +488,8 @@ export class UpsertStudyCountryComponent implements OnInit {
         this.handleLastCtisScCase(scToDelete);
 
         this.getStudyCountriesForm().removeAt(i);
+        // Removing a row doesn't make the form dirty, needed for the unsaved changes popup (#6)
+        this.getStudyCountriesForm().markAsDirty();
         this.snForms.splice(i, 1);  // Removing SNs forms entry
     }
 
@@ -825,6 +829,7 @@ export class UpsertStudyCountryComponent implements OnInit {
                     this.spinner.hide();
                     if (success.every(s => s)) { // success is a boolean[]: a non-empty array is always truthy on its own
                         this.toastr.success("Changes saved successfully");
+                        this.unsavedChangesService.markAllAsPristine();
                         this.router.navigate([`/study-countries/${this.id}/view`]);
                     } else {
                         this.toastr.error("One or more items failed to save");
