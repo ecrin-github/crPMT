@@ -10,7 +10,7 @@ export class UnsavedChangesGuard implements CanDeactivate<unknown> {
   constructor(
     private modalService: NgbModal,
     private unsavedChangesService: UnsavedChangesService
-  ) {}
+  ) { }
 
   canDeactivate(): boolean | Promise<boolean> {
     if (!this.unsavedChangesService.hasUnsavedChanges()) {
@@ -18,10 +18,10 @@ export class UnsavedChangesGuard implements CanDeactivate<unknown> {
     }
 
     const leaveModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-    leaveModal.componentInstance.title = 'Unsaved changes';
-    leaveModal.componentInstance.message = 'You have unsaved changes. Are you sure you want to leave this page? Your changes will be lost.';
-    leaveModal.componentInstance.buttonMessage = 'Leave page';
-    leaveModal.componentInstance.buttonClass = 'btn-warning';
+    leaveModal.componentInstance.title = 'Discard changes?';
+    leaveModal.componentInstance.message = `You have unsaved changes.\nAre you sure you want to discard the changes and leave this page?`;
+    leaveModal.componentInstance.buttonMessage = 'Discard';
+    leaveModal.componentInstance.buttonClass = 'btn-danger';
 
     // Staying on the page if the modal is dismissed
     return leaveModal.result.then((leave: boolean) => leave, () => false);
