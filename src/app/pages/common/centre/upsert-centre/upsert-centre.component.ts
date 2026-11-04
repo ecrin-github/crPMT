@@ -16,6 +16,8 @@ import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { UpsertVisitComponent } from '../../visit/upsert-visit/upsert-visit.component';
 import { VisitService } from 'src/app/_rms/services/entities/visit/visit.service';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
+import { BulkSaveItem, allTrue$, bulkSave$ } from 'src/app/_rms/utils/bulk-save';
 
 @Component({
     selector: 'app-upsert-centre',
@@ -23,6 +25,8 @@ import { VisitService } from 'src/app/_rms/services/entities/visit/visit.service
     styleUrls: ['./upsert-centre.component.scss']
 })
 export class UpsertCentreComponent implements OnInit {
+    private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
     VisitTypeCodes = VisitTypeCodes;
 
     @ViewChildren("siv") sivComponent: QueryList<UpsertVisitComponent>;
@@ -110,6 +114,7 @@ export class UpsertCentreComponent implements OnInit {
 
     patchForm() {
         this.form.setControl('centres', this.getFormArray());
+        this.baseline.capture(this.form.value.centres);
 
         // Setting initial boolean variables to display or not certain fields
         for (let i = 0; i < this.g.length; i++) {
@@ -299,119 +304,118 @@ export class UpsertCentreComponent implements OnInit {
 
         const payload = JSON.parse(JSON.stringify(this.form.value));
 
-        for (const [i, item] of payload.centres.entries()) {
+        // Add/edit centres: one bulk query for the new ones and one for the changed ones (#125)
+        const items: BulkSaveItem[] = payload.centres.map((item, i) => {
             this.updatePayload(item, sctuId, studyId, i);
+            return { payload: item, toSave: this.baseline.hasChanged(this.form.value.centres[i], i) };
+        });
 
-            let centreObs$: Observable<Object> = null;
-            if (!item.id) { // Add
-                centreObs$ = this.centreService.addCentreFromStudyCTU(sctuId, item);
-            } else {
-                centreObs$ = this.centreService.editCentre(item.id, item);
-            }
-
-            saveObs$.push(centreObs$.pipe(
-                mergeMap((res: any) => {
-                    if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
-                        const cId = res.id;
-
-                        let subObs$: Observable<Boolean>[] = [];
-                        const addPayload = [];
-                        const editPayload = [];
-
-                        const sivPayload = JSON.parse(JSON.stringify(this.sivComponent.get(i).form.value));
-                        const movPayload = JSON.parse(JSON.stringify(this.movComponent.get(i).form.value));
-                        const covPayload = JSON.parse(JSON.stringify(this.covComponent.get(i).form.value));
-
-                        for (const [j, sivItem] of sivPayload.visits.entries()) {
-                            this.sivComponent.get(i).updatePayload(sivItem, cId, j);
-
-                            if (!sivItem.id) {
-                                addPayload.push(sivItem);
-                            } else {
-                                editPayload.push(sivItem);
-                            }
-                        }
-
-                        for (const [j, movItem] of movPayload.visits.entries()) {
-                            this.movComponent.get(i).updatePayload(movItem, cId, j);
-
-                            if (!movItem.id) {
-                                addPayload.push(movItem);
-                            } else {
-                                editPayload.push(movItem);
-                            }
-                        }
-
-                        for (const [j, covItem] of covPayload.visits.entries()) {
-                            this.covComponent.get(i).updatePayload(covItem, cId, j);
-
-                            if (!covItem.id) {
-                                addPayload.push(covItem);
-                            } else {
-                                editPayload.push(covItem);
-                            }
-                        }
-
-                        // Bulk add queries
-                        if (addPayload.length > 0) {
-                            subObs$.push(this.visitService.addVisits(addPayload).pipe(
-                                mergeMap((res: any) => {
-                                    if (res.status === 201) {
-                                        return of(true);
-                                    }
-                                    return of(false);
-                                })
-                            ));
-                        }
-
-                        // Bulk edit queries
-                        if (editPayload.length > 0) {
-                            subObs$.push(this.visitService.editVisits(editPayload).pipe(
-                                mergeMap((res: any) => {
-                                    if (res.status === 200) {
-                                        return of(true);
-                                    }
-                                    return of(false);
-                                })
-                            ));
-                        }
-
-                        // Bulk delete queries
-                        const deletedIds = [
-                            ...this.sivComponent.get(i).getDeletedVisitIds(),
-                            ...this.movComponent.get(i).getDeletedVisitIds(),
-                            ...this.covComponent.get(i).getDeletedVisitIds()
-                        ];
-
-                        if (deletedIds.length > 0) {
-                            subObs$.push(this.visitService.deleteVisits(deletedIds).pipe(
-                                mergeMap((res: any) => {
-                                    if (res.status === 204) {
-                                        return of(true);
-                                    }
-                                    return of(false);
-                                }), catchError(err => {
-                                    this.toastr.error(err?.message, 'Failed to delete visits');
-                                    return of(false);
-                                })
-                            ));
-                        }
-
-                        if (subObs$.length == 0) {
-                            subObs$.push(of(true));
-                        }
-
-                        return combineLatest(subObs$).pipe(
-                            mergeMap((successArr: Boolean[]) => {
-                                const success: boolean = successArr.every(b => b);
-                                return of(success);
-                            })
-                        );
-                    }
+        saveObs$.push(bulkSave$(
+            items,
+            (payloads) => this.centreService.addCentres(payloads),
+            (payloads) => this.centreService.editCentres(payloads),
+        ).pipe(
+            // Once every centre has an id, saving the visits of each one
+            mergeMap((ids) => allTrue$(ids.map((cId, i) => {
+                if (cId === null) {
                     return of(false);
-                })
-            ));
-        }
+                }
+
+                let subObs$: Observable<Boolean>[] = [];
+                const addPayload = [];
+                const editPayload = [];
+
+                const sivPayload = JSON.parse(JSON.stringify(this.sivComponent.get(i).form.value));
+                const movPayload = JSON.parse(JSON.stringify(this.movComponent.get(i).form.value));
+                const covPayload = JSON.parse(JSON.stringify(this.covComponent.get(i).form.value));
+
+                for (const [j, sivItem] of sivPayload.visits.entries()) {
+                    this.sivComponent.get(i).updatePayload(sivItem, cId, j);
+
+                    if (!sivItem.id) {
+                        addPayload.push(sivItem);
+                    } else if (this.sivComponent.get(i).hasChanged(j)) {  // Edit, only if changed (#125)
+                        editPayload.push(sivItem);
+                    }
+                }
+
+                for (const [j, movItem] of movPayload.visits.entries()) {
+                    this.movComponent.get(i).updatePayload(movItem, cId, j);
+
+                    if (!movItem.id) {
+                        addPayload.push(movItem);
+                    } else if (this.movComponent.get(i).hasChanged(j)) {  // Edit, only if changed (#125)
+                        editPayload.push(movItem);
+                    }
+                }
+
+                for (const [j, covItem] of covPayload.visits.entries()) {
+                    this.covComponent.get(i).updatePayload(covItem, cId, j);
+
+                    if (!covItem.id) {
+                        addPayload.push(covItem);
+                    } else if (this.covComponent.get(i).hasChanged(j)) {  // Edit, only if changed (#125)
+                        editPayload.push(covItem);
+                    }
+                }
+
+                // Bulk add queries
+                if (addPayload.length > 0) {
+                    subObs$.push(this.visitService.addVisits(addPayload).pipe(
+                        mergeMap((res: any) => {
+                            if (res.status === 201) {
+                                return of(true);
+                            }
+                            return of(false);
+                        })
+                    ));
+                }
+
+                // Bulk edit queries
+                if (editPayload.length > 0) {
+                    subObs$.push(this.visitService.editVisits(editPayload).pipe(
+                        mergeMap((res: any) => {
+                            if (res.status === 200) {
+                                return of(true);
+                            }
+                            return of(false);
+                        })
+                    ));
+                }
+
+                // Bulk delete queries
+                const deletedIds = [
+                    ...this.sivComponent.get(i).getDeletedVisitIds(),
+                    ...this.movComponent.get(i).getDeletedVisitIds(),
+                    ...this.covComponent.get(i).getDeletedVisitIds()
+                ];
+
+                if (deletedIds.length > 0) {
+                    subObs$.push(this.visitService.deleteVisits(deletedIds).pipe(
+                        mergeMap((res: any) => {
+                            if (res.status === 204) {
+                                return of(true);
+                            }
+                            return of(false);
+                        }), catchError(err => {
+                            this.toastr.error(err?.message, 'Failed to delete visits');
+                            return of(false);
+                        })
+                    ));
+                }
+
+                if (subObs$.length == 0) {
+                    subObs$.push(of(true));
+                }
+
+                return combineLatest(subObs$).pipe(
+                    mergeMap((successArr: Boolean[]) => {
+                        const success: boolean = successArr.every(b => b);
+                        return of(success);
+                    })
+                );
+            })))
+        ));
 
         if (saveObs$.length == 0) {
             saveObs$.push(of(true));

@@ -30,4 +30,15 @@ export class StudyAgreementService {
   deleteStudyAgreement(id) {
     return this.http.delete(`${base}/core/study-agreements/${id}`, {observe: "response", responseType: 'json'});
   }
+
+  /* Bulk queries: one query for a whole list of items (#125) */
+  addStudyAgreements(payload) {
+    return this.http.post(`${base}/core/study-agreements/bulk_create`, payload, { observe: 'response' });
+  }
+  editStudyAgreements(payload) {
+    return this.http.put(`${base}/core/study-agreements/bulk_update`, payload, { observe: 'response' });
+  }
+  deleteStudyAgreements(ids) {
+    return this.http.post(`${base}/core/study-agreements/bulk_delete`, { ids: ids }, { observe: 'response' });
+  }
 }

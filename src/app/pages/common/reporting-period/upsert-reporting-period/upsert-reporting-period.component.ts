@@ -9,6 +9,7 @@ import { ReportingPeriodService } from 'src/app/_rms/services/entities/reporting
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { Router } from '@angular/router';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
 
 @Component({
   selector: 'app-upsert-reporting-period',
@@ -16,6 +17,8 @@ import { Router } from '@angular/router';
   styleUrls: ['./upsert-reporting-period.component.scss']
 })
 export class UpsertReportingPeriodComponent implements OnInit {
+  private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
   @Input() reportingPeriodsData: ReportingPeriodInterface[];
 
   form: UntypedFormGroup;
@@ -65,6 +68,7 @@ export class UpsertReportingPeriodComponent implements OnInit {
 
   patchForm() {
     this.form.setControl('reportingPeriods', this.patchArray());
+    this.baseline.capture(this.form.value.reportingPeriods);
   }
 
   patchArray(): UntypedFormArray {
@@ -163,7 +167,7 @@ export class UpsertReportingPeriodComponent implements OnInit {
 
       if (!item.id) { // Add
         addPayload.push(item);
-      } else {  // Edit
+      } else if (this.baseline.hasChanged(this.form.value.reportingPeriods[i], i)) {  // Edit, only if changed (#125)
         editPayload.push(item);
       }
     }

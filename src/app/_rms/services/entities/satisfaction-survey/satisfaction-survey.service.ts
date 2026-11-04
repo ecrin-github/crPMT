@@ -30,4 +30,15 @@ export class SatisfactionSurveyService {
   deleteSatisfactionSurvey(id) {
     return this.http.delete(`${base}/core/satisfaction-surveys/${id}`, {observe: "response", responseType: 'json'});
   }
+
+  /* Bulk queries: one query for a whole list of items (#125) */
+  addSatisfactionSurveys(payload) {
+    return this.http.post(`${base}/core/satisfaction-surveys/bulk_create`, payload, { observe: 'response' });
+  }
+  editSatisfactionSurveys(payload) {
+    return this.http.put(`${base}/core/satisfaction-surveys/bulk_update`, payload, { observe: 'response' });
+  }
+  deleteSatisfactionSurveys(ids) {
+    return this.http.post(`${base}/core/satisfaction-surveys/bulk_delete`, { ids: ids }, { observe: 'response' });
+  }
 }

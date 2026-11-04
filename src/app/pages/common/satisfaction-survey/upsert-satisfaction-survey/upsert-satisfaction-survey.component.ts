@@ -4,11 +4,13 @@ import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, combineLatest, of } from 'rxjs';
-import { catchError, mergeMap } from 'rxjs/operators';
+import { catchError, map, mergeMap } from 'rxjs/operators';
 import { SatisfactionSurveyInterface } from 'src/app/_rms/interfaces/core/satisfaction-survey.interface';
 import { SatisfactionSurveyService } from 'src/app/_rms/services/entities/satisfaction-survey/satisfaction-survey.service';
 import { SATISFACTION_SURVEY_INTERVAL_MONTHS, SATISFACTION_SURVEY_TYPES } from 'src/assets/js/constants';
 import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
+import { BulkSaveItem, bulkSave$ } from 'src/app/_rms/utils/bulk-save';
 
 /*
  * Business rules (specs L2, issue #120):
@@ -25,6 +27,8 @@ import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util'
   styleUrls: ['./upsert-satisfaction-survey.component.scss']
 })
 export class UpsertSatisfactionSurveyComponent implements OnInit {
+  private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
   @Input() satisfactionSurveys: SatisfactionSurveyInterface[];
 
   SATISFACTION_SURVEY_TYPES = SATISFACTION_SURVEY_TYPES;
@@ -95,6 +99,7 @@ export class UpsertSatisfactionSurveyComponent implements OnInit {
 
   patchForm() {
     this.form.setControl('satisfactionSurveys', this.getFormArray());
+    this.baseline.capture(this.form.value.satisfactionSurveys);
   }
 
   canAddSurvey(): boolean {
@@ -273,50 +278,44 @@ export class UpsertSatisfactionSurveyComponent implements OnInit {
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
-    // Add/edit satisfaction surveys
-    for (const [i, item] of payload.satisfactionSurveys.entries()) {
+    // Add/edit satisfaction surveys: one bulk query for the new ones and one for the changed ones (#125)
+    const items: BulkSaveItem[] = payload.satisfactionSurveys.map((item, i) => {
       this.updatePayload(item, studyId, i);
+      return { payload: item, toSave: this.baseline.hasChanged(this.form.value.satisfactionSurveys[i], i) };
+    });
 
-      let satisfactionSurveyObs$: Observable<Object> = null;
-      if (!item.id) { // Add
-        satisfactionSurveyObs$ = this.satisfactionSurveyService.addSatisfactionSurveyFromStudy(studyId, item);
-      } else {
-        satisfactionSurveyObs$ = this.satisfactionSurveyService.editSatisfactionSurvey(item.id, item);
-      }
-
-      saveObs$.push(satisfactionSurveyObs$.pipe(
-        mergeMap((res: any) => {
-          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
-            return of(true);
-          }
+    saveObs$.push(bulkSave$(
+      items,
+      (payloads) => this.satisfactionSurveyService.addSatisfactionSurveys(payloads),
+      (payloads) => this.satisfactionSurveyService.editSatisfactionSurveys(payloads),
+    ).pipe(
+      map((ids) => {
+        const success = ids.every((id) => id !== null);
+        if (!success) {
           this.toastr.error("Failed to save user satisfaction survey");
-          return of(false);
+        }
+        return success;
+      })
+    ));
+
+    // Deleting items deleted in the UI, in a single bulk query (#125)
+    const formItemIds: Set<String> = new Set(payload.satisfactionSurveys.map((item: SatisfactionSurveyInterface) => { return item.id; }));
+    const removedIds: Array<number> = this.satisfactionSurveys.filter((initialItem) => !formItemIds.has(initialItem.id)).map((item) => Number(item.id));
+
+    if (removedIds.length > 0) {
+      saveObs$.push(this.satisfactionSurveyService.deleteSatisfactionSurveys(removedIds).pipe(
+        map((res: any) => {
+          if (res.status === 204) {
+            return true;
+          }
+          this.toastr.error("Failed to delete user satisfaction survey");
+          return false;
         }), catchError(err => {
-          this.toastr.error(err.message, "Failed to save user satisfaction survey");
+          this.toastr.error(err?.message, "Failed to delete user satisfaction survey");
           return of(false);
         })
       ));
     }
-
-    // Deleting items deleted in the UI
-    const formItemIds: Set<String> = new Set(payload.satisfactionSurveys.map((item: SatisfactionSurveyInterface) => { return item.id; }));
-    const removedItems: Array<SatisfactionSurveyInterface> = this.satisfactionSurveys.filter((initialItem) => !formItemIds.has(initialItem.id));
-
-    removedItems.forEach((item) => {
-      saveObs$.push(this.satisfactionSurveyService.deleteSatisfactionSurvey(item.id).pipe(
-        mergeMap((res: any) => {
-          if (res.status === 204) {
-            return of(true);
-          } else {
-            this.toastr.error(res);
-            return of(false);
-          }
-        }), catchError(err => {
-          this.toastr.error(err);
-          return of(false);
-        }))
-      );
-    });
 
     if (saveObs$.length == 0) {
       saveObs$.push(of(true));

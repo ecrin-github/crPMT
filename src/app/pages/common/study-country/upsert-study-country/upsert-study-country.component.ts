@@ -24,6 +24,8 @@ import { UpsertStudyCtuComponent } from '../../study-ctu/upsert-study-ctu/upsert
 import { UpsertSubmissionComponent } from '../../submission/upsert-submission/upsert-submission.component';
 import { AuthorityCodes, SafetyNotificationTypeCodes, CA_TEXT, EC_TEXT } from 'src/assets/js/constants';
 import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-link/regulatory-link.service';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
+import { BulkSaveItem, allTrue$, bulkSave$ } from 'src/app/_rms/utils/bulk-save';
 
 @Component({
     selector: 'app-upsert-study-country',
@@ -31,6 +33,12 @@ import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-l
     styleUrls: ['./upsert-study-country.component.scss']
 })
 export class UpsertStudyCountryComponent implements OnInit {
+    // Items as loaded, to only save the changed ones (#125). The linked safety notifications are not in the form,
+    // so their ids as loaded are kept separately
+    private baseline = new FormArrayBaseline();
+    private loadedSnIds = new Map<string, string>();
+    private scLinksChanged: boolean = false;  // Whether a save can have left orphan safety notifications
+
     SafetyNotificationTypeCodes = SafetyNotificationTypeCodes;
     AuthorityCodes = AuthorityCodes;
 
@@ -170,6 +178,13 @@ export class UpsertStudyCountryComponent implements OnInit {
 
     patchForm() {
         this.form.setControl('studyCountries', this.patchArray());
+        this.baseline.capture(this.form.value.studyCountries);
+        this.loadedSnIds.clear();
+        this.studyCountries.forEach((sc) => {
+            if (sc.id) {
+                this.loadedSnIds.set(String(sc.id), this.getSnIdsKey(sc.safetyNotifications));
+            }
+        });
 
         // Initialize regulatory links for each study country
         this.studyCountries.forEach((sc, index) => {
@@ -687,82 +702,88 @@ export class UpsertStudyCountryComponent implements OnInit {
             }
         }
 
-        for (const [i, sc] of studyCountries.entries()) {
-            let scQueryObs$: Observable<Object>;
-
-            if (sc.id) {  // Edit
-                scQueryObs$ = this.studyCountryService.editStudyCountry(sc.id, sc);
-            } else {  // Add
-                scQueryObs$ = this.studyCountryService.addStudyCountry(sc.study, sc);
+        // Saving the study countries: one bulk query for the new ones and one for the changed ones (#125)
+        const items: BulkSaveItem[] = studyCountries.map((sc, i) => {
+            const toSave = !sc.id || this.isScChanged(sc, i);
+            if (toSave) {
+                this.scLinksChanged = true;
             }
+            return { payload: sc, toSave: toSave };
+        });
 
-            saveObs$.push(scQueryObs$.pipe(  // Saving study country first
-                mergeMap((res: any) => {
-                    if ((!sc.id && res.statusCode === 201) || (sc.id && res.statusCode === 200)) {
-                        let subObs$: Observable<Boolean>[] = [];
+        saveObs$.push(bulkSave$(
+            items,
+            (payloads) => this.studyCountryService.addStudyCountries(payloads),
+            (payloads) => this.studyCountryService.editStudyCountries(payloads),
+        ).pipe(
+            // Once every study country has an id, saving its sub-components
+            mergeMap((ids) => allTrue$(ids.map((scId, i) => {
+                if (scId === null) {
+                    return of(false);
+                }
+                const sc = studyCountries[i];
 
-                        // Saving all "subcomponents" (except safety notifications)
-                        for (let [component, itemType] of regularSubcomponentsAndItems) {
-                            let onSaveObs$;
+                let subObs$: Observable<Boolean>[] = [];
 
-                            if (component.get(i)) {
-                                if (component === this.studyCTUComponents) {
-                                    onSaveObs$ = component.get(i).onSave(res.id, sc.study);
-                                } else {
-                                    onSaveObs$ = component.get(i).onSave(res.id);
-                                }
+                // Saving all "subcomponents" (except safety notifications)
+                for (let [component, itemType] of regularSubcomponentsAndItems) {
+                    let onSaveObs$;
 
-                                subObs$.push(
-                                    onSaveObs$.pipe(
-                                        mergeMap((successArr: boolean[]) => {
-                                            const success: boolean = successArr.every(b => b);
-                                            if (!success) {
-                                                this.toastr.error(`Failed to add ${itemType}`);
-                                            }
-                                            return of(success);
-                                        })
-                                    )
-                                );
-                            }
+                    if (component.get(i)) {
+                        if (component === this.studyCTUComponents) {
+                            onSaveObs$ = component.get(i).onSave(String(scId), sc.study);
+                        } else {
+                            onSaveObs$ = component.get(i).onSave(String(scId));
                         }
 
-                        if (subObs$.length == 0) {
-                            subObs$.push(of(true));
-                        }
-
-                        return combineLatest(subObs$).pipe(
-                            mergeMap((successArr: boolean[]) => {
-                                const success: boolean = successArr.every(b => b);
-                                return of(success);
-                            })
+                        subObs$.push(
+                            onSaveObs$.pipe(
+                                mergeMap((successArr: boolean[]) => {
+                                    const success: boolean = successArr.every(b => b);
+                                    if (!success) {
+                                        this.toastr.error(`Failed to add ${itemType}`);
+                                    }
+                                    return of(success);
+                                })
+                            )
                         );
                     }
-                    return of(false);
-                })
-            ));
-        }
+                }
+
+                if (subObs$.length == 0) {
+                    subObs$.push(of(true));
+                }
+
+                return combineLatest(subObs$).pipe(
+                    mergeMap((successArr: boolean[]) => {
+                        const success: boolean = successArr.every(b => b);
+                        return of(success);
+                    })
+                );
+            })))
+        ));
 
         // Used to check for SCs that have been "soft deleted" from the interface, 
         // as in by switching country for an existing SC rather than deleting the SC and making a new one
         const formScIds: Array<Number> = studyCountries.map((item: StudyCountryInterface) => { return item.id; });
         const softDeletedScs: Array<StudyCountryInterface> = this.studyCountries.filter((initialSc) => formScIds.indexOf(initialSc.id) < 0);
 
-        softDeletedScs.forEach((sc) => {
-            // Deleting SC "soft deleted" from the interface (see comment above)
-            saveObs$.push(this.studyCountryService.deleteStudyCountry(sc.id).pipe(
-                mergeMap((res: any) => {
+        // Deleting SCs "soft deleted" from the interface (see comment above), in a single bulk query (#125)
+        if (softDeletedScs.length > 0) {
+            this.scLinksChanged = true;
+            saveObs$.push(this.studyCountryService.deleteStudyCountries(softDeletedScs.map((sc) => Number(sc.id))).pipe(
+                map((res: any) => {
                     if (res.status === 204) {
-                        return of(true);
-                    } else {
-                        this.toastr.error(res);
-                        return of(false);
+                        return true;
                     }
+                    this.toastr.error("Failed to delete study country");
+                    return false;
                 }), catchError(err => {
-                    this.toastr.error(err);
+                    this.toastr.error(err?.message, "Failed to delete study country");
                     return of(false);
-                }))
-            );
-        });
+                })
+            ));
+        }
 
         if (saveObs$.length == 0) {
             saveObs$.push(of(true));
@@ -771,7 +792,27 @@ export class UpsertStudyCountryComponent implements OnInit {
         return saveObs$;
     }
 
+    // Whether a study country must be saved (#125)
+    isScChanged(sc: StudyCountryInterface, i: number): boolean {
+        // Other CTIS study countries updated from a study country page have no form item: always saved
+        if (i >= this.g.length) {
+            return true;
+        }
+        return this.baseline.hasChanged(this.form.value.studyCountries[i], i)
+            || this.getSnIdsKey(sc.safetyNotifications) !== this.loadedSnIds.get(String(sc.id));
+    }
+
+    // Comparable list of safety notification ids, whether given as objects or as ids
+    getSnIdsKey(safetyNotifications: any[]): string {
+        return (safetyNotifications || []).map((sn) => String(sn?.id ?? sn)).sort().join(',');
+    }
+
     getSNDeleteObs$(res: boolean[]): Observable<boolean[]> {
+        // Orphan safety notifications can only appear if a study country or its links were saved (#125)
+        if (res.every(a => a) && !this.scLinksChanged) {
+            return of([true]);
+        }
+
         if (res.every(a => a)) {
             return this.safetyNotificationService.deleteOrphanSafetyNotifications().pipe(
                 mergeMap((res: any) => {
@@ -793,6 +834,7 @@ export class UpsertStudyCountryComponent implements OnInit {
 
     onSave(studyId: string): Observable<boolean[]> {
         this.submitted = true;
+        this.scLinksChanged = this.studyUsesCtisForSNsChanged;  // Set again by getScSaveObs$ if a study country is saved or deleted (#125)
 
         const payload = JSON.parse(JSON.stringify(this.form.value));
         const studyCountries: StudyCountryInterface[] = payload.studyCountries;

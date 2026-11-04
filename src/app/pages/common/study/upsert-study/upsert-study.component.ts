@@ -27,7 +27,7 @@ import { ProjectService } from 'src/app/_rms/services/entities/project/project.s
 import { REGULATORY_FRAMEWORKS, STUDY_STATUSES, TIME_UNITS } from 'src/assets/js/constants';
 import { ProjectInterface } from 'src/app/_rms/interfaces/core/project.interface';
 import { CtuMapperService } from 'src/app/_rms/services/entities/study-ctu/ctu-mapper.service';
-
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
 
 @Component({
     selector: 'app-upsert-study',
@@ -35,6 +35,7 @@ import { CtuMapperService } from 'src/app/_rms/services/entities/study-ctu/ctu-m
     styleUrls: ['./upsert-study.component.scss'],
 })
 export class UpsertStudyComponent implements OnInit {
+    private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
 
     @ViewChildren('studyCountries') studyCountryComponents: QueryList<UpsertStudyCountryComponent>;
     @ViewChildren('studyAgreements') studyAgreementComponents: QueryList<UpsertStudyAgreementComponent>;
@@ -562,6 +563,7 @@ export class UpsertStudyComponent implements OnInit {
 
     patchStudyForm() {
         this.studyForm.setControl('studies', this.getFormArray());
+        this.baseline.capture(this.studyForm.value.studies);
 
         // Setting initial boolean variables to display or not certain fields
         for (let i = 0; i < this.fc.length; i++) {
@@ -691,8 +693,20 @@ export class UpsertStudyComponent implements OnInit {
         const payload = JSON.parse(JSON.stringify(this.studyForm.value));
 
         for (const [i, item] of payload.studies.entries()) {
+            const formItem = this.studyForm.value.studies[i];
+            const isChanged = this.baseline.hasChanged(formItem, i);
+
+            // Resolving the lead CTU only if it changed, otherwise reusing the loaded one (#125)
+            let ctuId$: Observable<number | null>;
+            if (this.baseline.hasFieldChanged(formItem, 'leadCtu')) {
+                ctuId$ = this.resolveCtuId(item.leadCtu);
+            } else {
+                const loadedCtu: any = this.studies.find((s) => s.id == item.id)?.leadCtu;
+                ctuId$ = of(loadedCtu?.id ?? loadedCtu ?? null);
+            }
+
             saveObs$.push(
-                this.resolveCtuId(item.leadCtu).pipe(
+                ctuId$.pipe(
                     mergeMap((ctuId: number | null) => {
                         const finalCtuId = ctuId ?? item.leadCtu?.id;
 
@@ -702,8 +716,10 @@ export class UpsertStudyComponent implements OnInit {
                         let itemObs$: Observable<Object>;
                         if (!item.id) {  // Add
                             itemObs$ = this.studyService.addStudy(item);
-                        } else {
+                        } else if (isChanged) {  // Edit, only if changed (#125)
                             itemObs$ = this.studyService.editStudy(item.id, item);
+                        } else {  // Unchanged: no query, its sub-items are still saved (#125)
+                            itemObs$ = of({ statusCode: 200, id: item.id });
                         }
 
                         return itemObs$.pipe(
