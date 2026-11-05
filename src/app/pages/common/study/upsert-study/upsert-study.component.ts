@@ -340,7 +340,7 @@ export class UpsertStudyComponent implements OnInit {
             status: null,
             internalKoMeeting: null,
             stakeholderKoMeeting: null,
-            internalClosingKoMeeting: null,
+            internalClosingMeeting: null,
             archiveDate: null,
             satisfactionSurveys: [],
             project: this.project,
