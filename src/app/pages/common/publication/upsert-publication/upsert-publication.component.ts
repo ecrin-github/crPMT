@@ -3,6 +3,7 @@ import { ToastrService } from 'ngx-toastr';
 import { Observable, combineLatest, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { PublicationService, PublicationInterface } from 'src/app/_rms/services/entities/publication/publication.service';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
 
 @Component({
   selector: 'app-upsert-publication',
@@ -18,6 +19,7 @@ export class UpsertPublicationComponent implements OnChanges {
   publications: PublicationInterface[] = [];
   deletedPublicationIds: number[] = [];
   submitted: boolean = false;
+  private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
 
   constructor(
     private publicationService: PublicationService,
@@ -32,7 +34,19 @@ export class UpsertPublicationComponent implements OnChanges {
           order: publication.order ?? index
         }))
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      this.baseline.capture(this.publications.map((publication) => this.savedFields(publication)));
     }
+  }
+
+  // Fields of a publication that are saved, compared to only save the changed publications (#125)
+  savedFields(publication: PublicationInterface) {
+    return {
+      id: publication.id,
+      title: publication.title,
+      pubmedUrl: publication.pubmedUrl,
+      publicationAcknowledgingEcrin: publication.publicationAcknowledgingEcrin ?? false,
+      ecrinEmployeeInAuthors: publication.ecrinEmployeeInAuthors ?? false
+    };
   }
 
   addPublication(): void {
@@ -91,7 +105,9 @@ export class UpsertPublicationComponent implements OnChanges {
         };
 
         if (publication.id) {
-          editPayload.push({ ...payload, id: publication.id });
+          if (this.baseline.hasChanged(this.savedFields(publication), index)) {  // Edit, only if changed (#125)
+            editPayload.push({ ...payload, id: publication.id });
+          }
         } else {
           addPayload.push(payload);
         }

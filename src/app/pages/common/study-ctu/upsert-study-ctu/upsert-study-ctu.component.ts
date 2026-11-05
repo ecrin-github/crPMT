@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { ToastrService } from 'ngx-toastr';
-import { Observable, combineLatest, of } from 'rxjs';
+import { Observable, combineLatest, forkJoin, of } from 'rxjs';
 import { catchError, map, mergeMap } from 'rxjs/operators';
 
 import { ClassValueInterface } from 'src/app/_rms/interfaces/context/class-value.interface';
@@ -34,6 +34,8 @@ import { ConfirmationWindowComponent } from '../../confirmation-window/confirmat
 import { UpsertCtuAgreementComponent } from '../../ctu-agreement/upsert-ctu-agreement/upsert-ctu-agreement.component';
 import { CtuEvaluationResults, SasVerificationResults, ctuEvaluationsListUrl, sasTrackerListUrl } from 'src/assets/js/constants';
 import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interface';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
+import { BulkSaveItem, allTrue$, bulkSave$ } from 'src/app/_rms/utils/bulk-save';
 
 @Component({
     selector: 'app-upsert-study-ctu',
@@ -41,6 +43,8 @@ import { PersonInterface } from 'src/app/_rms/interfaces/context/person.interfac
     styleUrls: ['./upsert-study-ctu.component.scss']
 })
 export class UpsertStudyCtuComponent implements OnInit {
+    private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
     @ViewChildren('ctuAgreements') ctuAgreementComponents: QueryList<UpsertCtuAgreementComponent>;
     @ViewChildren('centres') centreComponents: QueryList<UpsertCentreComponent>;
     @Input() studyCTUsData: Array<StudyCTUInterface>;
@@ -304,6 +308,7 @@ export class UpsertStudyCtuComponent implements OnInit {
 
     patchForm() {
         this.form.setControl('studyCTUs', this.patchArray());
+        this.baseline.capture(this.form.value.studyCTUs);
         this.onChangeCTU();
     }
 
@@ -682,63 +687,63 @@ export class UpsertStudyCtuComponent implements OnInit {
         const saveObs$: Array<Observable<boolean>> = [];
         const payload = JSON.parse(JSON.stringify(this.form.value));
 
-        for (const [i, item] of payload.studyCTUs.entries()) {
-            saveObs$.push(
-                this.resolveCtuId(item.ctu).pipe(
-                    mergeMap((ctuId: number | null) => {
-                        const finalCtuId = ctuId ?? item.ctu?.id;
+        // 1. Resolving the CTU of each study CTU: only if it changed, otherwise reusing the loaded one (#125)
+        const items$: Observable<BulkSaveItem>[] = payload.studyCTUs.map((item, i) => {
+            const formItem = this.form.value.studyCTUs[i];
 
-                        if (!finalCtuId) {
-                            console.error('No CTU ID resolved for item:', item);
+            let ctuId$: Observable<number | null>;
+            if (this.baseline.hasFieldChanged(formItem, 'ctu')) {
+                ctuId$ = this.resolveCtuId(item.ctu);
+            } else {
+                const loadedCtu: any = this.studyCTUs.find((sctu) => sctu.id == item.id)?.ctu;
+                ctuId$ = of(loadedCtu?.id ?? loadedCtu ?? null);
+            }
+
+            return ctuId$.pipe(
+                map((ctuId: number | null): BulkSaveItem => {
+                    const finalCtuId = ctuId ?? item.ctu?.id;
+
+                    if (!finalCtuId) {
+                        console.error('No CTU ID resolved for item:', item);
+                        return { payload: null, toSave: false };  // Not saved, reported as failed below
+                    }
+
+                    item.ctu = { id: finalCtuId };
+                    this.updatePayload(item, scId, studyId, i);
+                    return { payload: item, toSave: this.baseline.hasChanged(formItem, i) };
+                }),
+                catchError((err) => {
+                    this.toastr.error(err);
+                    return of({ payload: null, toSave: false });
+                })
+            );
+        });
+
+        if (items$.length > 0) {
+            saveObs$.push(
+                forkJoin(items$).pipe(
+                    // 2. Once every CTU is resolved, saving all the study CTUs with at most 2 bulk queries (#125)
+                    mergeMap((items: BulkSaveItem[]) => bulkSave$(
+                        items,
+                        (payloads) => this.studyCTUService.addStudyCTUs(payloads),
+                        (payloads) => this.studyCTUService.editStudyCTUs(payloads),
+                    )),
+                    // 3. Once every study CTU has an id, saving the centres and CTU agreements of each one
+                    mergeMap((ids) => allTrue$(ids.map((id, i) => {
+                        if (id === null) {
+                            this.toastr.error('Failed to save Study CTU');
                             return of(false);
                         }
 
-                        item.ctu = { id: finalCtuId };
-                        this.updatePayload(item, scId, studyId, i);
-
-                        let itemObs$: Observable<Object>;
-                        if (!item.id) {
-                            itemObs$ = this.studyCTUService.addStudyCTUFromStudy(studyId, item);
-                        } else {
-                            itemObs$ = this.studyCTUService.editStudyCTU(item.id, item);
-                        }
-
-                        return itemObs$.pipe(
-                            mergeMap((res: any) => {
-
-                                if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
-                                    const subObs$: Observable<boolean>[] = [];
-
-                                    subObs$.push(
-                                        this.centreComponents.get(i).onSave(res.id, studyId).pipe(
-                                            map((successArr: boolean[]) => successArr.every(a => a))
-                                        )
-                                    );
-
-                                    subObs$.push(
-                                        this.ctuAgreementComponents.get(i).onSave(res.id).pipe(
-                                            map((successArr: boolean[]) => successArr.every(a => a))
-                                        )
-                                    );
-
-                                    return combineLatest(subObs$).pipe(
-                                        map((successArr: boolean[]) => successArr.every(a => a))
-                                    );
-                                }
-
-                                this.toastr.error('Failed to save Study CTU');
-                                return of(false);
-                            }),
-                            catchError((err) => {
-                                this.toastr.error(err);
-                                return of(false);
-                            })
-                        );
-                    }),
-                    catchError((err) => {
-                        this.toastr.error(err);
-                        return of(false);
-                    })
+                        return allTrue$([
+                            this.centreComponents.get(i).onSave(String(id), studyId).pipe(
+                                map((successArr: boolean[]) => successArr.every(a => a))
+                            ),
+                            this.ctuAgreementComponents.get(i).onSave(String(id)).pipe(
+                                map((successArr: boolean[]) => successArr.every(a => a))
+                            ),
+                        ]);
+                    })))
                 )
             );
         }

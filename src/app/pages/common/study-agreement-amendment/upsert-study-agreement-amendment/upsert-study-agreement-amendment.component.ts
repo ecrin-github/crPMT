@@ -8,6 +8,7 @@ import { catchError, mergeMap } from 'rxjs/operators';
 import { StudyAgreementAmendmentInterface } from 'src/app/_rms/interfaces/core/study-agreement-amendment.interface';
 import { StudyAgreementAmendmentService } from 'src/app/_rms/services/entities/study-agreement-amendment/study-agreement-amendment.service';
 import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
 
 @Component({
   selector: 'app-upsert-study-agreement-amendment',
@@ -15,6 +16,8 @@ import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util'
   styleUrls: ['./upsert-study-agreement-amendment.component.scss']
 })
 export class UpsertStudyAgreementAmendmentComponent implements OnInit {
+  private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
   @Input() studyAgreementAmendments: StudyAgreementAmendmentInterface[];
   // The parent agreement's start date, so a new end date can't be set before it
   @Input() agreementStartDate: NgbDateStruct;
@@ -92,6 +95,7 @@ export class UpsertStudyAgreementAmendmentComponent implements OnInit {
 
   patchForm() {
     this.form.setControl('studyAgreementAmendments', this.getFormArray());
+    this.baseline.capture(this.form.value.studyAgreementAmendments);
 
     // Restoring the yes/no toggle based on whether a new end date was already set
     this.changesEndDate = this.studyAgreementAmendments.map((amendment) => !!amendment.newEndDate);
@@ -162,7 +166,7 @@ export class UpsertStudyAgreementAmendmentComponent implements OnInit {
 
       if (!item.id) { // Add
         addPayload.push(item);
-      } else {  // Edit
+      } else if (this.baseline.hasChanged(this.form.value.studyAgreementAmendments[i], i)) {  // Edit, only if changed (#125)
         editPayload.push(item);
       }
     }

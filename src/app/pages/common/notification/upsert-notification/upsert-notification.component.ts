@@ -11,6 +11,7 @@ import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-l
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
 
 @Component({
   selector: 'app-upsert-notification',
@@ -18,6 +19,8 @@ import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
   styleUrls: ['./upsert-notification.component.scss']
 })
 export class UpsertNotificationComponent implements OnInit, OnDestroy {
+  private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
   @Input() notificationsData: Array<NotificationInterface>;
   @Input() studyCountry: any;
 
@@ -103,6 +106,7 @@ export class UpsertNotificationComponent implements OnInit, OnDestroy {
 
   patchForm() {
     this.form.setControl('notifications', this.patchArray());
+    this.baseline.capture(this.form.value.notifications);
     if (this.getNotificationsForm().length == 0) { // Adding EC and NCA if None have been found in study country (if isAdd for example)
       this.addNotification();
       this.addNotification();
@@ -247,7 +251,7 @@ export class UpsertNotificationComponent implements OnInit, OnDestroy {
 
       if (!item.id) { // Add
         addPayload.push(item);
-      } else {  // Edit
+      } else if (this.baseline.hasChanged(this.form.value.notifications[i], i)) {  // Edit, only if changed (#125)
         editPayload.push(item);
       }
     }

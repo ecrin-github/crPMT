@@ -45,6 +45,7 @@ export class UpsertProjectComponent implements OnInit {
     sticky: boolean = false;
     projectData: ProjectInterface;
     projectForm: UntypedFormGroup;
+    loadedProjectValue: string = null;  // Project form value as loaded, to only save the project if it changed (#125)
 
     constructor(private contextService: ContextService,
         private fb: UntypedFormBuilder,
@@ -173,6 +174,7 @@ export class UpsertProjectComponent implements OnInit {
             publicSummary: this.projectData.publicSummary,
             url: this.projectData.url,
         });
+        this.loadedProjectValue = JSON.stringify(this.projectForm.value);
 
         this.onChangeFundingSources();
     }
@@ -224,7 +226,10 @@ export class UpsertProjectComponent implements OnInit {
 
             let projectQueryObs$: Observable<Object>;
 
-            if (this.isEdit) {  // Edit
+            if (this.isEdit && JSON.stringify(this.projectForm.value) === this.loadedProjectValue) {
+                // Unchanged: no query, its studies, reporting periods and publications are still saved (#125)
+                projectQueryObs$ = of({ statusCode: 200, id: this.id });
+            } else if (this.isEdit) {  // Edit
                 projectQueryObs$ = this.projectService.editProject(this.id, payload);
             } else {  // Add
                 projectQueryObs$ = this.projectService.addProject(payload);

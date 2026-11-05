@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { VisitInterface } from 'src/app/_rms/interfaces/core/visit.interface';
 import { TIME_UNITS, VisitTypeCodes } from 'src/assets/js/constants';
 import { dateToString, stringToDate } from 'src/assets/js/util';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
 
 @Component({
     selector: 'app-upsert-visit',
@@ -11,6 +12,8 @@ import { dateToString, stringToDate } from 'src/assets/js/util';
     styleUrls: ['./upsert-visit.component.scss']
 })
 export class UpsertVisitComponent implements OnInit {
+    private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
     VisitTypeCodes = VisitTypeCodes;
     TIME_UNITS: String[] = TIME_UNITS;
 
@@ -87,6 +90,7 @@ export class UpsertVisitComponent implements OnInit {
 
     patchForm() {
         this.form.setControl('visits', this.getFormArray());
+        this.baseline.capture(this.form.value.visits);
 
         // SIV and COV components should have exactly 1 visit item at all times
         if (this.fv.length === 0 && (this.visitTypeCode === VisitTypeCodes.SIV || this.visitTypeCode === VisitTypeCodes.COV)) {
@@ -141,6 +145,11 @@ export class UpsertVisitComponent implements OnInit {
         }
 
         payload.order = i;
+    }
+
+    // Whether the visit at this position must be saved by the parent centre component (#125)
+    hasChanged(i: number): boolean {
+        return this.baseline.hasChanged(this.form.value.visits[i], i);
     }
 
     // Ids of the visits deleted in the UI, deleted by the parent centre component in a single bulk query

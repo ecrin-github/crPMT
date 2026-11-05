@@ -36,4 +36,15 @@ export class CentreService {
   deleteCentre(id) {
     return this.http.delete(`${base}/core/centres/${id}`, {observe: "response", responseType: 'json'});
   }
+
+  /* Bulk queries: one query for a whole list of items (#125) */
+  addCentres(payload) {
+    return this.http.post(`${base}/core/centres/bulk_create`, payload, { observe: 'response' });
+  }
+  editCentres(payload) {
+    return this.http.put(`${base}/core/centres/bulk_update`, payload, { observe: 'response' });
+  }
+  deleteCentres(ids) {
+    return this.http.post(`${base}/core/centres/bulk_delete`, { ids: ids }, { observe: 'response' });
+  }
 }

@@ -10,6 +10,11 @@ import { SafetyNotificationService } from 'src/app/_rms/services/entities/safety
 import { dateToString } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { AuthorityCodes, CA_TEXT, EC_TEXT } from 'src/assets/js/constants';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
+
+// Items as loaded, to only save the changed ones (#125). Kept per form rather than per component: the form comes from the
+// study country and can outlive this component (e.g. recreated when the CTIS check changes) or be shared between CTIS countries
+const baselines = new WeakMap<UntypedFormGroup, FormArrayBaseline>();
 
 @Component({
     selector: 'app-upsert-safety-notification',
@@ -17,6 +22,8 @@ import { AuthorityCodes, CA_TEXT, EC_TEXT } from 'src/assets/js/constants';
     styleUrls: ['./upsert-safety-notification.component.scss']
 })
 export class UpsertSafetyNotificationComponent implements OnInit {
+    private baseline = new FormArrayBaseline();
+
     AuthorityCodes = AuthorityCodes;
 
     @ViewChildren('submissionDate', { read: ElementRef }) submissionDateInputs: QueryList<ElementRef>;
@@ -72,6 +79,13 @@ export class UpsertSafetyNotificationComponent implements OnInit {
         // Note: have to do this because shared forms values don't update in the UI (thanks Angular!)
         // See: https://stackoverflow.com/questions/77694477/update-the-view-of-two-forms-sharing-a-formgroup
         if (changes.form && this.form) {
+            if (!baselines.has(this.form)) {  // First time this form is displayed: its values are still the loaded ones
+                const baseline = new FormArrayBaseline();
+                baseline.capture(this.form.value?.safetyNotifications);
+                baselines.set(this.form, baseline);
+            }
+            this.baseline = baselines.get(this.form);
+
             this.formValueChangesSub?.unsubscribe();
 
             this.formValueChangesSub = this.form.valueChanges.subscribe((change) => {
@@ -136,15 +150,22 @@ export class UpsertSafetyNotificationComponent implements OnInit {
         // One bulk query for the added items and one for the edited items, instead of one query per item (#18)
         const addPayload = [];
         const editPayload = [];
+        const unchangedIds = [];  // Not sent, but their ids are still needed to keep the study country links (#125)
 
         for (const [i, item] of payload.safetyNotifications.entries()) {
             this.updatePayload(item, i);
 
             if (!item.id) { // Add
                 addPayload.push(item);
-            } else {  // Edit
+            } else if (this.baseline.hasChanged(this.form.value.safetyNotifications[i], i)) {  // Edit, only if changed (#125)
                 editPayload.push(item);
+            } else {
+                unchangedIds.push(item.id);
             }
+        }
+
+        if (unchangedIds.length > 0) {
+            saveObs$.push(of(unchangedIds));
         }
 
         if (addPayload.length > 0) {
