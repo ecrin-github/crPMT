@@ -18,6 +18,41 @@ For deployment on server:
 
 ## Changelog
 
+## [1.0.0] - 2026-11-06
+### Global
+- Added a confirmation modal on exiting add/edit page with unsaved changes
+- Improved project and study lists display
+- Fixed EuCos appearing in EU Project Coordinator, Coordinating Investigator, and Site PI dropdown lists
+- Fixed studies not being deleted when deleting a project
+- Fixed CTU list
+- Fixed data loss caused by infinite loading error on save
+- Locked services (Study and CTU) dropdown and removed duplicated central pharmacovigilance value
+- Removed position field from Person items and hid country and EuCo field depending on field location
+- Fixed jumps when scrolling in dropdown lists
+- Fixed dropdown lists height shrinking too much with few items
+- Fixed reporting periods tooltip extending out of page with long text
+- Improved app speed by reducing queries to the back-end
+- Other various improvements
+### Project
+- Added free text field to specify private funding name when selecting private funding as funding source
+- Added KO meeting date field
+- Removed character limit on Full Name of EU project field
+### Study
+- Added ECRIN acknowledgement checkbox field
+- Added internal KO meeting date, stakeholder KO meeting, internal closing meeting and archive date fields
+- Added User satisfaction survey section
+- Removed summary field character limit
+### Study Country
+- Modified N/A checkboxes to apply to safety notifications sub-sections instead of per item
+- Fixed/re-enabled Safety Notifications - CTIS checkbox field
+### Study CTU
+- Modified CTU contact name to be manually filled instead of automatically filled by SharePoint data
+- Fixed SAS verification and CTU evaluations not displaying the most recent item
+### Centre
+- Added background color to Centres
+- Added competitive checkbox field next to expected number of patients
+- Modified pharmacy field to checkbox instead of free text
+
 ## [0.15.0] - 2026-09-29
 - Added Initial Agreement and Amendments section both at Study and CTU level (Sponsor-ECRIN for Studies and ECRIN-CTU for CTUs)
 
