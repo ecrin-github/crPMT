@@ -9,6 +9,8 @@ import { StudyAgreementInterface } from 'src/app/_rms/interfaces/core/study-agre
 import { StudyAgreementService } from 'src/app/_rms/services/entities/study-agreement/study-agreement.service';
 import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util';
 import { UpsertStudyAgreementAmendmentComponent } from '../../study-agreement-amendment/upsert-study-agreement-amendment/upsert-study-agreement-amendment.component';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
+import { BulkSaveItem, allTrue$, bulkSave$ } from 'src/app/_rms/utils/bulk-save';
 
 @Component({
   selector: 'app-upsert-study-agreement',
@@ -16,6 +18,8 @@ import { UpsertStudyAgreementAmendmentComponent } from '../../study-agreement-am
   styleUrls: ['./upsert-study-agreement.component.scss']
 })
 export class UpsertStudyAgreementComponent implements OnInit {
+  private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
   @ViewChildren('studyAgreementAmendments') studyAgreementAmendmentComponents: QueryList<UpsertStudyAgreementAmendmentComponent>;
   @Input() studyAgreements: StudyAgreementInterface[];
 
@@ -107,6 +111,7 @@ export class UpsertStudyAgreementComponent implements OnInit {
 
   patchForm() {
     this.form.setControl('studyAgreements', this.getFormArray());
+    this.baseline.capture(this.form.value.studyAgreements);
 
     // For now there is only 1 initial agreement, there might be "other" agreements later
     if (this.fv.length === 0) {
@@ -120,6 +125,8 @@ export class UpsertStudyAgreementComponent implements OnInit {
 
   removeStudyAgreement(i: number) {
     this.getStudyAgreementsForm().removeAt(i);
+    // Removing a row doesn't make the form dirty, needed for the unsaved changes popup (#6)
+    this.getStudyAgreementsForm().markAsDirty();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -171,59 +178,47 @@ export class UpsertStudyAgreementComponent implements OnInit {
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
-    // Add/edit study agreements
-    for (const [i, item] of payload.studyAgreements.entries()) {
+    // Add/edit Study Agreements: one bulk query for the new ones and one for the changed ones (#125)
+    const items: BulkSaveItem[] = payload.studyAgreements.map((item, i) => {
       this.updatePayload(item, studyId, i);
+      return { payload: item, toSave: this.baseline.hasChanged(this.form.value.studyAgreements[i], i) };
+    });
 
-      let studyAgreementObs$: Observable<Object> = null;
-      if (!item.id) { // Add
-        studyAgreementObs$ = this.studyAgreementService.addStudyAgreementFromStudy(studyId, item);
-      } else {
-        studyAgreementObs$ = this.studyAgreementService.editStudyAgreement(item.id, item);
-      }
-
-      saveObs$.push(studyAgreementObs$.pipe(
-        mergeMap((res: any) => {
-          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
-            let subObs$: Observable<boolean>[] = [];
-
-            subObs$.push(this.studyAgreementAmendmentComponents.get(i).onSave(res.id).pipe(
-              map((successArr: boolean[]) => {
-                return successArr.every(a => a);
-              })
-            ));
-
-            return combineLatest(subObs$).pipe(
-              map((successArr: boolean[]) => {
-                return successArr.every(a => a);
-              })
-            );
-          }
+    saveObs$.push(bulkSave$(
+      items,
+      (payloads) => this.studyAgreementService.addStudyAgreements(payloads),
+      (payloads) => this.studyAgreementService.editStudyAgreements(payloads),
+    ).pipe(
+      // Once every agreement has an id, saving the amendments of each one
+      mergeMap((ids) => allTrue$(ids.map((id, i) => {
+        if (id === null) {
           this.toastr.error("Failed to save Study Agreement");
+          return of(false);
+        }
+        return this.studyAgreementAmendmentComponents.get(i).onSave(String(id)).pipe(
+          map((successArr: boolean[]) => successArr.every(a => a))
+        );
+      })))
+    ));
+
+    // Deleting items deleted in the UI, in a single bulk query (#125)
+    const formItemIds: Set<String> = new Set(payload.studyAgreements.map((item: StudyAgreementInterface) => { return item.id; }));
+    const removedIds: Array<number> = this.studyAgreements.filter((initialItem) => !formItemIds.has(initialItem.id)).map((item) => Number(item.id));
+
+    if (removedIds.length > 0) {
+      saveObs$.push(this.studyAgreementService.deleteStudyAgreements(removedIds).pipe(
+        map((res: any) => {
+          if (res.status === 204) {
+            return true;
+          }
+          this.toastr.error("Failed to delete Study Agreement");
+          return false;
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to delete Study Agreement");
           return of(false);
         })
       ));
     }
-
-    // Deleting items deleted in the UI
-    const formItemIds: Set<String> = new Set(payload.studyAgreements.map((item: StudyAgreementInterface) => { return item.id; }));
-    const removedItems: Array<StudyAgreementInterface> = this.studyAgreements.filter((initialItem) => !formItemIds.has(initialItem.id));
-
-    removedItems.forEach((item) => {
-      saveObs$.push(this.studyAgreementService.deleteStudyAgreement(item.id).pipe(
-        mergeMap((res: any) => {
-          if (res.status === 204) {
-            return of(true);
-          } else {
-            this.toastr.error(res);
-            return of(false);
-          }
-        }), catchError(err => {
-          this.toastr.error(err);
-          return of(false);
-        }))
-      );
-    });
 
     if (saveObs$.length == 0) {
       saveObs$.push(of(true));

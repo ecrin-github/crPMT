@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Levels } from 'src/assets/js/constants';
-import { getCountryFlagFromIso2 } from 'src/assets/js/util';
+import { getCountryFlag } from 'src/assets/js/util';
 
 @Component({
   selector: 'app-breadcrumb-navigation-dropdown',
@@ -37,7 +37,7 @@ export class BreadcrumbNavigationDropdownComponent implements OnInit {
         displayName = item.shortTitle;
         break;
       case Levels.STUDY_COUNTRY:
-        displayName = getCountryFlagFromIso2(item.country?.iso2) + " " + item.country?.name;
+        displayName = getCountryFlag(item.country?.iso2) + " " + item.country?.name;
         break;
       case Levels.STUDY_CTU:
         displayName = item.ctu?.shortName ? item.ctu.shortName : item.ctu.name;

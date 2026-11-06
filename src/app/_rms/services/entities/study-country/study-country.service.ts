@@ -28,4 +28,15 @@ export class StudyCountryService {
   deleteStudyCountry(id) {
     return this.http.delete(`${base}/core/study-countries/${id}`, {observe: "response", responseType: 'json'});
   }
+
+  /* Bulk queries: one query for a whole list of items (#125) */
+  addStudyCountries(payload) {
+    return this.http.post(`${base}/core/study-countries/bulk_create`, payload, { observe: 'response' });
+  }
+  editStudyCountries(payload) {
+    return this.http.put(`${base}/core/study-countries/bulk_update`, payload, { observe: 'response' });
+  }
+  deleteStudyCountries(ids) {
+    return this.http.post(`${base}/core/study-countries/bulk_delete`, { ids: ids }, { observe: 'response' });
+  }
 }

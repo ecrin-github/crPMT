@@ -24,4 +24,13 @@ export class NotificationService {
     deleteNotification(id) {
       return this.http.delete(`${base}/core/notifications/${id}`, {observe: "response", responseType: 'json'});
     }
+
+    /* Bulk queries (#18) */
+    addNotifications(payload) {
+      return this.http.post(`${base}/core/notifications/bulk_create`, payload, { observe: 'response' });
+    }
+
+    editNotifications(payload) {
+      return this.http.put(`${base}/core/notifications/bulk_update`, payload, { observe: 'response' });
+    }
 }

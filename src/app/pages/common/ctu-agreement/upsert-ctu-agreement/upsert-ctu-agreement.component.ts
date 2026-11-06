@@ -9,6 +9,8 @@ import { CTUAgreementInterface } from 'src/app/_rms/interfaces/core/ctu-agreemen
 import { CtuAgreementService } from 'src/app/_rms/services/entities/ctu-agreement/ctu-agreement.service';
 import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util';
 import { UpsertCtuAgreementAmendmentComponent } from '../../ctu-agreement-amendment/upsert-ctu-agreement-amendment/upsert-ctu-agreement-amendment.component';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
+import { BulkSaveItem, allTrue$, bulkSave$ } from 'src/app/_rms/utils/bulk-save';
 
 @Component({
   selector: 'app-upsert-ctu-agreement',
@@ -16,6 +18,8 @@ import { UpsertCtuAgreementAmendmentComponent } from '../../ctu-agreement-amendm
   styleUrls: ['./upsert-ctu-agreement.component.scss']
 })
 export class UpsertCtuAgreementComponent implements OnInit {
+  private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
   @ViewChildren('ctuAgreementAmendments') ctuAgreementAmendmentComponents: QueryList<UpsertCtuAgreementAmendmentComponent>;
   @Input() ctuAgreements: CTUAgreementInterface[];
 
@@ -112,6 +116,7 @@ export class UpsertCtuAgreementComponent implements OnInit {
 
   patchForm() {
     this.form.setControl('ctuAgreements', this.getFormArray());
+    this.baseline.capture(this.form.value.ctuAgreements);
 
     // For now there is only 1 initial agreement, there might be "other" agreements later
     if (this.fv.length === 0) {
@@ -125,6 +130,8 @@ export class UpsertCtuAgreementComponent implements OnInit {
 
   removeCTUAgreemen(i: number) {
     this.getCTUAgreementsForm().removeAt(i);
+    // Removing a row doesn't make the form dirty, needed for the unsaved changes popup (#6)
+    this.getCTUAgreementsForm().markAsDirty();
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -182,59 +189,47 @@ export class UpsertCtuAgreementComponent implements OnInit {
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
-    // Add/edit ctu agreements
-    for (const [i, item] of payload.ctuAgreements.entries()) {
+    // Add/edit CTU Agreements: one bulk query for the new ones and one for the changed ones (#125)
+    const items: BulkSaveItem[] = payload.ctuAgreements.map((item, i) => {
       this.updatePayload(item, sctuId, i);
+      return { payload: item, toSave: this.baseline.hasChanged(this.form.value.ctuAgreements[i], i) };
+    });
 
-      let ctuAgreementObs$: Observable<Object> = null;
-      if (!item.id) { // Add
-        ctuAgreementObs$ = this.ctuAgreementService.addCTUAgreementFromStudyCTU(sctuId, item);
-      } else {
-        ctuAgreementObs$ = this.ctuAgreementService.editCTUAgreement(item.id, item);
-      }
-
-      saveObs$.push(ctuAgreementObs$.pipe(
-        mergeMap((res: any) => {
-          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
-            let subObs$: Observable<boolean>[] = [];
-
-            subObs$.push(this.ctuAgreementAmendmentComponents.get(i).onSave(res.id).pipe(
-              map((successArr: boolean[]) => {
-                return successArr.every(a => a);
-              })
-            ));
-
-            return combineLatest(subObs$).pipe(
-              map((successArr: boolean[]) => {
-                return successArr.every(a => a);
-              })
-            );
-          }
+    saveObs$.push(bulkSave$(
+      items,
+      (payloads) => this.ctuAgreementService.addCTUAgreements(payloads),
+      (payloads) => this.ctuAgreementService.editCTUAgreements(payloads),
+    ).pipe(
+      // Once every agreement has an id, saving the amendments of each one
+      mergeMap((ids) => allTrue$(ids.map((id, i) => {
+        if (id === null) {
           this.toastr.error("Failed to save CTU Agreement");
+          return of(false);
+        }
+        return this.ctuAgreementAmendmentComponents.get(i).onSave(String(id)).pipe(
+          map((successArr: boolean[]) => successArr.every(a => a))
+        );
+      })))
+    ));
+
+    // Deleting items deleted in the UI, in a single bulk query (#125)
+    const formItemIds: Set<String> = new Set(payload.ctuAgreements.map((item: CTUAgreementInterface) => { return item.id; }));
+    const removedIds: Array<number> = this.ctuAgreements.filter((initialItem) => !formItemIds.has(initialItem.id)).map((item) => Number(item.id));
+
+    if (removedIds.length > 0) {
+      saveObs$.push(this.ctuAgreementService.deleteCTUAgreements(removedIds).pipe(
+        map((res: any) => {
+          if (res.status === 204) {
+            return true;
+          }
+          this.toastr.error("Failed to delete CTU Agreement");
+          return false;
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to delete CTU Agreement");
           return of(false);
         })
       ));
     }
-
-    // Deleting items deleted in the UI
-    const formItemIds: Set<String> = new Set(payload.ctuAgreements.map((item: CTUAgreementInterface) => { return item.id; }));
-    const removedItems: Array<CTUAgreementInterface> = this.ctuAgreements.filter((initialItem) => !formItemIds.has(initialItem.id));
-
-    removedItems.forEach((item) => {
-      saveObs$.push(this.ctuAgreementService.deleteCTUAgreement(item.id).pipe(
-        mergeMap((res: any) => {
-          if (res.status === 204) {
-            return of(true);
-          } else {
-            this.toastr.error(res);
-            return of(false);
-          }
-        }), catchError(err => {
-          this.toastr.error(err);
-          return of(false);
-        }))
-      );
-    });
 
     if (saveObs$.length == 0) {
       saveObs$.push(of(true));

@@ -8,6 +8,7 @@ import { catchError, mergeMap } from 'rxjs/operators';
 import { StudyAgreementAmendmentInterface } from 'src/app/_rms/interfaces/core/study-agreement-amendment.interface';
 import { StudyAgreementAmendmentService } from 'src/app/_rms/services/entities/study-agreement-amendment/study-agreement-amendment.service';
 import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
 
 @Component({
   selector: 'app-upsert-study-agreement-amendment',
@@ -15,6 +16,8 @@ import { dateToString, getTodayNgbDate, stringToDate } from 'src/assets/js/util'
   styleUrls: ['./upsert-study-agreement-amendment.component.scss']
 })
 export class UpsertStudyAgreementAmendmentComponent implements OnInit {
+  private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
   @Input() studyAgreementAmendments: StudyAgreementAmendmentInterface[];
   // The parent agreement's start date, so a new end date can't be set before it
   @Input() agreementStartDate: NgbDateStruct;
@@ -92,6 +95,7 @@ export class UpsertStudyAgreementAmendmentComponent implements OnInit {
 
   patchForm() {
     this.form.setControl('studyAgreementAmendments', this.getFormArray());
+    this.baseline.capture(this.form.value.studyAgreementAmendments);
 
     // Restoring the yes/no toggle based on whether a new end date was already set
     this.changesEndDate = this.studyAgreementAmendments.map((amendment) => !!amendment.newEndDate);
@@ -104,12 +108,16 @@ export class UpsertStudyAgreementAmendmentComponent implements OnInit {
 
   removeAmendment(i) {
     this.getAmendmentsForm().removeAt(i);
+    // Removing a row doesn't make the form dirty, needed for the unsaved changes popup (#6)
+    this.getAmendmentsForm().markAsDirty();
     this.changesEndDate.splice(i, 1);
   }
 
   onChangeEndDateToggle(i: number) {
     if (!this.changesEndDate[i]) { // Switched back to "No": clearing the stale date so it isn't saved
       this.getAmendmentsForm().at(i).get('newEndDate').setValue(null);
+      // The toggle isn't part of the form: marking the date as changed for the unsaved changes popup (#6)
+      this.getAmendmentsForm().at(i).get('newEndDate').markAsDirty();
     }
   }
 
@@ -149,23 +157,45 @@ export class UpsertStudyAgreementAmendmentComponent implements OnInit {
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
-    // Add/edit amendments
+    // One bulk query for the added items and one for the edited items, instead of one query per item (#18)
+    const addPayload = [];
+    const editPayload = [];
+
     for (const [i, item] of payload.studyAgreementAmendments.entries()) {
       this.updatePayload(item, saId, i);
 
-      let amendmentObs$: Observable<Object> = null;
       if (!item.id) { // Add
-        amendmentObs$ = this.studyAgreementAmendmentService.addAmendmentFromStudyAgreement(saId, item);
-      } else {
-        amendmentObs$ = this.studyAgreementAmendmentService.editStudyAgreementAmendment(item.id, item);
+        addPayload.push(item);
+      } else if (this.baseline.hasChanged(this.form.value.studyAgreementAmendments[i], i)) {  // Edit, only if changed (#125)
+        editPayload.push(item);
       }
+    }
 
-      saveObs$.push(amendmentObs$.pipe(
+    if (addPayload.length > 0) {
+      saveObs$.push(this.studyAgreementAmendmentService.addStudyAgreementAmendments(addPayload).pipe(
         mergeMap((res: any) => {
-          if ((!item.id && res.statusCode === 201) || (item.id && res.statusCode === 200)) {
+          if (res.status === 201) {
             return of(true);
           }
           this.toastr.error("Failed to save Study Agreement Amendment");
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to save Study Agreement Amendment");
+          return of(false);
+        })
+      ));
+    }
+
+    if (editPayload.length > 0) {
+      saveObs$.push(this.studyAgreementAmendmentService.editStudyAgreementAmendments(editPayload).pipe(
+        mergeMap((res: any) => {
+          if (res.status === 200) {
+            return of(true);
+          }
+          this.toastr.error("Failed to save Study Agreement Amendment");
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to save Study Agreement Amendment");
           return of(false);
         })
       ));
@@ -173,23 +203,22 @@ export class UpsertStudyAgreementAmendmentComponent implements OnInit {
 
     // Deleting items deleted in the UI
     const formItemIds: Set<String> = new Set(payload.studyAgreementAmendments.map((item: StudyAgreementAmendmentInterface) => { return item.id; }));
-    const removedItems: Array<StudyAgreementAmendmentInterface> = this.studyAgreementAmendments.filter((initialItem) => !formItemIds.has(initialItem.id));
+    const removedIds: Array<number> = this.studyAgreementAmendments.filter((initialItem) => !formItemIds.has(initialItem.id)).map((item) => Number(item.id));
 
-    removedItems.forEach((item) => {
-      saveObs$.push(this.studyAgreementAmendmentService.deleteStudyAgreementAmendment(item.id).pipe(
+    if (removedIds.length > 0) {
+      saveObs$.push(this.studyAgreementAmendmentService.deleteStudyAgreementAmendments(removedIds).pipe(
         mergeMap((res: any) => {
           if (res.status === 204) {
             return of(true);
-          } else {
-            this.toastr.error(res);
-            return of(false);
           }
-        }), catchError(err => {
-          this.toastr.error(err);
+          this.toastr.error("Failed to delete Study Agreement Amendment");
           return of(false);
-        }))
-      );
-    });
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to delete Study Agreement Amendment");
+          return of(false);
+        })
+      ));
+    }
 
     if (saveObs$.length == 0) {
       saveObs$.push(of(true));
