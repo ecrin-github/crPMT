@@ -97,14 +97,15 @@ export class ProjectListComponent implements OnInit {
         });
     }
 
-    deleteRecord(id) {
+    deleteRecord(item) {
         const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-        deleteModal.componentInstance.setDefaultDeleteMessage("project");
+        deleteModal.componentInstance.setDeleteTitleWithItem(item.shortName);
+        deleteModal.componentInstance.setDefaultDeleteMessageWithItem("project", item.shortName);
 
         deleteModal.result.then((data: any) => {
             if (data) {
                 this.spinner.show();
-                this.projectService.deleteProjectById(id).subscribe((res: any) => {
+                this.projectService.deleteProjectById(item.id).subscribe((res: any) => {
                     if (res.status === 204) {
                         this.toastr.success('Project deleted successfully');
                         this.listUpdateService.sendListRefresh();   // Updating both project and study list

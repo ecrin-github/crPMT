@@ -100,14 +100,15 @@ export class StudyListComponent implements OnInit {
         });
     }
 
-    deleteRecord(id) {
+    deleteRecord(item) {
         const deleteModal = this.modalService.open(ConfirmationWindowComponent, { size: 'lg', backdrop: 'static' });
-        deleteModal.componentInstance.setDefaultDeleteMessage("study");
+        deleteModal.componentInstance.setDeleteTitleWithItem(item.shortTitle);
+        deleteModal.componentInstance.setDefaultDeleteMessageWithItem("study", item.shortTitle);
 
         deleteModal.result.then((data: any) => {
             if (data) {
                 this.spinner.show();
-                this.studyService.deleteStudyById(id).subscribe((res: any) => {
+                this.studyService.deleteStudyById(item.id).subscribe((res: any) => {
                     if (res.status === 204) {
                         this.toastr.success('Study deleted successfully');
                         this.getStudyList();
