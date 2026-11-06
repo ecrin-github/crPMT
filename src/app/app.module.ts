@@ -16,7 +16,6 @@ import { HIGHLIGHT_OPTIONS, HighlightModule } from 'ngx-highlightjs';
 import { NgxPermissionsModule } from 'ngx-permissions';
 import { NgxSpinnerModule } from 'ngx-spinner';
 import { ToastrModule } from 'ngx-toastr';
-import { SplashScreenModule } from './_rms/partials/layout/splash-screen/splash-screen.module';
 // https://github.com/ng-select/ng-select/issues/1464
 import { MSAL_GUARD_CONFIG, MSAL_INSTANCE, MSAL_INTERCEPTOR_CONFIG, MsalBroadcastService, MsalGuard, MsalGuardConfiguration, MsalInterceptor, MsalInterceptorConfiguration, MsalModule, MsalRedirectComponent, MsalService } from '@azure/msal-angular';
 import { BrowserCacheLocation, IPublicClientApplication, InteractionType, PublicClientApplication } from '@azure/msal-browser';
@@ -90,7 +89,6 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
     NgSelectModule,
     BrowserModule,
     BrowserAnimationsModule,
-    SplashScreenModule,
     HttpClientModule,
     // TranslateModule.forRoot(),
     HighlightModule,

@@ -1,13 +1,10 @@
 import { Injectable } from '@angular/core';
 import { of } from 'rxjs';
 import { map, catchError, mergeMap, timeout } from 'rxjs/operators';
-import { ToastrService  } from 'ngx-toastr';
+import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
-import { UserInterface } from '../../interfaces/user/user.interface';
 import { StatesService } from '../states/states.service';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
-import { UserService } from '../user/user.service';
-import { LsAaiUserInterface } from '../../interfaces/user/ls-aai/ls-aai.user.interface';
 import { NgxPermissionsService } from 'ngx-permissions';
 // import { WebSocketService } from '../notifications/websocket.service';
 
@@ -21,10 +18,9 @@ export class AuthService {
 
   constructor(
     private statesService: StatesService,
-    private permissionService: NgxPermissionsService, 
+    private permissionService: NgxPermissionsService,
     private router: Router,
     private oidcSecurityService: OidcSecurityService,
-    private userService: UserService,
     private toastr: ToastrService,
     // private webSocketService: WebSocketService,
   ) { }
@@ -32,7 +28,7 @@ export class AuthService {
   isAuthenticUser() {
     return this.oidcSecurityService.checkAuth().pipe(
       timeout(20000),
-      mergeMap(async ({isAuthenticated, userData, accessToken, idToken}) => {
+      mergeMap(async ({ isAuthenticated, userData, accessToken, idToken }) => {
         this.isAuthenticated = isAuthenticated;
         if (isAuthenticated) {
         } else {

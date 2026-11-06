@@ -1,0 +1,16 @@
+// Each date column gets a guaranteed minimum width so "yyyy-mm-dd" + the calendar button never gets clipped,
+// instead of relying on Bootstrap's col-md-* fractions (which shrink below what the content needs on narrower screens)
+.agreement-fields-grid {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(100px, auto);
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 930px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+  }
+}

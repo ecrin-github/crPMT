@@ -4,13 +4,14 @@ import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { Observable, combineLatest, of, Subject } from 'rxjs';
-import { mergeMap, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { catchError, mergeMap, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { SubmissionInterface } from 'src/app/_rms/interfaces/core/submission.interface';
 import { SubmissionService } from 'src/app/_rms/services/entities/submission/submission.service';
 import { RegulatoryLinkService } from 'src/app/_rms/services/common/regulatory-link/regulatory-link.service';
 import { dateToString, stringToDate } from 'src/assets/js/util';
 import { ConfirmationWindowComponent } from '../../confirmation-window/confirmation-window.component';
 import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
+import { FormArrayBaseline } from 'src/app/_rms/utils/form-array-baseline';
 
 @Component({
   selector: 'app-upsert-submission',
@@ -18,6 +19,8 @@ import { AuthorityCodes, EC_TEXT, NCA_TEXT } from 'src/assets/js/constants';
   styleUrls: ['./upsert-submission.component.scss']
 })
 export class UpsertSubmissionComponent implements OnInit, OnDestroy {
+  private baseline = new FormArrayBaseline();  // Items as loaded, to only save the changed ones (#125)
+
   @Input() submissionsData: Array<SubmissionInterface>;
   @Input() isAmendments: boolean = false;
   @Input() isOthers: boolean = false;
@@ -111,6 +114,7 @@ export class UpsertSubmissionComponent implements OnInit, OnDestroy {
 
   patchForm() {
     this.form.setControl('submissions', this.patchArray());
+    this.baseline.capture(this.form.value.submissions);
     if (!this.isAmendments && !this.isOthers && this.getSubmissionsForm().length == 0) { // Adding EC and NCA if None have been found in study country (if isAdd for example)
       this.addSubmission();
       this.addSubmission();
@@ -257,27 +261,48 @@ export class UpsertSubmissionComponent implements OnInit, OnDestroy {
 
     const payload = JSON.parse(JSON.stringify(this.form.value));
 
+    // One bulk query for the added items and one for the edited items, instead of one query per item (#18)
+    const addPayload = [];
+    const editPayload = [];
+
     for (const [i, item] of payload.submissions.entries()) {
       this.updatePayload(item, scId, i);
+
       if (!item.id) { // Add
-        saveObs$.push(this.submissionService.addSubmissionFromStudyCountry(scId, item).pipe(
-          mergeMap((res: any) => {
-            if (res.statusCode === 201) {
-              return of(true);
-            }
-            return of(false);
-          })
-        ));
-      } else {  // Edit
-        saveObs$.push(this.submissionService.editSubmission(item.id, item).pipe(
-          mergeMap((res: any) => {
-            if (res.statusCode === 200) {
-              return of(true);
-            }
-            return of(false);
-          })
-        ));
+        addPayload.push(item);
+      } else if (this.baseline.hasChanged(this.form.value.submissions[i], i)) {  // Edit, only if changed (#125)
+        editPayload.push(item);
       }
+    }
+
+    if (addPayload.length > 0) {
+      saveObs$.push(this.submissionService.addSubmissions(addPayload).pipe(
+        mergeMap((res: any) => {
+          if (res.status === 201) {
+            return of(true);
+          }
+          this.toastr.error("Failed to save submissions");
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to save submissions");
+          return of(false);
+        })
+      ));
+    }
+
+    if (editPayload.length > 0) {
+      saveObs$.push(this.submissionService.editSubmissions(editPayload).pipe(
+        mergeMap((res: any) => {
+          if (res.status === 200) {
+            return of(true);
+          }
+          this.toastr.error("Failed to save submissions");
+          return of(false);
+        }), catchError(err => {
+          this.toastr.error(err?.message, "Failed to save submissions");
+          return of(false);
+        })
+      ));
     }
 
     if (saveObs$.length == 0) {

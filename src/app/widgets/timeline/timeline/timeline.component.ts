@@ -36,7 +36,7 @@ export class TimelineComponent implements OnInit {  // Note: for now this compon
         // Taken from default Tooltip style
         html += `<span style='display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:${color};'></span>`;
         html += `<span>Comment</span>: `;
-        html += `<span>${this.data[params.seriesIndex]?.comment}</span>`;
+        html += `<span style='text-wrap:wrap;'>${this.data[params.seriesIndex]?.comment}</span>`;
       }
 
       this.tooltipHTML = html;
@@ -58,6 +58,7 @@ export class TimelineComponent implements OnInit {  // Note: for now this compon
 
     this.options = {
       tooltip: {
+        confine: true,
         trigger: 'axis',
         axisPointer: {
           type: 'cross'

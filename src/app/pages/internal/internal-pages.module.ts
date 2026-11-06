@@ -9,7 +9,6 @@ import { NgbDatepickerModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstr
 
 // Pages
 import { InternalMainPageComponent } from './main-page/internal-main-page.component';
-import { ReportsPageInternalComponent } from './reports/reports-page-internal.component';
 
 // Additional modules
 import { ReactiveFormsModule } from '@angular/forms';
@@ -25,13 +24,13 @@ import { NgxPermissionsModule } from 'ngx-permissions';
 import { CommonPagesModule } from '../common/common-pages.module';
 import { ManagerGuard } from 'src/app/_rms/guards/role/manager.guard';
 import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
+import { UnsavedChangesGuard } from 'src/app/_rms/guards/unsaved-changes/unsaved-changes.guard';
 import { PersonListComponent } from '../common/person/person-list/person-list.component';
 
 
 @NgModule({
     declarations: [
         InternalMainPageComponent,
-        ReportsPageInternalComponent,
     ],
     imports: [
         NgbDatepickerModule,
@@ -53,7 +52,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 pathMatch: 'full',
                 component: InternalMainPageComponent,
                 data: {
-                    shouldReuse: true,
+                    shouldReuse: false,
                     key: 'internalmainpagecomponent'
                 }
             },
@@ -63,7 +62,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 pathMatch: 'full',
                 component: StudyListComponent,
                 data: {
-                    shouldReuse: true,
+                    shouldReuse: false,
                     key: 'summarystudycomponent',
                     reuseRoutesFrom: ['studies/:id/view', 'studies/:id/add', 'studies/:id/edit']
                 }
@@ -76,7 +75,8 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                     shouldReuse: false,
                     key: 'upsertstudycomponentadd'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'projects/add',
@@ -86,14 +86,15 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                     shouldReuse: false,
                     key: 'upsertprojectcomponentadd'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'projects',
                 pathMatch: 'full',
                 component: ProjectListComponent,
                 data: {
-                    shouldReuse: true,
+                    shouldReuse: false,
                     key: 'ProjectListComponent'
                 }
             },
@@ -103,7 +104,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
                 pathMatch: 'full',
                 component: PersonListComponent,
                 data: {
-                    shouldReuse: true,
+                    shouldReuse: false,
                     key: 'summaryusercomponent',
                     reuseRoutesFrom: ['people/:id/view', 'people/:id/add', 'people/:id/edit']
                 }

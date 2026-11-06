@@ -36,4 +36,15 @@ export class StudyCtuService {
   deleteStudyCTU(id) {
     return this.http.delete(`${base}/core/study-ctus/${id}`, {observe: "response", responseType: 'json'});
   }
+
+  /* Bulk queries: one query for a whole list of items (#125) */
+  addStudyCTUs(payload) {
+    return this.http.post(`${base}/core/study-ctus/bulk_create`, payload, { observe: 'response' });
+  }
+  editStudyCTUs(payload) {
+    return this.http.put(`${base}/core/study-ctus/bulk_update`, payload, { observe: 'response' });
+  }
+  deleteStudyCTUs(ids) {
+    return this.http.post(`${base}/core/study-ctus/bulk_delete`, { ids: ids }, { observe: 'response' });
+  }
 }

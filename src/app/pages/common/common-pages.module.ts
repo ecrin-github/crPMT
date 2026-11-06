@@ -15,6 +15,8 @@ import { CalendarModule } from 'primeng/calendar';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgxPermissionsModule } from 'ngx-permissions';
 import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
+import { UnsavedChangesGuard } from 'src/app/_rms/guards/unsaved-changes/unsaved-changes.guard';
+import { UnsavedChangesDirective } from 'src/app/_rms/directives/unsaved-changes.directive';
 import { UpsertCentreComponent } from './centre/upsert-centre/upsert-centre.component';
 import { ConfirmationWindowComponent } from './confirmation-window/confirmation-window.component';
 import { CtuModalComponent } from './ctu-modal/ctu-modal.component';
@@ -38,6 +40,9 @@ import { UpsertVisitComponent } from './visit/upsert-visit/upsert-visit.componen
 import { UpsertCtuAgreementComponent } from './ctu-agreement/upsert-ctu-agreement/upsert-ctu-agreement.component';
 import { UpsertCtuAgreementAmendmentComponent } from './ctu-agreement-amendment/upsert-ctu-agreement-amendment/upsert-ctu-agreement-amendment.component';
 import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amendment-modal.component';
+import { UpsertStudyAgreementComponent } from './study-agreement/upsert-study-agreement/upsert-study-agreement.component';
+import { UpsertStudyAgreementAmendmentComponent } from './study-agreement-amendment/upsert-study-agreement-amendment/upsert-study-agreement-amendment.component';
+import { UpsertSatisfactionSurveyComponent } from './satisfaction-survey/upsert-satisfaction-survey/upsert-satisfaction-survey.component';
 
 
 
@@ -65,6 +70,10 @@ import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amend
         UpsertCtuAgreementComponent,
         UpsertCtuAgreementAmendmentComponent,
         AmendmentModalComponent,
+        UpsertStudyAgreementComponent,
+        UpsertStudyAgreementAmendmentComponent,
+        UpsertSatisfactionSurveyComponent,
+        UnsavedChangesDirective,
     ],
     schemas: [NO_ERRORS_SCHEMA],
     imports: [
@@ -79,7 +88,8 @@ import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amend
                     shouldReuse: false,
                     key: 'upsertprojectcomponentedit'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'projects/:id/view',
@@ -99,7 +109,8 @@ import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amend
                     shouldReuse: false,
                     key: 'upsertstudycomponentedit'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'studies/:id/view',
@@ -119,7 +130,8 @@ import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amend
                     shouldReuse: false,
                     key: 'upsertstudycountrycomponentedit'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'study-countries/:id/view',
@@ -139,7 +151,8 @@ import { AmendmentModalComponent } from './amendment-modal/amendment-modal/amend
                     shouldReuse: false,
                     key: 'upsertstudyctucomponentedit'
                 },
-                canActivate: [RoleGuard]
+                canActivate: [RoleGuard],
+                canDeactivate: [UnsavedChangesGuard]
             },
             {
                 path: 'study-ctus/:id/view',

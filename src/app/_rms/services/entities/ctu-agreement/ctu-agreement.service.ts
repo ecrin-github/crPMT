@@ -30,4 +30,15 @@ export class CtuAgreementService {
   deleteCTUAgreement(id) {
     return this.http.delete(`${base}/core/ctu-agreements/${id}`, {observe: "response", responseType: 'json'});
   }
+
+  /* Bulk queries: one query for a whole list of items (#125) */
+  addCTUAgreements(payload) {
+    return this.http.post(`${base}/core/ctu-agreements/bulk_create`, payload, { observe: 'response' });
+  }
+  editCTUAgreements(payload) {
+    return this.http.put(`${base}/core/ctu-agreements/bulk_update`, payload, { observe: 'response' });
+  }
+  deleteCTUAgreements(ids) {
+    return this.http.post(`${base}/core/ctu-agreements/bulk_delete`, { ids: ids }, { observe: 'response' });
+  }
 }

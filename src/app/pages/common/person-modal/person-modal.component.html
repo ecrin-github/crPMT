@@ -6,27 +6,19 @@
         <div class="row form-group">
             <div class="col-md-12">
                 <label for="fullName" class="font-style">Full name<sup>*</sup></label>
-                <input type="text" id="fullName" class="form-control" [(ngModel)]="fullName"/>
+                <input type="text" id="fullName" class="form-control" [(ngModel)]="fullName" />
             </div>
         </div>
         <div class="row form-group">
             <div class="col-md-12">
                 <label for="email" class="font-style">Email</label>
-                <input type="text" id="email" class="form-control" [(ngModel)]="email"/>
+                <input type="text" id="email" class="form-control" [(ngModel)]="email" />
             </div>
         </div>
-        <div class="row form-group">
-            <div class="col-md-12">
-                <label for="position" class="font-style">Position</label>
-                <input type="text" id="position" class="form-control" [(ngModel)]="position"/>
-            </div>
-        </div>
-        <div class="row form-group">
+        <div class="row form-group" *ngIf="showCountry">
             <div class="col-md-12">
                 <label for="country" class="font-style">Country</label>
-                <ng-select [items]="countries" bindLabel="name" bindValue="iso2" [(ngModel)]="countryId"
-                    [searchFn]="searchCountries" [multiple]="false" [virtualScroll]="true"
-                    notFoundText="No countries found" placeholder="Select country" appendTo="body" name="country">
+                <ng-select [items]="countries" bindLabel="name" bindValue="iso2" [(ngModel)]="countryId" [searchFn]="searchCountries" [multiple]="false" notFoundText="No countries found" placeholder="Select country" name="country">
                     <ng-template ng-label-tmp let-item="item">{{item.name}}</ng-template>
                     <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
                         <div class="row m-0">
@@ -36,15 +28,15 @@
                 </ng-select>
             </div>
         </div>
-        <div class="row form-group">
+        <div class="row form-group" *ngIf="showEuCo">
             <div class="col-md-12">
                 <label for="isEuco" class="font-style">EuCo?</label>
-                <input type="checkbox" id="isEuco" class="form-check-input checkbox" [(ngModel)]="isEuco"/>
+                <input type="checkbox" id="isEuco" class="form-check-input checkbox" [(ngModel)]="isEuco" />
             </div>
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-primary" (click)="onSave()">Save</button>
-        <button type="button" class="btn btn-danger" (click)="closeModal()">Cancel</button>
+        <button type="button" class="btn btn-success" (click)="onSave()">Save</button>
+        <button type="button" class="btn btn-warning" (click)="closeModal()">Cancel</button>
     </div>
 </div>

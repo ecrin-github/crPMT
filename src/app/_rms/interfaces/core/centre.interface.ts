@@ -13,6 +13,7 @@ export interface CentreInterface {
     pi: PersonInterface;
     piNationalCoordinator: boolean;
     patientsExpected: number;
+    competitiveEnrollment: boolean;
     recruitmentGreenlight: string;
     firstPatientVisit: string;
     movExpectedNumber: number;

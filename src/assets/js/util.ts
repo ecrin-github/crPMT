@@ -20,6 +20,12 @@ export function stringToDate(date) {
 	return date ? { year: dateArray.getFullYear(), month: dateArray.getMonth() + 1, day: dateArray.getDate() } : null;
 }
 
+// Used as [maxDate] on a ngbDatepicker to prevent picking a date in the future (e.g. a signature date)
+export function getTodayNgbDate(): NgbDateStruct {
+	const today = new Date();
+	return { year: today.getFullYear(), month: today.getMonth() + 1, day: today.getDate() };
+}
+
 export function dateObjToTimeString(date) {
 	if (date instanceof Date) {
 		return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} \
@@ -31,20 +37,9 @@ export function dateObjToTimeString(date) {
 export function anyStringToDateString(str) {
 	const date = new Date(str);
 	if (date) {
-		return date.toISOString();
+		return getYYYYMMDDFromDateString(date.toISOString());
 	}
 	return "";
-}
-
-export function jsDateStrToString(str) {
-	let retStr = "";
-	if (str) {
-		const date = new Date(str);
-		if (date) {
-			retStr = date.toISOString();
-		}
-	}
-	return retStr;
 }
 
 export function getYYYYMMDDFromDateString(dateStr) {
@@ -78,7 +73,7 @@ export function getFlagEmoji(countryCode: string) {
 			.map((char) => 127397 + char.charCodeAt(0))
 		return String.fromCodePoint(...codePoints)
 	}
-	return null;
+	return "";
 }
 
 /*
@@ -180,7 +175,7 @@ export function getTagBgColor(str) {
 	return `rgb(${h.r} ${h.g} ${h.b} / 0.15)`;
 }
 
-export function getCountryFlagFromIso2(iso2) {
+export function getCountryFlag(iso2) {
 	return getFlagEmoji(iso2);
 }
 
