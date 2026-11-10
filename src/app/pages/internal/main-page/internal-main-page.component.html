@@ -1,4 +1,169 @@
-<div class="row">
+<!-- Dashboard-->
+<div class="dashboard">
+    <div class="dashboard-heading">
+        <h1 class="dashboard-title">Dashboard</h1>
+        <p class="dashboard-subtitle">Overview of ECRIN clinical research projects and performance indicators</p>
+    </div>
+
+    <div class="row g-3">
+        <!-- Studies by status -->
+        <div class="col-12 col-xl-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2 class="dashboard-card-title">Studies by status</h2>
+                    <p class="dashboard-card-subtitle">{{ studyStatusTotal }} clinical {{ studyStatusTotal === 1 ? 'study' : 'studies' }}</p>
+                </div>
+                <div *ngIf="dashboardLoaded && !studyStatuses.length" class="dashboard-empty">No studies yet</div>
+                <div class="donut-with-legend" *ngIf="studyStatuses.length">
+                    <!-- $event: the clicked slice, $event.name is its status group -->
+                    <div echarts [options]="studyStatusChartOptions" class="donut-chart"
+                         (chartClick)="openStatusStudies($any($event)?.name)"></div>
+                    <ul class="chart-legend chart-legend--vertical">
+                        <li *ngFor="let status of studyStatuses">
+                            <button type="button" class="chart-legend-button" (click)="openStatusStudies(status.name)"
+                                    [title]="'See the ' + status.name + ' studies'">
+                                <span class="chart-legend-dot" [style.background]="status.color"></span>
+                                {{ status.name }} <span class="chart-legend-value">{{ status.value }}</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regulatory submissions -->
+        <div class="col-12 col-xl-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2 class="dashboard-card-title">Regulatory submissions</h2>
+                    <p class="dashboard-card-subtitle">Submitted vs approved, last 6 months</p>
+                </div>
+                <!-- $event: the clicked bar, with the month position (dataIndex) and the series (seriesName) -->
+                <div echarts [options]="submissionsChartOptions" class="columns-chart"
+                     (chartClick)="openBarSubmissions($any($event))"></div>
+                <ul class="chart-legend">
+                    <li>
+                        <span class="chart-legend-dot" [style.background]="submittedColor"></span>
+                        Submitted <span class="chart-legend-value">{{ submittedTotal }}</span>
+                    </li>
+                    <li>
+                        <span class="chart-legend-dot" [style.background]="approvedColor"></span>
+                        Approved <span class="chart-legend-value">{{ approvedTotal }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Upcoming deadlines -->
+        <div class="col-12 col-xl-4">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2 class="dashboard-card-title">Upcoming deadlines</h2>
+                    <p class="dashboard-card-subtitle">Next 60 days</p>
+                </div>
+                <div *ngIf="dashboardLoaded && !upcomingDeadlines.length" class="dashboard-empty">No upcoming deadlines</div>
+                <div class="deadline" *ngFor="let deadline of upcomingDeadlines">
+                    <div class="deadline-date">
+                        <span class="deadline-month">{{ deadline.date | date: 'MMM' }}</span>
+                        <span class="deadline-day">{{ deadline.date | date: 'dd' }}</span>
+                    </div>
+                    <div class="deadline-text">
+                        <div class="deadline-title">{{ deadline.title }}</div>
+                        <div class="deadline-details">{{ deadline.details }}</div>
+                    </div>
+                    <!-- dueSoon: deadline within DUE_SOON_DAYS (30) days, computed in setDashboardData() -->
+                    <span class="deadline-badge" *ngIf="deadline.dueSoon">Due soon</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Studies of the status clicked on the "Studies by status" chart -->
+<ng-template #statusStudiesModal let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">
+            <span class="chart-legend-dot" [style.background]="selectedStatus?.color"></span>
+            {{ selectedStatus?.name }} studies ({{ selectedStatus?.value }})
+        </h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div *ngIf="selectedStatusLoading" class="dashboard-empty">Loading…</div>
+        <div *ngIf="!selectedStatusLoading && !selectedStatusStudies.length" class="dashboard-empty">No studies found</div>
+        <table *ngIf="!selectedStatusLoading && selectedStatusStudies.length" class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Study</th>
+                    <th>Project</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- modal.close() before navigating, otherwise the modal stays open on the next page -->
+                <tr *ngFor="let study of selectedStatusStudies">
+                    <td><a [routerLink]="['/studies', study.id, 'view']" (click)="modal.close()">{{ study.shortTitle || '—' }}</a></td>
+                    <td>
+                        <a *ngIf="study.project" [routerLink]="['/projects', study.project.id, 'view']" (click)="modal.close()">
+                            {{ study.project.shortName || '—' }}
+                        </a>
+                        <span *ngIf="!study.project" class="text-muted">—</span>
+                    </td>
+                    <td>{{ study.status || 'Not set' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</ng-template>
+
+<!-- Submissions of the bar clicked on the "Regulatory submissions" chart -->
+<ng-template #submissionsModal let-modal>
+    <div class="modal-header">
+        <h5 class="modal-title">
+            <span class="chart-legend-dot" [style.background]="selectedBar?.color"></span>
+            {{ selectedBar?.title }} ({{ selectedBar?.count }})
+        </h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    </div>
+    <div class="modal-body">
+        <div *ngIf="selectedBarLoading" class="dashboard-empty">Loading…</div>
+        <div *ngIf="!selectedBarLoading && !selectedBarSubmissions.length" class="dashboard-empty">No submissions found</div>
+        <table *ngIf="!selectedBarLoading && selectedBarSubmissions.length" class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>{{ selectedBar?.dateLabel }}</th>
+                    <th>Study</th>
+                    <th>Project</th>
+                    <th>Country</th>
+                    <th>Authority</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let submission of selectedBarSubmissions">
+                    <td>{{ parseLocalDate(submission.date) | date: 'dd MMM yyyy' }}</td>
+                    <td>
+                        <a *ngIf="submission.study" [routerLink]="['/studies', submission.study.id, 'view']" (click)="modal.close()">
+                            {{ submission.study.shortTitle || '—' }}
+                        </a>
+                        <span *ngIf="!submission.study" class="text-muted">—</span>
+                    </td>
+                    <td>
+                        <a *ngIf="submission.project" [routerLink]="['/projects', submission.project.id, 'view']" (click)="modal.close()">
+                            {{ submission.project.shortName || '—' }}
+                        </a>
+                        <span *ngIf="!submission.project" class="text-muted">—</span>
+                    </td>
+                    <td>{{ submission.country || '—' }}</td>
+                    <td>{{ submission.authority || '—' }}</td>
+                    <td>{{ submission.type }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</ng-template>
+
+<!-- <div class="row">
     <div class="col-12">
         <app-project-list></app-project-list>
     </div>
@@ -8,4 +173,4 @@
     <div class="col-12">
         <app-study-list></app-study-list>
     </div>
-</div>
+</div> -->

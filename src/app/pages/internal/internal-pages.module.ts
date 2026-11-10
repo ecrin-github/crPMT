@@ -20,6 +20,7 @@ import { ProjectListComponent } from '../common/project/project-list/project-lis
 import { UpsertProjectComponent } from '../common/project/upsert-project/upsert-project.component';
 import { UpsertStudyComponent } from '../common/study/upsert-study/upsert-study.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { NgxEchartsModule } from 'ngx-echarts';
 import { NgxPermissionsModule } from 'ngx-permissions';
 import { CommonPagesModule } from '../common/common-pages.module';
 import { ManagerGuard } from 'src/app/_rms/guards/role/manager.guard';
@@ -43,6 +44,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
         MatFormFieldModule,
         MatButtonModule,
         NgApexchartsModule,
+        NgxEchartsModule.forChild(),  // [echarts] directive for the dashboard charts
         NgxPermissionsModule.forChild(),
         CommonModule,
         CommonPagesModule,
