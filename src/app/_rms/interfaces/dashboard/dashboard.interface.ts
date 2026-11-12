@@ -6,6 +6,18 @@ export interface DashboardResponseInterface {
     studiesByStatus: { name: string; value: number }[];                            // Every status group, even with 0 studies
     submissionsByMonth: { month: string; submitted: number; approved: number }[];  // month: 'YYYY-MM', oldest first
     upcomingDeadlines: { title: string; details: string; date: string }[];         // date: 'YYYY-MM-DD', closest first
+    projectTimelines: {
+        projects: DashboardProjectTimelineInterface[];   // Projects with a start and an end date, earliest start first
+        withoutDates: number;                            // Number of projects not drawn, missing a start or end date
+    };
+}
+
+/** One project of the "Project timelines" chart */
+export interface DashboardProjectTimelineInterface {
+    id: number;
+    name: string;
+    start: string;   // 'YYYY-MM-DD'
+    end: string;     // 'YYYY-MM-DD'
 }
 
 /** One study of GET core/dashboard/studies?status_group=..., listed when clicking on the "Studies by status" chart */

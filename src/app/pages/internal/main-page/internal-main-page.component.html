@@ -76,6 +76,29 @@
                 </div>
             </div>
         </div>
+
+        <!-- Project timelines: full width, under the 3 cards -->
+        <div class="col-12">
+            <div class="dashboard-card dashboard-card--auto">
+                <div class="dashboard-card-header">
+                    <h2 class="dashboard-card-title">Project timelines</h2>
+                    <p class="dashboard-card-subtitle">From start to end date · click on a project to open it</p>
+                </div>
+                <div *ngIf="dashboardLoaded && !timelineData.length" class="dashboard-empty">
+                    No project with a start and an end date yet
+                </div>
+                <!-- Same widget as the reporting periods of a project, with the project names as row labels -->
+                <app-timeline *ngIf="timelineData.length"
+                              [data]="timelineData"
+                              [rowLabels]="timelineLabels"
+                              axisName="Projects"
+                              (rowClick)="openTimelineProject($event)"></app-timeline>
+                <p *ngIf="projectsWithoutDates > 0" class="dashboard-card-subtitle mt-2">
+                    {{ projectsWithoutDates }} {{ projectsWithoutDates === 1 ? 'project is' : 'projects are' }}
+                    not shown: start or end date missing
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 

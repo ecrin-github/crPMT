@@ -23,6 +23,7 @@ import { NgApexchartsModule } from 'ng-apexcharts';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { NgxPermissionsModule } from 'ngx-permissions';
 import { CommonPagesModule } from '../common/common-pages.module';
+import { WidgetsModule } from 'src/app/widgets/widgets.module';
 import { ManagerGuard } from 'src/app/_rms/guards/role/manager.guard';
 import { RoleGuard } from 'src/app/_rms/guards/role/role.guard';
 import { UnsavedChangesGuard } from 'src/app/_rms/guards/unsaved-changes/unsaved-changes.guard';
@@ -48,6 +49,7 @@ import { PersonListComponent } from '../common/person/person-list/person-list.co
         NgxPermissionsModule.forChild(),
         CommonModule,
         CommonPagesModule,
+        WidgetsModule,  // <app-timeline>, reused for the project timelines of the dashboard
         RouterModule.forChild([
             {
                 path: '',

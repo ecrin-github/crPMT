@@ -40,6 +40,11 @@ $text-tertiary: #667085;
   border-radius: 12px;
 }
 
+// Card whose height follows its content (project timelines: one row per project)
+.dashboard-card--auto {
+  min-height: 0;
+}
+
 // Title + subtitle, 42px high in the design
 .dashboard-card-header {
   display: flex;

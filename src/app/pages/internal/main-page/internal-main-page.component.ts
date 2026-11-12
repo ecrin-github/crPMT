@@ -1,5 +1,6 @@
 import { Component, HostListener, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Router } from '@angular/router';
+import { NgbDateStruct, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { LayoutService } from 'src/app/_rms';
 import { StatesService } from 'src/app/_rms/services/states/states.service';
 import { EChartsOption } from 'echarts';
@@ -41,6 +42,11 @@ export class InternalMainPageComponent implements OnInit {
   studyStatuses: DashboardStatusInterface[] = [];   // Only the status groups with at least 1 study
   submissionsByMonth: DashboardSubmissionsMonthInterface[] = [];
   upcomingDeadlines: DashboardDeadlineInterface[] = [];
+  // Project timelines, in the format of the reporting periods <app-timeline> widget, which is reused here
+  timelineData: { stage: number; start: NgbDateStruct; end: NgbDateStruct; comment: string }[] = [];
+  timelineLabels: string[] = [];        // Project names, one per row of the timeline
+  timelineProjectIds: number[] = [];    // Project ids, one per row, to open the clicked project
+  projectsWithoutDates = 0;             // Projects not drawn, missing a start or end date
   dashboardLoaded = false;   // Avoids showing the "no data" messages while loading
 
   // Colours of the "Regulatory submissions" series, also used by its legend
@@ -91,7 +97,8 @@ export class InternalMainPageComponent implements OnInit {
               private dashboardService: DashboardService,
               private spinner: NgxSpinnerService,
               private toastr: ToastrService,
-              private modalService: NgbModal) {
+              private modalService: NgbModal,
+              private router: Router) {
     this.colorsGrayGray100 = this.layout.getProp('js.colors.gray.gray100');
     this.colorsGrayGray700 = this.layout.getProp('js.colors.gray.gray700');
     this.colorsThemeBaseSuccess = this.layout.getProp(
@@ -193,6 +200,32 @@ export class InternalMainPageComponent implements OnInit {
       const date = this.parseLocalDate(deadline.date);
       return { ...deadline, date: date, dueSoon: this.daysFromToday(date) <= DUE_SOON_DAYS };
     });
+
+    // <app-timeline> expects reporting periods: a stage (row number, from 1) and datepicker dates {year, month, day}
+    const projects = data?.projectTimelines?.projects ?? [];
+    this.timelineData = projects.map((project, i) => ({
+      stage: i + 1,
+      start: this.toNgbDate(project.start),
+      end: this.toNgbDate(project.end),
+      comment: '',
+    }));
+    this.timelineLabels = projects.map((project) => project.name);
+    this.timelineProjectIds = projects.map((project) => project.id);
+    this.projectsWithoutDates = data?.projectTimelines?.withoutDates ?? 0;
+  }
+
+  // Click on a project bar of the timeline: rowIndex is its position, the same as in timelineProjectIds
+  openTimelineProject(rowIndex: number): void {
+    const projectId = this.timelineProjectIds[rowIndex];
+    if (projectId) {
+      this.router.navigate(['/projects', projectId, 'view']);
+    }
+  }
+
+  // 'YYYY-MM-DD' -> {year, month, day}, the date format of the datepickers, expected by <app-timeline>
+  toNgbDate(isoDate: string): NgbDateStruct {
+    const [year, month, day] = isoDate.split('-').map(Number);
+    return { year, month, day };
   }
 
   // Number of days between today and the given date (0: today)

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import type { EChartsCoreOption } from 'echarts/core';
 import { ngbDateToString } from 'src/assets/js/util';
 
@@ -9,6 +9,12 @@ import { ngbDateToString } from 'src/assets/js/util';
 })
 export class TimelineComponent implements OnInit {  // Note: for now this component is specific to Reporting Periods
   @Input() data: any;
+  // Optional, to use the timeline for other items than reporting periods (e.g. projects on the dashboard).
+  // When not given, the reporting period labels are used, as before.
+  @Input() rowLabels: string[];   // Label of each row, in the same order as data
+  @Input() axisName: string = "Reporting Period";
+  // Optional: emits the index (in data) of the row whose bar was clicked, e.g. to open the clicked project
+  @Output() rowClick = new EventEmitter<number>();
 
   options: EChartsCoreOption;
   tooltipHTML: string = "";
@@ -16,6 +22,13 @@ export class TimelineComponent implements OnInit {  // Note: for now this compon
   constructor() { }
 
   ngOnInit(): void { }
+
+  // Click on a bar (line series): its series index is the index of the row in data
+  onClick(params) {
+    if (params?.componentSubType == "line" && params?.seriesIndex != null) {
+      this.rowClick.emit(params.seriesIndex);
+    }
+  }
 
   // Custom tooltip to show only on mouse over line (pixels)
   onMouseEvent(params) {
@@ -112,10 +125,10 @@ export class TimelineComponent implements OnInit {  // Note: for now this compon
         type: 'category',
         triggerEvent: true,
         inverse: true,
-        name: "Reporting Period",
+        name: this.axisName,
         nameLocation: "start",
-        data: this.data.map((rp) => {
-          return "RP " + rp?.stage;
+        data: this.data.map((rp, i) => {
+          return this.rowLabels?.[i] ?? "RP " + rp?.stage;
         })
       },
       // Tools on the right
@@ -138,9 +151,9 @@ export class TimelineComponent implements OnInit {  // Note: for now this compon
         },
       ],
       // Populating series data
-      series: this.data.map((rp) => {
+      series: this.data.map((rp, i) => {
         return {
-          name: "Reporting Period " + rp?.stage,
+          name: this.rowLabels?.[i] ?? "Reporting Period " + rp?.stage,
           type: 'line',
           symbol: 'rect',
           symbolSize: 0,
